@@ -759,8 +759,7 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     paint(); setTimeout(() => step(0), 700);
   }
   heroAnim();
-  // Type options: A Petrona, B Schibsted Grotesk, C Besley (body stays Hanken Grotesk)
-  (function () { let t = 'a'; try { t = localStorage.getItem('pesadithi:type') || 'a'; } catch (e) { /* none */ } const set = (v) => { document.documentElement.dataset.type = v; $$('.typepick button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === v))); try { localStorage.setItem('pesadithi:type', v); } catch (e) { /* none */ } if (S.A && !$('#v-story').hidden) setTimeout(drawCharts, 60); }; $$('.typepick button').forEach((b) => b.addEventListener('click', () => set(b.dataset.t))); set(t); })();
+
 
   /* ---------------- Start ---------------- */
   setDataUI(false);

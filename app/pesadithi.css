@@ -11,7 +11,7 @@
   --brand: #17694e; --brand-dk: #0f4f3a; --brand-tint: #e4f4ec; --brand-tint2: #c9e9d8; --leaf: #6dbb95; --glow: #3ddc97;
   --in: #17803f; --out: #d23b2e; --credit: #2457d6; --loan: #e08a00; --fee: #5b6670; --bad: #a3170f; --good: #17803f; --focus: #17694e;
   --in-tint: #e6f5ec; --out-tint: #fcecea; --credit-tint: #e9effc;
-  --serif: 'Petrona', Georgia, serif; --sans: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --serif: 'Besley', Georgia, serif; --sans: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
   --r: 12px; --wrap: 1080px;
 }
 * { box-sizing: border-box; }
@@ -409,38 +409,18 @@ footer { background: var(--soft); }
 .sm .lock i { font-style: italic; font-weight: 300; }
 @media (prefers-reduced-motion: reduce) { .anim .g, .anim .gx, .anim .f, .anim .p, .anim .ln { transform: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; } }
 
-/* ================= Three type options (Nov 2026). Body stays Hanken Grotesk. =================
-   Banned for this project: Inter, Fraunces, Bricolage Grotesque, Young Serif, Funnel Display, Montserrat,
-   Raleway, Merriweather, Source Serif, Poppins, Outfit, Space Grotesk, Archivo, Public Sans; Literata reads too thin. */
-@font-face { font-family: 'Petrona'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('vendor/fonts/petrona-latin-wght-normal.woff2') format('woff2-variations'); }
-@font-face { font-family: 'Petrona'; font-style: italic; font-weight: 100 900; font-display: swap; src: url('vendor/fonts/petrona-latin-wght-italic.woff2') format('woff2-variations'); }
-@font-face { font-family: 'Schibsted Grotesk'; font-style: normal; font-weight: 400 900; font-display: swap; src: url('vendor/fonts/schibsted-grotesk-latin-wght-normal.woff2') format('woff2-variations'); }
-@font-face { font-family: 'Schibsted Grotesk'; font-style: italic; font-weight: 400 900; font-display: swap; src: url('vendor/fonts/schibsted-grotesk-latin-wght-italic.woff2') format('woff2-variations'); }
+/* ================= Type, locked Nov 2026: Besley headings, Hanken Grotesk text, JetBrains Mono figures =================
+   Never use: Inter, Fraunces, Bricolage Grotesque, Young Serif, Funnel Display, Montserrat, Raleway, Merriweather,
+   Source Serif, Poppins, Outfit, Space Grotesk, Archivo, Public Sans; Literata reads too thin. */
 @font-face { font-family: 'Besley'; font-style: normal; font-weight: 400 900; font-display: swap; src: url('vendor/fonts/besley-latin-wght-normal.woff2') format('woff2-variations'); }
 @font-face { font-family: 'Besley'; font-style: italic; font-weight: 400 900; font-display: swap; src: url('vendor/fonts/besley-latin-wght-italic.woff2') format('woff2-variations'); }
-@font-face { font-family: 'Geist Mono'; font-weight: 400; font-display: swap; src: url('vendor/fonts/geist-mono-latin-400-normal.woff2') format('woff2'); }
-@font-face { font-family: 'Geist Mono'; font-weight: 500; font-display: swap; src: url('vendor/fonts/geist-mono-latin-500-normal.woff2') format('woff2'); }
-
-/* A: Petrona, a sturdy editorial serif with a full weight range (Literata's job, with more body) */
-:root, :root[data-type="a"] { --serif: 'Petrona', Georgia, serif; --mono: 'Geist Mono', ui-monospace, monospace; --hw: 620; --ew: 560; --ls: -.022em; }
-/* B: Schibsted Grotesk, a newspaper-born grotesk: bold, direct, made for headlines and big numbers */
-:root[data-type="b"] { --serif: 'Schibsted Grotesk', 'Hanken Grotesk', system-ui, sans-serif; --mono: 'Geist Mono', ui-monospace, monospace; --hw: 760; --ew: 700; --ls: -.035em; }
-/* C: Besley, a Clarendon revival: warm, chunky, confident, unmistakably not a default */
-:root[data-type="c"] { --serif: 'Besley', Georgia, serif; --mono: 'JetBrains Mono', ui-monospace, monospace; --hw: 640; --ew: 560; --ls: -.025em; }
-
+:root { --serif: 'Besley', Georgia, serif; --mono: 'JetBrains Mono', ui-monospace, monospace; --hw: 640; --ew: 560; --ls: -.025em; }
 h1, h2, h3, .chapter h1, .chapter h2, .chapter#cover h1, .hero h1, .big .v, .habit .v, .ledger .a, .mcard .a, .tally4 b, .insight, .qa b, .sm .slide .sv, .sm .slide .st, .next b { font-weight: var(--hw); letter-spacing: var(--ls); }
 h1 em, h2 em, h3 em { font-weight: var(--ew); }
 .insight, .sm .slide .st, .tally4 b, .big .v { font-weight: calc(var(--hw) - 100); }
 .chapter .k, .hero .kicker, .try b, .sm .slide .sk { font-weight: 500; }
-:root[data-type="b"] .chapter .k, :root[data-type="b"] .hero .kicker, :root[data-type="b"] .try b, :root[data-type="b"] .sm .slide .sk { font-style: normal; font-family: var(--sans); font-weight: 600; letter-spacing: .02em; }
-:root[data-type="b"] .hero h1, :root[data-type="c"] .hero h1 { font-size: clamp(40px, 7vw, 68px); }
-:root[data-type="b"] .chapter#cover h1, :root[data-type="c"] .chapter#cover h1 { font-size: clamp(36px, 6.4vw, 62px); }
-
-.typepick { position: fixed; left: 12px; bottom: 12px; z-index: 90; display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 4px; box-shadow: 0 8px 24px rgba(15,38,32,.14); font: 500 13px var(--sans); }
-.typepick span { padding: 0 8px 0 10px; color: var(--muted); }
-.typepick button { border: 0; background: none; border-radius: 99px; min-height: 36px; padding: 0 12px; cursor: pointer; font: 600 14px var(--sans); color: var(--ink); }
-.typepick button[aria-pressed="true"] { background: var(--ink); color: #fff; }
-@media print { .typepick { display: none; } }
+.hero h1 { font-size: clamp(40px, 7vw, 68px); }
+.chapter#cover h1 { font-size: clamp(36px, 6.4vw, 62px); }
 
 /* ================= Hero phone: a Tecno Spark-style Android (centred punch-hole, gesture bar) running Google Messages, the default texting app on most Androids sold in Kenya ================= */
 @font-face { font-family: 'Roboto'; font-weight: 400; font-display: swap; src: url('vendor/fonts/roboto-latin-400-normal.woff2') format('woff2'); }
@@ -498,4 +478,3 @@ h1 em, h2 em, h3 em { font-weight: var(--ew); }
 .tally4 { margin-top: 26px; }
 @media (prefers-reduced-motion: reduce) { .dev .track, .dev .scan { transition: none; } }
 .dev .row.on .bub { box-shadow: 0 0 0 1.5px var(--c); }
-@media (max-width: 720px) { .typepick { left: auto; right: 8px; bottom: 8px; padding: 3px; font-size: 12px; } .typepick span { display: none; } .typepick button { min-height: 32px; padding: 0 10px; font-size: 12.5px; } }

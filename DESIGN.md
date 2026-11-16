@@ -16,7 +16,7 @@ Light, green-led, and built so colour carries meaning rather than decoration.
 Rules
 - In and out always differ by position (above or below a baseline) and by sign (+ or −), not by colour alone. The palette passes the dataviz validator; green and red sit at ΔE 6.1 for deuteranopia, which is legal only because of that second encoding.
 - Every chart has a "See the numbers" table.
-- Type: body is Hanken Grotesk. Headings are one of three options under review (A Petrona, B Schibsted Grotesk, C Besley), switchable on the page. Mono: Geist Mono or JetBrains Mono. The phone mock-up uses Roboto, as Android does.
+- Type (locked Nov 2026): Besley for headings and big numbers, Hanken Grotesk for text, JetBrains Mono for times and codes. The phone mock-up uses Roboto, as Android does.
 - Never use: Inter, Fraunces, Bricolage Grotesque, Young Serif, Funnel Display, Montserrat, Raleway, Merriweather, Source Serif, Poppins, Outfit, Space Grotesk, Archivo, Public Sans. Literata reads too thin.
 - Motion: charts reveal as they scroll in (bars grow, lines draw, dots drop), big figures count up, and the home page reads a phone's money texts and labels them. Everything respects reduced motion.
 - Story mode is the Wrapped: one full-bleed colour per slide (green for money in, red for money out, blue for Fuliza, deep ink and mint between).
