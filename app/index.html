@@ -125,7 +125,7 @@
         <dl class="ai-facts">
           <div><dt>Goes with it</dt><dd>Totals, categories, Fuliza days, charges and patterns by week.</dd></div>
           <div><dt>Stays on your phone</dt><dd>People's names, phone numbers and the SMS text itself.</dd></div>
-          <div><dt>Fits a free plan</dt><dd id="aiFit">Short enough for the free tier of any of the five.</dd></div>
+          <div><dt>Fits a free plan</dt><dd>About a page of text, so it works on the free version of all five.</dd></div>
           <div><dt>4 quick choices</dt><dd>Your assistant, free or paid, how deep, and what you share. Safest options are already set.</dd></div>
         </dl>
         <a class="linkbtn small ai-go" href="#ai">See the prompt it writes</a>
@@ -399,8 +399,29 @@
     </div>
     <label class="small check"><input type="checkbox" id="incMerchants" checked> Include the names of shops and businesses (people are never named)</label>
     <div class="advice" id="aiAdvice" role="status" aria-live="polite">Answer the questions above.</div>
+    <div class="ai-next" id="aiNext">
+      <div class="ai-next-h"><span class="ai" id="aiNextLogo" data-ai="chatgpt"></span><b id="aiNextTitle">Next, in ChatGPT</b></div>
+      <ol class="ai-steps">
+        <li><b>Copy</b> the prompt and summary with the button below.</li>
+        <li><b>Open</b> <a id="aiOpen" href="https://chatgpt.com" target="_blank" rel="noopener">chatgpt.com</a> or the app, and start a new chat.</li>
+        <li><b>Paste and send.</b> The answer takes about a minute to read.</li>
+      </ol>
+      <p class="ai-priv" id="aiPriv"></p>
+    </div>
     <div class="btn-row"><button class="btn" id="copyPrompt" type="button">Copy prompt and summary</button><span class="small muted" id="aiSize"></span><span class="small" id="copyState" role="status" aria-live="polite"></span></div>
+    <p class="small muted ai-pre-h">This is exactly what you'll paste. Read it first: nothing leaves this page until you copy it.</p>
     <pre class="out" id="aiOut" tabindex="0" aria-label="Prompt and summary"></pre>
+    <div class="ai-follow">
+      <p class="aq"><b>Then keep the conversation going</b><span class="small muted">Tap one to copy it, and paste it after the first answer.</span></p>
+      <div class="ai-fq" id="aiFq">
+        <button type="button">Which one change would save me the most, in shillings?</button>
+        <button type="button">Turn that into a plan for the week I usually run low.</button>
+        <button type="button">How do I lean on Fuliza less without losing my limit?</button>
+        <button type="button">Which charges could I avoid next month, and how?</button>
+        <button type="button">Explain my year in 3 sentences I could tell a friend.</button>
+      </div>
+      <span class="small" id="fqState" role="status" aria-live="polite"></span>
+    </div>
     </div>
   </div>
 </section>

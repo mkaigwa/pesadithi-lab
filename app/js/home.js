@@ -43,6 +43,7 @@
   const aiRow = $('#aiRow');
   if (aiRow) aiRow.innerHTML = Object.keys(AIS).map((k) => `<span class="ai-tile" data-k="${k}"><span class="ai" data-ai="${k}"></span><small>${AIS[k]}</small></span>`).join('');
   $$('.ai[data-ai]').forEach(fillAi);
+  window.pdFillAi = fillAi;
 
   /* ---------- Wallet ticker ---------- */
   const TK = [
@@ -205,7 +206,6 @@
 
     // 6. Ask your AI: a typed prompt and the size of the summary
     if (V('ai')){
-      let tokens = 0; try { tokens = Math.round(JSON.stringify(window.PDAnalyse.summary(A, { merchants: 8, demo: true, provider: 'M-PESA' })).length / 3.6); } catch (e) { tokens = 0; }
       const QS = [
         ['chatgpt', 'ChatGPT', `Half of each payday is gone in ${Math.round(A.lifespan)} days. What should I change first?`],
         ['claude', 'Claude', `I was on Fuliza ${A.creditDays} days this year. How do I lean on it less without losing my limit?`],
@@ -221,9 +221,8 @@
         if (reduce) { tEl.textContent = q; return; }
         let i = 0; const f = () => { tEl.textContent = q.slice(0, i); i += 2; if (i <= q.length + 1) timer = setTimeout(f, 30); else timer = setTimeout(() => { qi++; show(); }, 2600); }; f();
       };
-      if (tokens) $('#aiFit').textContent = `About ${n0(tokens)} tokens for Amani's year: comfortably inside the free tier of all five.`;
-      whenSeen(card('ai'), () => { show(); if (tokens) countTo(K('ai'), tokens, (v) => n0(v) + ' tokens'); else K('ai').textContent = 'Free-plan sized'; });
-      K('ai').textContent = tokens ? n0(tokens) + ' tokens' : 'Free-plan sized';
+      whenSeen(card('ai'), show);
+      K('ai').textContent = '5 assistants';
     }
 
     // Share card preview

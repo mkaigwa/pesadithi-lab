@@ -682,6 +682,26 @@
     const months = free || lvl === 'a little' ? 1 : lvl === 'some' ? 3 : 12;
     return { lvl, free, words, months };
   }
+  const AI_INFO = {
+    ChatGPT: ['chatgpt', 'https://chatgpt.com', 'chatgpt.com', 'Before you paste, open Settings, then Data controls, and switch off "Improve the model for everyone" if you don\'t want your chats used for training.'],
+    Claude: ['claude', 'https://claude.ai', 'claude.ai', 'Before you paste, open Settings, then Privacy, and check "Help improve Claude" if you don\'t want your chats used for training.'],
+    Gemini: ['gemini', 'https://gemini.google.com', 'gemini.google.com', 'Before you paste, open Settings, then Activity, and turn off "Keep Activity" if you don\'t want your chats used to train Google\'s models.'],
+    DeepSeek: ['deepseek', 'https://chat.deepseek.com', 'chat.deepseek.com', 'DeepSeek\'s own apps store chats on servers in China. Share only the anonymised summary, never your statement or SMS.'],
+    Copilot: ['copilot', 'https://copilot.microsoft.com', 'copilot.microsoft.com', 'Before you paste, open your profile, then Privacy, and switch off "Training on conversation activity" if you don\'t want your chats used for training.']
+  };
+  function aiNext(p) {
+    const box = $('#aiNext'); if (!box) return;
+    const inf = AI_INFO[p];
+    const logo = $('#aiNextLogo');
+    if (inf) { logo.hidden = false; if (logo.dataset.ai !== inf[0]) { logo.dataset.ai = inf[0]; logo.className = 'ai'; window.pdFillAi && window.pdFillAi(logo); } }
+    else logo.hidden = true;
+    $('#aiNextTitle').textContent = inf ? 'Next, in ' + p : 'Next, in your assistant';
+    const o = $('#aiOpen');
+    if (inf) { o.href = inf[1]; o.textContent = inf[2]; o.hidden = false; o.nextSibling.textContent = ' or the app, and start a new chat.'; }
+    else { o.hidden = true; o.nextSibling.textContent = 'your assistant and start a new chat.'; }
+    $('#aiPriv').textContent = inf ? inf[3] : 'Before you paste, check its settings for an option that lets your chats train its models, and switch it off if you prefer.';
+  }
+  $$('#aiFq button').forEach((b) => b.addEventListener('click', async () => { try { await navigator.clipboard.writeText(b.textContent); $('#fqState').textContent = 'Copied: ' + b.textContent; } catch (e) { $('#fqState').textContent = 'Copy this: ' + b.textContent; } }));
   function renderAI() {
     const A = S.A; if (!A) return; const a = S.ai; const plan = aiPlan(a);
     const sum = AN.summary(A, { merchants: plan.free ? 8 : 15, demo: S.demo, provider: A.provider });
@@ -694,9 +714,8 @@
     if (a.share === 'pdf') adv.push(plan.months === 12 ? 'Attach your statement PDF with this prompt. Up to 12 months is reasonable on your plan.' : `On your answers, attach at most ${plan.months === 1 ? '1 month' : plan.months + ' months'} of statement (a 12-month PDF can be 60,000 to 150,000 tokens), or use the summary instead.`);
     if (a.share === 'pdf' || a.share === 'sms') adv.push('A statement or raw messages include people\'s names and phone numbers. The summary doesn\'t.');
     if (a.share === 'sms') adv.push(`Paste your money messages where the prompt says, ${plan.months === 1 ? 'one month at most' : 'one month at a time, up to ' + plan.months + ' months'}. Never paste bank codes or chats.`);
-    if (a.platform) adv.push(`Check ${a.platform === 'another assistant' ? 'its' : a.platform + '\'s'} data settings first: on some plans, chats can be used to improve models unless you switch that off.`);
-    if (a.platform === 'DeepSeek') adv.push('DeepSeek\'s own apps store chats on servers in China. Stick to the anonymised summary.');
     $('#aiAdvice').textContent = adv.join(' ');
+    aiNext(a.platform);
     const mp = A.provider === 'M-PESA';
     const what = a.share === 'pdf' ? 'I have attached my statement PDF. The summary below covers the same period.' : a.share === 'sms' ? 'My money messages are pasted at the end, after the summary.' : 'Below is an anonymised summary: totals and patterns only, with no names of people.';
     const prompt = `${S.demo ? 'NOTE: this is DEMO data for a fictional person, invented to show how the tool works. It is not real.\n\n' : ''}You are a calm, practical money coach who understands mobile money in Africa${mp ? ' (M-PESA, Fuliza, M-Shwari, KCB M-PESA)' : ` (${A.provider}, mobile loans and agent fees)`}. Use British English and plain words.
@@ -716,7 +735,7 @@ Rules: use only numbers in the data and never invent any. Months marked partial_
 SUMMARY (${A.cur}, ${A.start} to ${A.end}):
 ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     $('#aiOut').textContent = prompt;
-    $('#aiSize').textContent = `About ${n0(Math.round(prompt.length / 4))} tokens${a.share === 'pdf' ? ' plus your PDF' : a.share === 'sms' ? ' plus your messages' : ''}`;
+    $('#aiSize').textContent = `About ${n0(Math.round(prompt.split(/\s+/).length / 10) * 10)} words, small enough for a free plan${a.share === 'pdf' ? ' plus your PDF' : a.share === 'sms' ? ' plus your messages' : ''}`;
     $('#copyState').textContent = '';
   }
   $('#copyPrompt').addEventListener('click', async () => { const t = $('#aiOut').textContent; try { await navigator.clipboard.writeText(t); $('#copyState').textContent = 'Copied. Paste it into your assistant.'; } catch (e) { const r = document.createRange(); r.selectNodeContents($('#aiOut')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('#copyState').textContent = 'Selected. Press Ctrl+C or Cmd+C to copy.'; } });
