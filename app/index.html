@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pesadithi: the story of your mobile money</title>
 <meta name="description" content="Turn your M-PESA statement or money SMS into a story about timing: when money arrives, how fast it goes, when you borrow and what it costs. Runs in your browser.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; connect-src 'self' blob: data:; form-action 'self'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; connect-src 'self' blob: data:; form-action 'self'; base-uri 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%2316161a%22/%3E%3Cpath d=%22M7 22c4-9 8-12 18-12%22 stroke=%22%2300968f%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="pesadithi.css">
 <script src="js/theme.js"></script>
@@ -18,7 +18,7 @@
     <a class="demo-badge" id="demoBadge" href="#start" hidden title="This is invented data. Load your own.">Demo data · use mine</a>
     <nav class="nav" aria-label="Main">
       <a href="#home" data-view="home">Home</a>
-      <a href="#start" data-view="start">Load data</a>
+      <a href="#start" data-view="start">Attach SMS</a>
       <a href="#story" data-view="story" data-needs-data hidden>Story</a>
       <a href="#sort" data-view="sort" data-needs-data hidden>Sort people</a>
       <a href="#budget" data-view="budget" data-needs-data hidden>Budget</a>
@@ -36,7 +36,7 @@
    <div>
     <div class="kicker">Your year in mobile money</div>
     <h1>Every SMS says what moved. <em>Together they tell your story.</em></h1>
-    <p class="lede">How many days does half your pay last? Load your M-PESA SMS or statement and find out in a minute: when money lands, how fast it goes, when Fuliza fills the gap, what you saved, and what it all cost.</p>
+    <p class="lede">How many days does half your pay last? Attach your M-PESA SMSes or statement and find out in a minute: when money lands, how fast it goes, when Fuliza fills the gap, what you saved, and what it all cost.</p>
     <div class="btn-row" style="margin-top:26px">
       <button class="btn" id="btnDemo" type="button" disabled>Loading…</button>
       <a class="btn ghost" href="#start" data-pick="paste">Try with five SMS</a>
@@ -52,7 +52,8 @@
       <div><b>Open source</b><span>Every line is public on GitHub, so anyone can check these claims.</span></div>
     </div>
    </div>
-   <div class="phonewrap" aria-label="A Tecno-style Android phone showing M-PESA SMS in Google Messages. Each one is read and labelled, with running totals underneath">
+   <div class="phonewrap" aria-label="A hand holding an Android phone showing M-PESA SMS in Google Messages. Each one is read and labelled, with running totals underneath">
+    <div class="inhand"><img class="handimg" src="img/hand-phone.webp" alt="" width="780" height="1380" decoding="async">
     <div class="devbox" id="devbox"><div class="dev" id="dev" aria-hidden="true">
       <i class="key vol"></i><i class="key pwr"></i>
       <div class="glass">
@@ -63,6 +64,7 @@
         <div class="gnav"><i></i></div>
       </div>
     </div></div>
+    </div>
     <div class="tally4" id="heroTally"></div>
     <p class="cap">Invented SMS in the style of M-PESA messages, for Amani, a fictional person: salary, a Ziidi saving, a Pochi la Biashara sale, Fuliza, and money moved from Pochi to M-PESA. Each one is recognised and labelled.</p>
    </div>
@@ -147,34 +149,68 @@
     </div>
   </div>
 
-  <!-- WHICH ONE ARE YOU: free, no paywall -->
+  <!-- PATTERNS: which ones are you -->
   <div class="wrap seen" aria-labelledby="seenH">
-    <div class="kicker">Which one sounds like you?</div>
-    <h2 id="seenH" class="sec-h">Every wallet has a story. <em>Here's what yours might be telling you.</em></h2>
-    <p class="lede-s muted">No judgement and nothing to buy. Pick the one that sounds like you, then see it in your own numbers.</p>
+    <div class="kicker">6 patterns in Kenyan wallets</div>
+    <h2 id="seenH" class="sec-h">Most M-PESA stories rhyme. <em>See which ones are yours.</em></h2>
+    <p class="lede-s muted">These show up again and again. Attach your SMSes and Pesadithi tells you which ones are yours, with your own numbers. No judgement, no lectures.</p>
     <div class="seen-cards">
-      <article class="seen-card">
-        <h3>Fuliza gets you to payday</h3>
-        <p>You're not careless; payday and rent rarely land on the same day. Your story shows the exact days you lean on Fuliza and what it really cost, so you borrow on purpose, not by default.</p>
-        <p class="seen-tip"><b>Try this:</b> Repaying on time and using M-PESA regularly is what Safaricom says its limit reviews look at. Your story shows how quickly you clear it.</p>
+      <article class="seen-card" data-pattern="dry">
+        <img src="img/roles/flat.jpg" alt="" width="960" height="717" loading="lazy">
+        <div class="seen-body">
+          <h3>The dry week</h3>
+          <p>Payday feels like plenty. Then the last week of the month arrives early.</p>
+          <p class="seen-check"><b>Your story checks</b> How many days until half your pay is gone.</p>
+          <p class="seen-tip"><b>Try this</b> On payday, send rent and the must-pays first, before anything else moves. M-PESA Ratiba standing orders can do it for you.</p>
+        </div>
       </article>
-      <article class="seen-card">
-        <h3>You're the first-born</h3>
-        <p>School fees, a clinic visit, an urgent call from home. Sort your people once and see how much of what comes in goes to family, and how much of it arrives as a surprise.</p>
-        <p class="seen-tip"><b>Try this:</b> A set amount on a set day is easier to say yes to than a dozen requests. Your story shows what that amount has really been.</p>
+      <article class="seen-card" data-pattern="bridge">
+        <img src="img/roles/couple.jpg" alt="" width="960" height="717" loading="lazy">
+        <div class="seen-body">
+          <h3>The Fuliza bridge</h3>
+          <p>Fuliza isn't the problem. Not seeing the pattern is.</p>
+          <p class="seen-check"><b>Your story checks</b> The days you borrow, and what each bridge really cost.</p>
+          <p class="seen-tip"><b>Try this</b> Clear it the day money lands. Safaricom says limits grow with regular use and repaying on time.</p>
+        </div>
       </article>
-      <article class="seen-card">
-        <h3>You've got a side hustle</h3>
-        <p>Customers pay into your Pochi la Biashara, then it all blurs with your own money. Pesadithi counts Pochi sales as side-hustle income and leaves out moves between Pochi and M-PESA.</p>
-        <p class="seen-tip"><b>Try this:</b> Keep business takings in Pochi and pay yourself a fixed amount. Your story shows how much really came in.</p>
+      <article class="seen-card" data-pattern="family">
+        <img src="img/roles/first.jpg" alt="" width="960" height="717" loading="lazy">
+        <div class="seen-body">
+          <h3>The family bank</h3>
+          <p>You're the one everyone calls: school fees, a clinic visit, an urgent request from home.</p>
+          <p class="seen-check"><b>Your story checks</b> What share of your money goes to people, and how much arrives as a surprise.</p>
+          <p class="seen-tip"><b>Try this</b> A set amount on a set day is easier to give, and easier to plan around, than a dozen requests.</p>
+        </div>
       </article>
-      <article class="seen-card">
-        <h3>You're building savings</h3>
-        <p>Ziidi, a Sacco, a chama, a 52-week challenge. Money you move to savings counts as kept, not spent, and story mode shows your savings rate and your Fuliza-free days.</p>
-        <p class="seen-tip"><b>Try this:</b> Save on payday, before the spending starts. Your story shows how fast pay goes, so you can pick the amount.</p>
+      <article class="seen-card" data-pattern="hustle">
+        <img src="img/roles/hustle.jpg" alt="" width="960" height="717" loading="lazy">
+        <div class="seen-body">
+          <h3>Two wallets, one phone</h3>
+          <p>Customers pay into your Pochi la Biashara, then it blurs with your own money.</p>
+          <p class="seen-check"><b>Your story checks</b> Pochi sales counted as side-hustle income; moves between Pochi and M-PESA left out.</p>
+          <p class="seen-tip"><b>Try this</b> Pay yourself a fixed amount from Pochi each week. Then your story shows what the business really made.</p>
+        </div>
+      </article>
+      <article class="seen-card" data-pattern="saveborrow">
+        <img src="img/roles/chama.jpg" alt="" width="960" height="717" loading="lazy">
+        <div class="seen-body">
+          <h3>Saving while borrowing</h3>
+          <p>Money sits in Ziidi, M-Shwari or the chama, while you pay fees to borrow the same week.</p>
+          <p class="seen-check"><b>Your story checks</b> Whether borrowing cost you more than you kept aside.</p>
+          <p class="seen-tip"><b>Try this</b> A small buffer you can reach beats a big one you can't. Keep one week's spending where Fuliza would otherwise step in.</p>
+        </div>
+      </article>
+      <article class="seen-card" data-pattern="fees">
+        <img src="img/roles/sib.jpg" alt="" width="960" height="717" loading="lazy">
+        <div class="seen-body">
+          <h3>The small charges</h3>
+          <p>KES 23 here, KES 53 there. It adds up to real money by December.</p>
+          <p class="seen-check"><b>Your story checks</b> Your charges by type, and the ones you could have skipped.</p>
+          <p class="seen-tip"><b>Try this</b> Paying a till costs you nothing; sending money and cashing out do. Pay tills directly, and withdraw less often.</p>
+        </div>
       </article>
     </div>
-    <p class="small muted">Not financial advice. It's a clearer view of your own money, so you can decide.</p>
+    <p class="small muted">Photos are AI-generated illustrations. Not financial advice: a clearer view of your own money, so you can decide.</p>
   </div>
 
   <div class="wrap">
@@ -222,10 +258,11 @@
   <div class="wrap" style="padding-top:44px;padding-bottom:60px">
     <div class="kicker">Step 1 of 3</div>
     <div class="notice" id="notice" role="status" hidden>Load your data first. Nothing is kept between visits, so after a reload the story needs your file again. If you have just loaded it, press "Tell me my story".</div>
-    <h1>Where is your money data?</h1>
+    <h1>Attach your SMSes</h1>
     <p class="muted">Start by pasting a few SMS to see how it works. For your whole year, use the M-PESA statement: it works on any phone.</p>
     <div class="sources" role="group" aria-label="Choose your data source">
-      <button class="source" type="button" data-src="paste" aria-pressed="false"><h3>Paste a few SMS</h3><p class="small muted">Copy five or more M-PESA SMS from your phone and paste them in. The quickest way to see how it works.</p><div class="meta"><span class="pill rec">Start here</span><span class="pill">Any phone</span><span class="pill">1 minute</span></div></button>
+      <button class="source" type="button" data-src="shots" aria-pressed="false"><h3>Screenshots of your SMS</h3><p class="small muted">Open the M-PESA chat, take a few screenshots, and attach them. The text is read on this device, never uploaded.</p><div class="meta"><span class="pill rec">Easiest on any phone</span><span class="pill">2 minutes</span></div></button>
+      <button class="source" type="button" data-src="paste" aria-pressed="false"><h3>Paste a few SMS</h3><p class="small muted">Copy five or more M-PESA SMS from your phone and paste them in. The quickest way to see how it works.</p><div class="meta"><span class="pill">Any phone</span><span class="pill">1 minute</span></div></button>
       <button class="source" type="button" data-src="pdf" aria-pressed="false"><h3>M-PESA statement (PDF)</h3><p class="small muted">The official statement Safaricom emails you, opened with the code they send by SMS.</p><div class="meta"><span class="pill rec">Best for your full year</span><span class="pill">Any phone</span><span class="pill">About 5 minutes</span></div></button>
       <button class="source" type="button" data-src="mac" aria-pressed="false"><h3>Messages from a Mac (.json)</h3><p class="small muted">For iPhone users whose texts sync to a Mac. Shows the most detail, including Fuliza and M-Shwari fees.</p><div class="meta"><span class="pill">iPhone + Mac</span><span class="pill risk">Needs Full Disk Access</span></div></button>
       <button class="source" type="button" data-src="android" aria-pressed="false"><h3>Android SMS backup (.xml)</h3><p class="small muted">Export your texts with the SMS Backup &amp; Restore app, then load the file here.</p><div class="meta"><span class="pill">Android</span><span class="pill risk">Backup app reads all texts</span></div></button>
@@ -236,12 +273,12 @@
 
     <div id="loader" hidden>
       <div class="kicker" style="margin-top:28px">Step 2 of 3</div>
-      <h2 class="h3">Load it</h2>
+      <h2 class="h3">Attach your SMSes</h2>
       <div class="drop" id="drop">
         <p style="margin:0 0 10px"><b>Drop your file here</b> or</p>
         <label class="btn ghost small" for="file">Choose a file</label>
-        <input id="file" type="file" class="sr" accept=".pdf,.json,.xml,.txt,.csv,application/pdf,application/json,text/xml,text/plain,text/csv">
-        <p class="small muted" id="fileName" style="margin:10px 0 0">PDF, JSON, XML, CSV or TXT. Up to 25 MB.</p>
+        <input id="file" type="file" class="sr" accept=".pdf,.json,.xml,.txt,.csv,.png,.jpg,.jpeg,.webp,image/*,application/pdf,application/json,text/xml,text/plain,text/csv" multiple>
+        <p class="small muted" id="fileName" style="margin:10px 0 0">PDF statement, screenshots of your SMS, or a JSON, XML, CSV or TXT export. Up to 25 MB.</p>
       </div>
       <div class="field" id="pwField" hidden>
         <label for="pw">PDF password</label>
@@ -350,7 +387,7 @@
   <div class="wrap prose" style="padding-top:44px;padding-bottom:60px">
     <div class="kicker">Privacy and risks</div>
     <h1>What happens to your data, in plain words</h1>
-    <p><b>This page:</b> your file is opened and read by JavaScript inside your browser. Nothing is uploaded, and there is no server that could receive it. The page loads only its own files: fonts, a chart library and a PDF reader, all served from the same place. You can check this: load the page, switch off Wi-Fi or mobile data, then load your file. It still works. For a PDF, choose the PDF route once while online so the PDF reader loads first.</p>
+    <p><b>This page:</b> your file is opened and read by JavaScript inside your browser. Nothing is uploaded, and there is no server that could receive it. The page loads only its own files: fonts, a chart library, a PDF reader and, if you attach screenshots, a text reader, all served from the same place. You can check this: load the page, switch off Wi-Fi or mobile data, then load your file. It still works. For a PDF, choose the PDF route once while online so the PDF reader loads first.</p>
     <p><b>Nothing is saved</b> unless you tick "Remember my sorting and targets". Even then, only your category choices and budget targets are kept in this browser, with each person stored as a scrambled code rather than a name. Your transactions are never kept. "Clear my data" at the bottom of the page removes everything.</p>
     <h2>Each route, honestly</h2>
     <div class="scrollx"><table class="risk-table">
@@ -389,6 +426,7 @@
 </div>
 
 <script src="vendor/d3.min.js" defer></script>
+<script src="js/track.js" defer></script>
 <script src="js/merchants.js" defer></script>
 <script src="js/parse.js" defer></script>
 <script src="js/analyse.js" defer></script>

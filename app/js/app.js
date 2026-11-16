@@ -67,13 +67,15 @@
   const HELP = {
     pdf: `<b>Get your statement (free)</b><ol><li>Open the <b>M-PESA app</b> and go to <b>Statements</b>, or dial <b>*334#</b> and look for <b>My Account → M-PESA Statement</b>.</li><li>Ask for a <b>full statement</b> for the months you want. 12 months shows the most patterns.</li><li>It arrives by <b>email as a PDF</b>. The <b>password arrives by SMS</b>.</li><li>Open that email on this device and save the PDF, or email it to yourself here.</li><li>Choose the file below and type the password from the SMS.</li></ol><details class="rescue"><summary>I got the SMS with the password. Now what?</summary><ol><li>Open your email app on this phone and search for <b>M-PESA statement</b>. Check Spam or Promotions too.</li><li>Tap the PDF and choose <b>Download</b> or <b>Save to Files</b>. Don't open it in the email app.</li><li>Come back to this page, tap <b>Choose a file</b>, and pick the PDF from Downloads or Files.</li><li>Type the code from the SMS. It's a one-off code, not your M-PESA PIN.</li></ol><p class="small muted">Lost the SMS? Request the statement again; each request sends a new code.</p></details><p class="small muted" style="margin:8px 0 0">These were Safaricom's steps in November 2026. Menus change; if yours look different, follow the steps in the M-PESA app.</p>`,
     mac: `<b>For iPhone users with a Mac</b><ol><li>On your iPhone, check <b>Settings → Messages → Text Message Forwarding</b> is on for your Mac, so M-PESA texts reach it.</li><li>Download <code>extract_mobile_money.py</code> from the <a href="https://github.com/mkaigwa/pesadithi-lab/tree/main/tools/mac" rel="noopener">tools/mac</a> folder on GitHub.</li><li>Give <b>Terminal</b> Full Disk Access (System Settings → Privacy &amp; Security → Full Disk Access). <b>This lets Terminal read every file on your Mac</b>, so switch it off again afterwards.</li><li>Run <code>python3 extract_mobile_money.py</code>. It saves <code>pesadithi-messages.json</code> in your Downloads folder.</li><li>Choose that file below. Then switch Full Disk Access off and delete the file when you're done.</li></ol>`,
-    android: `<b>For Android phones</b><ol><li>Install <b>SMS Backup &amp; Restore</b> (by SyncTech) from Google Play.</li><li>Back up <b>messages only</b> to your phone's storage. It saves a file ending in <code>.xml</code>.</li><li>Choose that file below, on your phone or a computer.</li><li>Delete the backup file afterwards. It contains <b>all</b> your texts, including bank codes.</li></ol>`,
+    android: `<b>For Android phones</b><ol><li>Install <b>SMS Backup &amp; Restore</b> by SyncTech from Google Play (<a href="https://synctech.com.au/sms-backup-restore/" target="_blank" rel="noopener">their guide</a>, <a href="https://synctech.com.au/sms-faqs/" target="_blank" rel="noopener">help</a>).</li><li>Back up <b>messages only</b> to your phone's storage. It saves a file ending in <code>.xml</code>.</li><li>Choose that file below, on your phone or a computer.</li><li>Delete the backup file afterwards. It contains <b>all</b> your texts, including bank codes.</li></ol>`,
+    shots: `<b>Screenshots of your SMS</b><ol><li>Open your messages and the <b>M-PESA</b> conversation.</li><li>Take screenshots as you scroll up. Ten screenshots covers about a month for most people.</li><li>Tap <b>Choose a file</b> below and select all of them at once.</li><li>Press <b>Read my data</b>. The text is read here, on this device; the first time, the reader takes a few seconds to load.</li></ol><p class="small muted" style="margin:8px 0 0">Screenshots work best when they're sharp and the text isn't cut off. For a whole year, the statement PDF is faster.</p>`,
     paste: `<b>Quick try</b><ol><li>Open your messages and the <b>M-PESA</b> conversation.</li><li>Copy as many messages as you like and paste them in the box below.</li></ol><p class="small muted" style="margin:8px 0 0">The more months you paste, the better the patterns. For a whole year, a statement is faster.</p>`,
     momo: `<b>MTN MoMo and Airtel Money (beta)</b><ol><li>Paste your MoMo or Airtel Money texts below, or choose an Android SMS backup (<code>.xml</code>).</li><li>Formats differ between countries. After reading, we show how many messages we read and list the ones we couldn't.</li></ol><p class="small muted" style="margin:8px 0 0">Help us improve: open an issue on GitHub with a message whose names and numbers you've replaced.</p>`
   };
-  let FILE = null;
+  let FILE = null; let FILES = [];
+  const isImg = (f) => f && (/^image\//.test(f.type) || /\.(png|jpe?g|webp|heic)$/i.test(f.name));
   function resetLoader() {
-    FILE = null; S.lastInput = null; S.pwFails = 0; $('#file').value = ''; $('#fileName').textContent = 'PDF, JSON, XML, CSV or TXT. Up to 25 MB.';
+    FILE = null; S.lastInput = null; S.pwFails = 0; $('#file').value = ''; $('#fileName').textContent = 'PDF statement, screenshots of your SMS, or a JSON, XML, CSV or TXT export. Up to 25 MB.';
     $('#found').hidden = true; status('');
   }
   $$('.source').forEach((b) => b.addEventListener('click', () => {
@@ -81,7 +83,7 @@
     S.src = b.dataset.src; S.token++; resetLoader();
     $('#srcHelp').innerHTML = HELP[S.src]; $('#srcHelp').hidden = false; $('#loader').hidden = false;
     $('#pwField').hidden = S.src !== 'pdf';
-    $('#pasteField').hidden = S.src === 'pdf';
+    $('#pasteField').hidden = S.src === 'pdf' || S.src === 'shots';
     $('#btnSample').hidden = !['paste', 'momo'].includes(S.src);
     if (S.src === 'pdf') P.preloadPdf().catch(() => {});
     $('#srcHelp').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
@@ -89,14 +91,15 @@
   const drop = $('#drop');
   ['dragenter', 'dragover'].forEach((e) => drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.add('over'); }));
   ['dragleave', 'drop'].forEach((e) => drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop', (ev) => { const f = ev.dataTransfer.files[0]; if (f) setFile(f); });
-  $('#file').addEventListener('change', (e) => { if (e.target.files[0]) setFile(e.target.files[0]); });
+  drop.addEventListener('drop', (ev) => { const fs = Array.from(ev.dataTransfer.files); if (fs[0]) setFile(fs[0], fs); });
+  $('#file').addEventListener('change', (e) => { const fs = Array.from(e.target.files); if (fs[0]) setFile(fs[0], fs); });
   $('#paste').addEventListener('input', () => { S.lastInput = $('#paste').value.trim() ? 'paste' : (FILE ? 'file' : null); });
   $('#pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); readData(); } });
-  function setFile(f) {
-    FILE = f; S.lastInput = 'file'; $('#found').hidden = true;
-    $('#fileName').innerHTML = 'Chosen: <b>' + esc(f.name) + '</b> (' + Math.max(1, Math.round(f.size / 1024)) + ' KB) · <button type="button" class="linkbtn" id="rmFile">Remove</button>';
-    $('#rmFile').addEventListener('click', () => { FILE = null; $('#file').value = ''; S.lastInput = $('#paste').value.trim() ? 'paste' : null; $('#fileName').textContent = 'PDF, JSON, XML, CSV or TXT. Up to 25 MB.'; });
+  function setFile(f, all) {
+    FILE = f; FILES = (all || [f]).filter(isImg); S.lastInput = 'file'; $('#found').hidden = true;
+    $('#fileName').innerHTML = (isImg(f) && FILES.length > 1 ? 'Chosen: <b>' + FILES.length + ' screenshots</b>' : 'Chosen: <b>' + esc(f.name) + '</b> (' + Math.max(1, Math.round(f.size / 1024)) + ' KB)') + ' · <button type="button" class="linkbtn" id="rmFile">Remove</button>';
+    if (isImg(f)) { status('Screenshots are read on this device, never uploaded. Press "Read my data". The first time takes a little longer while the text reader loads.'); }
+    $('#rmFile').addEventListener('click', () => { FILE = null; $('#file').value = ''; S.lastInput = $('#paste').value.trim() ? 'paste' : null; $('#fileName').textContent = 'PDF statement, screenshots of your SMS, or a JSON, XML, CSV or TXT export. Up to 25 MB.'; });
     if (/\.pdf$/i.test(f.name) || f.type === 'application/pdf') { $('#pwField').hidden = false; P.preloadPdf().catch(() => {}); status('Now type the password from the M-PESA SMS, then press "Read my data".'); $('#pw').focus(); }
     else status('');
   }
@@ -133,8 +136,11 @@
         if (!r.txs.length) { status('The PDF opened, but we found no M-PESA transactions in it. Scanned images and other banks\' statements won\'t work here.', 'err'); return; }
       } else {
         let text = pasted;
-        if (useFile) {
-          if (!/\.(json|xml|txt|csv)$/i.test(FILE.name) && !/json|xml|text|csv/.test(FILE.type)) { status('This file type isn\'t supported. Use a PDF statement, a .json or .xml export, or paste the messages.', 'err'); return; }
+        if (useFile && isImg(FILE)) {
+          text = await ocrImages(FILES.length ? FILES : [FILE], (m) => { if (token === S.token) status(m); });
+          if (token !== S.token) return;
+        } else if (useFile) {
+          if (!/\.(json|xml|txt|csv)$/i.test(FILE.name) && !/json|xml|text|csv/.test(FILE.type)) { status('This file type isn\'t supported. Use a PDF statement, screenshots of your SMS, a .json or .xml export, or paste the messages.', 'err'); return; }
           text = await FILE.text();
         }
         r = P.fromMessages(text, useFile ? FILE.name : 'pasted');
@@ -145,6 +151,29 @@
     } catch (e) {
       console.error(e); if (token === S.token) status('Something went wrong while reading. Nothing was sent anywhere. Try again, or use a different source.', 'err');
     } finally { S.busy = false; btn.removeAttribute('aria-busy'); btn.textContent = 'Read my data'; }
+  }
+  /* Screenshots: read the text on this device with Tesseract (loaded only when needed, from this site) */
+  let OCR = null;
+  function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+  async function ocrImages(files, say) {
+    say('Loading the text reader (about 7 MB, once)…');
+    if (!window.Tesseract) await loadScript(window.PD_OCR_BASE ? window.PD_OCR_BASE + 'tesseract.min.js' : 'vendor/ocr/tesseract.min.js');
+    const base = window.PD_OCR_BASE || new URL('vendor/ocr/', location.href).href;
+    if (!OCR) {
+      // The language file ships as .wasm (some hosts refuse .gz); seed the reader's own cache with it so nothing is fetched elsewhere
+      const lang = new Uint8Array(await (await fetch(base + 'eng-traineddata.wasm')).arrayBuffer());
+      await new Promise((ok) => { try { const rq = indexedDB.open('keyval-store'); rq.onupgradeneeded = () => rq.result.createObjectStore('keyval'); rq.onsuccess = () => { const tx = rq.result.transaction('keyval', 'readwrite'); tx.objectStore('keyval').put(lang, './eng.traineddata'); tx.oncomplete = ok; tx.onerror = ok; }; rq.onerror = ok; } catch (e) { ok(); } });
+      OCR = await window.Tesseract.createWorker('eng', 1, { workerPath: base + 'worker.min.js', corePath: base, langPath: base, gzip: true, workerBlobURL: false });
+    }
+    let out = '';
+    for (let i = 0; i < files.length; i++) {
+      say(`Reading screenshot ${i + 1} of ${files.length} on this device…`);
+      const { data } = await OCR.recognize(files[i]);
+      out += '\n' + data.text;
+    }
+    if (window.PD_OCR_DEBUG) console.log('OCR', out);
+    // Screenshots break each SMS across lines; join them so each message starts at its code
+    return out.replace(/\r/g, '').replace(/([^\n])\n(?!\n)/g, '$1 ').replace(/\bKsh\s+(?=\d)/g, 'Ksh').replace(/\s+/g, ' ');
   }
   function showSkipped(list) {
     $('#skippedBox').hidden = !list.length;
@@ -161,7 +190,7 @@
     const ts = r.txs.map((t) => t.ts).sort();
     const span = Math.round((dt(ts[ts.length - 1]) - dt(ts[0])) / 864e5) + 1;
     const nTx = r.txs.filter((t) => t.dir === 'in' || t.dir === 'out').length;
-    $('#found').hidden = false;
+    $('#found').hidden = false; window.pdTrack && pdTrack('Data loaded', { route: S.src || 'unknown', kind: r.kind || 'sms', months: String(Math.max(1, Math.round(span / 30))) });
     $('#foundTitle').textContent = `We found ${pl(nTx, r.provider + ' transaction')}`;
     $('#foundText').textContent = (r.kind === 'statement' ? 'Read from your statement' : `${n0(r.txs.length)} of ${pl(r.messages, 'message')} were transactions or loan updates`) + `, from ${fmtDate(ts[0])} to ${fmtDate(ts[ts.length - 1])} (${pl(span, 'day')}). Everything stayed on this device.${note}`;
     showSkipped(r.skipped);
@@ -191,7 +220,7 @@
 
   $('#btnDemo').addEventListener('click', async (e) => {
     if (S.busy) return; S.busy = true; e.target.setAttribute('aria-busy', 'true'); e.target.textContent = 'Loading the demo…';
-    try { const t = await (await fetch('demo/demo-mpesa-sms.json')).text(); S.raw = P.fromMessages(t, 'demo'); S.demo = true; S.period = 12; compute(); go('story'); }
+    try { const t = await (await fetch('demo/demo-mpesa-sms.json')).text(); S.raw = P.fromMessages(t, 'demo'); S.demo = true; S.period = 12; compute(); go('story'); window.pdTrack && pdTrack('Demo opened'); }
     catch (err) { e.target.insertAdjacentHTML('afterend', '<p class="small status err">The demo could not load. If you opened this file straight from your computer, use the hosted version or run a local web server.</p>'); }
     finally { S.busy = false; e.target.removeAttribute('aria-busy'); e.target.textContent = 'See a demo story'; }
   });
@@ -421,8 +450,21 @@
     chapters.push(['price', 'The price', ch('price', num() + 'the price paid', A.avoidableTotal ? `${F(A.avoidableTotal)} <em>that could have been kept</em>` : `${F(A.feesTotal)} in fees and charges`, `${S.raw.kind === 'statement' ? '<p class="small muted">Read from a statement. Statements list every transaction cost line by line but leave out Fuliza daily charges and loan penalties, while SMS show those but not every cost. So the same months can give a different fee total from each source.</p>' : ''}<div class="chart" data-c="fees"></div><div class="legend" id="feesLegend"></div>${A.avoidable.length ? `<h3 style="margin-top:26px">Avoidable</h3><div class="ledger">${A.avoidable.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(a.what)}</div><div class="nt">${esc(a.note)}</div></div><div class="a ${/penalty/i.test(a.what) ? 'bad' : ''}">${F(a.amount)}</div></div>`).join('')}</div>` : ''}${A.toCheck.length ? `<h3 style="margin-top:26px">Worth checking</h3><p class="small muted">The same amount to the same place within 30 minutes. It may be deliberate, or a payment that went through twice. Reversed payments are already left out.</p><div class="ledger">${A.toCheck.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(titleCase(a.party))}</div><div class="nt">${esc(a.note)}</div></div><div class="a">${F(a.amount)}</div></div>`).join('')}</div>` : ''}`)]);
     if (A.biggest.length) chapters.push(['outliers', 'Stand-outs', ch('outliers', num() + 'payments that stood out', 'Unusual payments', `<p class="muted">Payments much bigger than usual for that place, or to places paid only once or twice. Regular bills, rent and cash withdrawals are left out.</p><div class="ledger">${A.biggest.map((t) => `<div class="row"><div class="d">${fmtDate(t.ts)}</div><div><div class="w">${esc(t.person ? 'A person' : titleCase(t.party))}</div><div class="nt">${esc(t.category)}${t.note ? ' · ' + esc(t.note) : ''}</div></div><div class="a">${F(t.amt)}</div></div>`).join('')}</div>${A.spikeDays.length ? `<p class="insight">The heaviest days were ${A.spikeDays.slice(0, 3).map((d) => `${fmtDate(d.date)} (${F(d.out)})`).join(', ')}.</p>` : ''}`)]);
     if (Array.isArray(window.PD_NOTES) && window.PD_NOTES.length && !S.demo) chapters.push(['notes', 'Your questions', ch('notes', num() + 'your questions, answered from the data', 'What the texts say about the questions you asked', window.PD_NOTES.map((q) => `<div class="qa"><b>${esc(q.q)}</b>${esc(q.a)}</div>`).join(''))]);
+    // Which of the six patterns show up in this person's own data
+    {
+      const pats = []; const spendPeople = d3.sum(A.people, (p) => p.total); const pochiIn = d3.sum(A.ins.filter((t) => t.pochi), (t) => t.amt); const borrowCost = A.creditFees + A.loanCost;
+      if (A.lifespan != null && A.lifespan <= 10) pats.push(['flat', 'The dry week', `Half of ${their} big payments were gone in ${A.lifespan.toFixed(1)} days.`]);
+      if (A.hasCredit && A.creditDays >= 10) pats.push(['couple', 'The Fuliza bridge', `${pl(A.creditDays, 'day')} owing Fuliza, for ${F(A.creditFees)} in charges.`]);
+      if (A.spend > 0 && spendPeople / A.spend >= 0.12) pats.push(['first', 'The family bank', `${pct(spendPeople / A.spend)} of spending went to people. Sort them to see how much is family.`]);
+      if (pochiIn > 0) pats.push(['hustle', 'Two wallets, one phone', `${F(pochiIn)} came in through Pochi la Biashara.`]);
+      if (A.ownOut > 0 && borrowCost > 0) pats.push(['chama', 'Saving while borrowing', `${F(A.ownOut)} went to savings and banks while borrowing cost ${F(borrowCost)}.`]);
+      if (A.txFees > 0 && A.spend > 0 && A.txFees / A.spend >= 0.005) pats.push(['sib', 'The small charges', `${F(A.txFees)} in transaction charges${A.avoidableTotal ? `, and ${F(A.avoidableTotal)} that could have been avoided` : ''}.`]);
+      if (A.habits.lateNightShare >= 0.08) pats.push([null, 'The 2am wallet', `${pct(A.habits.lateNightShare)} of spending happened between 10pm and 4am.`]);
+      if (pats.length) chapters.push(['you', 'Which ones are you', ch('you', num() + 'which ones are you', `${pats.length === 1 ? 'One pattern shows' : ['', '', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][pats.length] + ' patterns show'} up in ${S.demo ? 'Amani\'s' : 'your'} money`, `<p class="muted">The same patterns show up in wallets across Kenya. Here's the evidence from ${S.demo ? 'her' : 'your'} own SMS.</p><div class="pats">${pats.map(([img, t, ev]) => `<div class="pat">${img ? `<img src="img/roles/${img}.jpg" alt="" loading="lazy">` : '<div class="pat-noimg" aria-hidden="true">10pm–4am</div>'}<div><b>${esc(t)}</b><span>${ev}</span></div></div>`).join('')}</div>`)]);
+    }
     chapters.push(['try', 'What to try', ch('try', num() + 'what to try', sug.length === 1 ? 'One small change the data points to' : `${['', 'One', 'Two', 'Three'][sug.length]} small changes the data points to`, sug.map((s, i) => `<div class="try"><b>Try ${i + 1}</b>${esc(s)}</div>`).join('') + `<div class="next">${S.demo ? '<a href="#start"><b>Try it with my data</b><span class="small muted">Statement PDF, SMS export or pasted messages. Stays on your device.</span></a>' : ''}<a href="#sort"><b>Sort the people</b><span class="small muted">Label who gets sent money, in a quick swipe game.</span></a><a href="#budget"><b>Build a budget</b><span class="small muted">Monthly averages and targets by category.</span></a><a href="#ai"><b>Ask your AI</b><span class="small muted">A prompt and summary for Claude, ChatGPT or Gemini, with no people's names.</span></a><button type="button" data-act="storymode"><b>Story mode (vertical)</b><span class="small muted">A tall 9:16 version to screen-record and share.</span></button></div>`)]);
-    el.innerHTML = chapters.map((c) => c[2]).join('');
+    el.innerHTML = chapters.map((c) => c[2]).join('') + (S.demo ? '' : worthHTML());
+    if (!S.demo) wireWorth();
     $('#chapterNav').innerHTML = chapters.map((c) => `<a href="#${c[0]}" data-ch="${c[0]}">${c[1]}</a>`).join('');
     drawCharts();
     $$('#cover .big .v').forEach(countUp);
@@ -474,6 +516,37 @@
   }
   let rw = 0, lastW = window.innerWidth; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - lastW) < 30) return; lastW = window.innerWidth; clearTimeout(rw); rw = setTimeout(() => { if (!$('#v-story').hidden) drawCharts(); }, 200); });
 
+  /* ---------------- What was it worth? Asked once, after someone has seen their own story ---------------- */
+  function worthHTML() {
+    let done = false; try { done = !!localStorage.getItem('pesadithi:worth'); } catch (e) { /* ask again */ }
+    if (done) return '';
+    const amt = [['0', 'Nothing, glad it\'s free'], ['200', 'KES 200'], ['500', 'KES 500'], ['1000', 'KES 1,000'], ['3000', 'KES 3,000']];
+    const cad = [['once', 'Once'], ['year', 'Every year'], ['month', 'Every month']];
+    const use = ['How long money lasts', 'Fuliza and borrowing', 'Where it goes', 'The patterns', 'Fees and charges', 'Sorting my people', 'The story to share', 'Budget', 'Ask your AI'];
+    return `<section class="worth" id="worth" aria-labelledby="worth-h"><div class="k">Before you go</div><h2 id="worth-h">What was this worth to you?</h2>
+      <p class="muted">Pesadithi is free. Your honest answer shapes what stays free and what gets built next. It's anonymous, and it contains none of your money data.</p>
+      <p class="wq"><b>If it weren't free, what would you pay?</b></p><div class="choices opts wamt" data-w="amount">${amt.map(([v, l]) => `<button type="button" data-a="${v}" aria-pressed="false"><b>${l}</b></button>`).join('')}</div>
+      <div class="wmore" hidden><p class="wq"><b>How would you rather pay?</b></p><div class="choices opts wcad" data-w="cadence">${cad.map(([v, l]) => `<button type="button" data-a="${v}" aria-pressed="false"><b>${l}</b></button>`).join('')}</div></div>
+      <p class="wq"><b>What was most useful?</b> <span class="small muted">Pick any</span></p><div class="wuse">${use.map((u) => `<button type="button" aria-pressed="false">${esc(u)}</button>`).join('')}</div>
+      <div class="btn-row" style="margin-top:18px"><button class="btn" id="wSend" type="button" disabled>Send my answer</button><span class="small muted" id="wState" role="status" aria-live="polite"></span></div>
+      <div class="wthanks" hidden><b>Thank you.</b> <span>If one person you know would find this useful, sending it to them is worth more than any price.</span><div class="btn-row"><a class="btn small" id="wWa" target="_blank" rel="noopener">Share on WhatsApp</a><a class="btn ghost small" id="wX" target="_blank" rel="noopener">Post on X</a></div></div></section>`;
+  }
+  function wireWorth() {
+    const box = $('#worth'); if (!box) return; const W = { amount: null, cadence: null, useful: [] };
+    const pick = (grp, key) => $$('button', grp).forEach((b) => b.addEventListener('click', () => { $$('button', grp).forEach((x) => x.setAttribute('aria-pressed', String(x === b))); W[key] = b.dataset.a; $('.wmore', box).hidden = W.amount === '0' || !W.amount; $('#wSend').disabled = !W.amount; }));
+    pick($('.wamt', box), 'amount'); pick($('.wcad', box), 'cadence');
+    $$('.wuse button', box).forEach((b) => b.addEventListener('click', () => { const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', String(on)); W.useful = $$('.wuse button[aria-pressed="true"]', box).map((x) => x.textContent); }));
+    $('#wSend').addEventListener('click', () => {
+      if (window.pdTrack) pdTrack('Worth', { amount: W.amount, cadence: W.cadence || 'n/a', useful: W.useful.join(', ') || 'none' });
+      try { localStorage.setItem('pesadithi:worth', JSON.stringify({ ...W, at: new Date().toISOString().slice(0, 10) })); } catch (e) { /* fine */ }
+      const url = window.PD_SHARE_URL || location.href.split('#')[0];
+      const line = 'Pesadithi turned my M-PESA SMS into a story about my money. It runs on your phone and nothing is uploaded. Try it: ' + url;
+      $('#wWa').href = 'https://wa.me/?text=' + encodeURIComponent(line);
+      $('#wX').href = 'https://x.com/intent/post?text=' + encodeURIComponent((W.amount && W.amount !== '0' ? `I'd pay KES ${n0(+W.amount)}${W.cadence === 'year' ? ' a year' : W.cadence === 'month' ? ' a month' : ''} for this, and it's free. ` : '') + line + ' via @mkaigwa');
+      $$('.wq, .choices, .wuse, .wmore, .btn-row', box).forEach((e) => { if (!e.closest('.wthanks')) e.hidden = true; });
+      $('.wthanks', box).hidden = false;
+    });
+  }
   /* ---------------- Sort game ---------------- */
   const GCATS = ['Household and home help', 'Family support', 'Friends and social', 'Work and business', 'Services and transport', 'Giving and community', 'Savings group or chama', 'Lending or repaying'];
   function resetGame() { const saved = store.get('game') || {}; S.game = { assign: {}, saved: saved.assign || {}, history: [], last: null, skipped: [], extra: saved.extra || [] }; }
@@ -678,7 +751,7 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     return '';
   }
   function openStoryMode(ev) {
-    if (!S.A) return; SM.opener = (ev && ev.currentTarget) || document.activeElement; SM.slides = slides(); SM.i = 0;
+    if (!S.A) return; window.pdTrack && pdTrack('Story mode opened', { demo: String(!!S.demo) }); SM.opener = (ev && ev.currentTarget) || document.activeElement; SM.slides = slides(); SM.i = 0;
     stopCount(); stopPlay(); SM.rec = false; $('#sm').hidden = false; document.body.style.overflow = 'hidden'; $('#smDemo').hidden = !S.demo; $('#sm').classList.remove('rec', 'playing');
     history.pushState({ sm: 1 }, ''); drawSlide(); $('#smPlay').focus();
   }
@@ -730,7 +803,7 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   function heroAnim() {
     const feed = $('#heroFeed'); if (!feed) return;
     const box = $('#devbox'), dev = $('#dev');
-    const fit = () => { dev.style.setProperty('--s', (box.clientWidth / 432).toFixed(4)); };
+    const fit = () => { const w = box.closest('.inhand') ? 412 : 432; dev.style.setProperty('--s', (box.clientWidth / w).toFixed(4)); };
     fit(); window.addEventListener('resize', fit);
     const G = { in: '#17803f', out: '#d23b2e', credit: '#2457d6', who: '#b26a00', saved: '#7c4ddb', move: '#5b6670' };
     // [day label, time, text with [[amount]] and {{payee}} marks, tag, colour key, in, out, fuliza, fee, saved]
