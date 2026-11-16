@@ -5,7 +5,7 @@ Usage: python3 tools/theme/build_dark.py"""
 import colorsys, os, re
 P = os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'pesadithi.css')
 css = open(P).read()
-css = re.sub(r'\n?/\* DARK:START \*/.*?/\* DARK:END \*/\n?', '\n', css, flags=re.S)
+css = re.sub(r'\n?/\* DARK:START.*?/\* DARK:END \*/\n?', '\n', css, flags=re.S)
 D = 'html[data-theme="dark"]'
 SKIP = ('.sm', '.dev', '.phonewrap', '.share-card', '.sc-', '.share-strip', '.receipt', '.rl', '.rh', '.rf', '.rc', '.tally4', '.skip', '@font-face')
 

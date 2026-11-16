@@ -13,6 +13,25 @@
   ['#btnDemo2', '#btnDemo3'].forEach((id) => { const b = $(id); if (b) b.addEventListener('click', () => { const d = $('#btnDemo'); if (d && !d.disabled) d.click(); }); });
   $$('[data-pick]').forEach((a) => a.addEventListener('click', () => { const k = a.dataset.pick; setTimeout(() => { const s = $(`.source[data-src="${k}"]`); if (s && s.getAttribute('aria-pressed') !== 'true') s.click(); }, 60); }));
 
+  /* ---------- Trust notes in English or Kiswahili ---------- */
+  const I18N = {
+    sw: {
+      air: 'Inafanya kazi hata kwa airplane mode', pin: 'Hatutawahi kukuuliza PIN yako ya M-PESA',
+      demo: 'Demo inatumia data ya kubuni ya mtu asiyekuwepo. Hakuna kupakia, hakuna kujisajili.',
+      t1h: 'Inabaki kwenye simu yako', t1: 'Faili yako inasomwa na ukurasa huu ndani ya kivinjari chako, haitumwi popote. Zima Wi-Fi na data baada ya ukurasa kufunguka, na bado inafanya kazi.',
+      t2h: 'Hakuna akaunti, hakuna ufuatiliaji', t2: 'Hakuna kujisajili, hakuna cookies. Funga ukurasa na kila kitu kinatoweka, isipokuwa ukichagua "Kumbuka".',
+      t3h: 'Msimbo uko wazi', t3: 'Kila mstari uko wazi kwenye GitHub, ili mtu yeyote aweze kukagua ahadi hizi.'
+    }
+  };
+  const EN = {}; $$('[data-i18n]').forEach((el) => { EN[el.dataset.i18n] = el.textContent; });
+  const setLang = (l) => {
+    $$('[data-i18n]').forEach((el) => { const k = el.dataset.i18n; el.textContent = l === 'sw' && I18N.sw[k] ? I18N.sw[k] : EN[k]; });
+    $$('.lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+    try { localStorage.setItem('pesadithi:lang', l); } catch (e) { /* not remembered */ }
+  };
+  $$('.lang button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+  try { if (localStorage.getItem('pesadithi:lang') === 'sw') setLang('sw'); } catch (e) { /* English */ }
+
   /* ---------- AI logo slots: official files dropped into vendor/logos/ are used; otherwise a neutral lettermark ---------- */
   const LM = { chatgpt: 'GPT', claude: 'Cl', gemini: 'Ge', deepseek: 'DS', copilot: 'Co' };
   const AIS = { chatgpt: 'ChatGPT', claude: 'Claude', gemini: 'Gemini', deepseek: 'DeepSeek', copilot: 'Copilot' };
@@ -157,7 +176,7 @@
     }
 
     // 3. Money clock: 24 radial bars, after 10pm in red
-    {
+    if (V('clock')){
       const S = 150, cx = S / 2, cy = S / 2, r0 = 24, r1 = 70; const mx = Math.max(...A.byHour) || 1;
       const late = (h) => h >= 22 || h < 5;
       const bars = A.byHour.map((v, h) => {
@@ -180,7 +199,7 @@
     }
 
     // 5. Sort your people: names flick into categories
-    {
+    if (V('sort')){
       const ppl = A.people.slice(0, 4); const cats = ['Family support', 'Household and home help', 'Friends and social', 'Work and business'];
       V('sort').innerHTML = `<div class="deckm">${ppl.map((p, i) => `<div class="pc" style="--i:${i}"><b>${esc(tc(p.name))}</b><small>${p.count} sends · KES ${n0(p.total)}</small></div>`).join('')}</div><div class="chips">${cats.map((c) => `<span>${esc(c)}</span>`).join('')}</div>`;
       K('sort').textContent = A.people.length + ' people';
@@ -191,7 +210,7 @@
     }
 
     // 6. Ask your AI: a typed prompt and the size of the summary
-    {
+    if (V('ai')){
       let tokens = 0; try { tokens = Math.round(JSON.stringify(window.PDAnalyse.summary(A, { merchants: 8, demo: true, provider: 'M-PESA' })).length / 3.6); } catch (e) { tokens = 0; }
       const line = `Here is a year of my mobile money: KES ${n0(A.totalIn)} in, ${A.creditDays} days on Fuliza, half of each payday gone in ${Math.round(A.lifespan)} days. What should I change first?`;
       const tEl = $('#aiType');
@@ -204,7 +223,7 @@
     {
       const sc = $('#shareCard');
       sc.innerHTML = `<div class="sc-top">Amani's year in mobile money</div><div class="sc-big" id="scBig">KES ${n0(A.totalIn)}</div><div class="sc-sub">came in</div>
-        <div class="sc-lines"><div><b>${Math.round(A.lifespan)} days</b><span>until half of payday is gone</span></div><div><b>${A.creditDays} days</b><span>on Fuliza</span></div><div><b>KES ${n0(A.feesTotal)}</b><span>in charges</span></div></div>
+        <div class="sc-lines"><div><b>${Math.round(A.lifespan)} days</b><span>until half of payday is gone</span></div><div><b>${A.nDays - A.creditDays} days</b><span>Fuliza-free</span></div><div><b>KES ${n0(A.feesTotal)}</b><span>in charges</span></div></div>
         <div class="sc-foot"><span class="lock">Pesa<i>dithi</i></span><span>made by Mark Kaigwa · mark.co.ke</span></div>`;
       whenSeen(sc, () => countTo($('#scBig'), A.totalIn, (v) => 'KES ' + n0(v), 1400));
     }

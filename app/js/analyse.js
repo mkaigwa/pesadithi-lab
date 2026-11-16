@@ -18,7 +18,7 @@
     const ins = txs.filter((t) => t.dir === 'in' && t.type === 'received');
     const outs = txs.filter((t) => t.dir === 'out' && SPEND.has(t.type));
     outs.forEach((t) => { const k = M.lookup(t.party, t.type, t.person); t.category = t.category || k.category; t.note = k.note; });
-    ins.forEach((t) => { const k = M.lookup(t.party, t.type, t.person); t.category = t.category || (k.category === M.categories.banks ? 'From your banks' : t.person ? 'From people' : 'Other income'); t.note = k.note; });
+    ins.forEach((t) => { const k = M.lookup(t.party, t.type, t.person); t.category = t.category || (t.pochi ? 'Side hustle (Pochi)' : k.category === M.categories.banks ? 'From your banks' : t.person ? 'From people' : 'Other income'); t.note = t.pochi ? 'Paid into your Pochi la Biashara, M-PESA\'s business wallet.' : k.note; });
     const sum = (a, f) => d3.sum(a, f || ((t) => t.amt));
     const totalIn = sum(ins), totalOut = sum(outs);
     const ownOut = sum(outs.filter((t) => M.OWN_MONEY.includes(t.category)));

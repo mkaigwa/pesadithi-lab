@@ -65,7 +65,7 @@
 
   /* ---------------- Sources ---------------- */
   const HELP = {
-    pdf: `<b>Get your statement (free)</b><ol><li>Open the <b>M-PESA app</b> and go to <b>Statements</b>, or dial <b>*334#</b> and look for <b>My Account → M-PESA Statement</b>.</li><li>Ask for a <b>full statement</b> for the months you want. 12 months shows the most patterns.</li><li>It arrives by <b>email as a PDF</b>. The <b>password arrives by SMS</b>.</li><li>Open that email on this device and save the PDF, or email it to yourself here.</li><li>Choose the file below and type the password from the SMS.</li></ol><p class="small muted" style="margin:8px 0 0">These were Safaricom's steps in November 2026. Menus change; if yours look different, follow the steps in the M-PESA app.</p>`,
+    pdf: `<b>Get your statement (free)</b><ol><li>Open the <b>M-PESA app</b> and go to <b>Statements</b>, or dial <b>*334#</b> and look for <b>My Account → M-PESA Statement</b>.</li><li>Ask for a <b>full statement</b> for the months you want. 12 months shows the most patterns.</li><li>It arrives by <b>email as a PDF</b>. The <b>password arrives by SMS</b>.</li><li>Open that email on this device and save the PDF, or email it to yourself here.</li><li>Choose the file below and type the password from the SMS.</li></ol><details class="rescue"><summary>I got the SMS with the password. Now what?</summary><ol><li>Open your email app on this phone and search for <b>M-PESA statement</b>. Check Spam or Promotions too.</li><li>Tap the PDF and choose <b>Download</b> or <b>Save to Files</b>. Don't open it in the email app.</li><li>Come back to this page, tap <b>Choose a file</b>, and pick the PDF from Downloads or Files.</li><li>Type the code from the SMS. It's a one-off code, not your M-PESA PIN.</li></ol><p class="small muted">Lost the SMS? Request the statement again; each request sends a new code.</p></details><p class="small muted" style="margin:8px 0 0">These were Safaricom's steps in November 2026. Menus change; if yours look different, follow the steps in the M-PESA app.</p>`,
     mac: `<b>For iPhone users with a Mac</b><ol><li>On your iPhone, check <b>Settings → Messages → Text Message Forwarding</b> is on for your Mac, so M-PESA texts reach it.</li><li>Download <code>extract_mobile_money.py</code> from the <a href="https://github.com/mkaigwa/pesadithi-lab/tree/main/tools/mac" rel="noopener">tools/mac</a> folder on GitHub.</li><li>Give <b>Terminal</b> Full Disk Access (System Settings → Privacy &amp; Security → Full Disk Access). <b>This lets Terminal read every file on your Mac</b>, so switch it off again afterwards.</li><li>Run <code>python3 extract_mobile_money.py</code>. It saves <code>pesadithi-messages.json</code> in your Downloads folder.</li><li>Choose that file below. Then switch Full Disk Access off and delete the file when you're done.</li></ol>`,
     android: `<b>For Android phones</b><ol><li>Install <b>SMS Backup &amp; Restore</b> (by SyncTech) from Google Play.</li><li>Back up <b>messages only</b> to your phone's storage. It saves a file ending in <code>.xml</code>.</li><li>Choose that file below, on your phone or a computer.</li><li>Delete the backup file afterwards. It contains <b>all</b> your texts, including bank codes.</li></ol>`,
     paste: `<b>Quick try</b><ol><li>Open your messages and the <b>M-PESA</b> conversation.</li><li>Copy as many messages as you like and paste them in the box below.</li></ol><p class="small muted" style="margin:8px 0 0">The more months you paste, the better the patterns. For a whole year, a statement is faster.</p>`,
@@ -657,6 +657,9 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     else s.push({ k: d ? 'Meet Amani · invented data' : 'Your money story', v: n0(A.txCount), t: `transactions in ${pl(Math.round(A.monthsEq), 'month')}.`, dd: 'Here is what they say about timing.' });
     s.push({ k: 'Money in', tone: 'in', v: '+' + FB(A.totalIn), t: 'came in.', dd: `Most of it around the ${A.bigInDays.slice(0, 2).map(ord).join(' and ') || 'same few days'}.` });
     s.push({ k: 'Money out', tone: 'out', v: '−' + FB(A.totalOut), t: 'went out.', dd: A.ownOut > A.totalOut * .05 ? `${pct(A.ownOut / A.totalOut)} of it moved to ${their} own banks, cards or savings.` : `Net: ${A.totalIn >= A.totalOut ? '+' : '−'}${kfmt(Math.abs(A.totalIn - A.totalOut))}.` });
+    // Brag stats: things people are happy to post
+    if (A.hasCredit) s.push({ k: 'Fuliza-free days', tone: 'mint', v: `${A.nDays - A.creditDays} of ${A.nDays}`, t: `days ${d ? 'she' : 'you'} owed Fuliza nothing.`, dd: `That's ${pct((A.nDays - A.creditDays) / A.nDays)} of the year.` });
+    if (A.totalIn > 0 && A.ownOut / A.totalIn >= 0.05) s.push({ k: 'Savings rate', tone: 'mint', v: pct(A.ownOut / A.totalIn), t: `of what came in went to ${their} savings, banks or investments.`, dd: `${F(A.ownOut)} moved out of the wallet on purpose.` });
     if (A.lifespan != null) s.push({ k: 'How long it lasts', v: A.lifespan.toFixed(1) + ' days', t: 'until half of a big payment is spent.', dd: A.lifespan75 ? `Three quarters gone by day ${A.lifespan75.toFixed(1)}.` : '', viz: 'drain' });
     if (A.hasCredit && A.lowDay) s.push({ k: 'The gap', v: `The ${ord(A.lowDay.day)}`, t: `is when ${their} balance is usually lowest.`, dd: A.bigInDays.length ? `Money lands around the ${ord(A.bigInDays[0])}. ${cn} fills the gap.` : '', viz: 'dom' });
     s.push({ k: 'The money clock', v: hourLabel(A.habits.peakHour), t: `on ${WD[A.habits.peakWeekday]} is peak spending time.`, dd: `${pct(A.habits.lateNightShare)} of spending happens between 10pm and 4am.` });
@@ -689,9 +692,9 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   function drawSlide() {
     const s = SM.slides[SM.i];
     $('#smBar').innerHTML = SM.slides.map((_, i) => `<i class="${i <= SM.i ? 'on' : ''}"></i>`).join('');
-    const TONES = { 'Your money story': 'ink', 'Meet Amani · invented data': 'ink', 'How long it lasts': 'mint', 'The gap': 'credit', 'The money clock': 'ink', 'A habit': 'mint', 'Borrowing': 'credit', 'The price': 'out', 'Try this': 'mint', 'Pesadithi Lab': 'ink' };
+    const TONES = { 'Fuliza-free days': 'mint', 'Savings rate': 'mint', 'Your money story': 'ink', 'Meet Amani · invented data': 'ink', 'How long it lasts': 'mint', 'The gap': 'credit', 'The money clock': 'ink', 'A habit': 'mint', 'Borrowing': 'credit', 'The price': 'out', 'Try this': 'mint', 'Pesadithi Lab': 'ink' };
     $('#smFrame').dataset.tone = s.tone || TONES[s.k] || 'mint';
-    $('#smSlide').innerHTML = `<div class="sk">${esc(s.k)}</div><div class="sv${s.small ? ' small' : ''}${s.cls ? ' ' + s.cls : ''}">${esc(s.v)}</div><div class="st">${esc(s.t)}</div>${s.dd ? `<div class="sd">${esc(s.dd)}</div>` : ''}${s.viz ? miniViz(s.viz) : ''}${s.url ? `<div class="surl">${esc(s.url)}</div>` : ''}`;
+    $('#smSlide').innerHTML = `<div class="sk">${esc(s.k)}</div><div class="sv${s.small ? ' small' : ''}${s.cls ? ' ' + s.cls : ''}${/KES|Ksh|UGX|[+−-]?\d{1,3}(?:,\d{3})|\d(?:\.\d+)?[km]\b/.test(s.v) ? ' money' : ''}">${esc(s.v)}</div><div class="st">${esc(s.t)}</div>${s.dd ? `<div class="sd">${esc(s.dd)}</div>` : ''}${s.viz ? miniViz(s.viz) : ''}${s.url ? `<div class="surl">${esc(s.url)}</div>` : ''}`;
     const sv = $('#smSlide .sv'); if (sv && /\d/.test(sv.textContent)) countUp(sv);
     $('#smLive').textContent = `Slide ${SM.i + 1} of ${SM.slides.length}: ${s.v} ${s.t}`;
   }
@@ -729,17 +732,18 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     const box = $('#devbox'), dev = $('#dev');
     const fit = () => { dev.style.setProperty('--s', (box.clientWidth / 432).toFixed(4)); };
     fit(); window.addEventListener('resize', fit);
-    const G = { in: '#17803f', out: '#d23b2e', credit: '#2457d6', who: '#b26a00' };
-    // [day label, time, text with [[amount]] and {{payee}} marks, tag, colour key, in, out, fuliza, fee]
+    const G = { in: '#17803f', out: '#d23b2e', credit: '#2457d6', who: '#b26a00', saved: '#7c4ddb', move: '#5b6670' };
+    // [day label, time, text with [[amount]] and {{payee}} marks, tag, colour key, in, out, fuliza, fee, saved]
     const M = [
-      ['Fri, 26 Sep', '9:14 am', 'TIQ4H2KL7S Confirmed.You have received [[Ksh48,500.00]] from {{ACME DESIGN LTD}} on 26/9/26 at 9:14 AM New M-PESA balance is Ksh49,180.00.', 'Money in', 'in', 48500, 0, 0, 0],
-      ['', '9:14 am', 'TIQ4H2KL7T Confirmed. Fuliza M-PESA amount is [[Ksh180.00]] repaid. Available Fuliza M-PESA limit is Ksh5,000.00.', 'Fuliza repaid', 'credit', 0, 0, 0, 0],
-      ['', '6:41 pm', 'TIR2B7MX0P Confirmed. [[Ksh2,350.00]] paid to {{NAIVAS WESTLANDS}}. on 26/9/26 at 6:41 PM.New M-PESA balance is Ksh46,650.00. Transaction cost, Ksh0.00.', 'Groceries', 'out', 0, 2350, 0, 0],
-      ['Sat, 27 Sep', '7:02 am', 'TIS9C3QW1E Confirmed. [[Ksh1,500.00]] sent to {{WANJIRU KAMAU}} 0712xxx486 on 27/9/26 at 7:02 AM. New M-PESA balance is Ksh45,127.00. Transaction cost, Ksh23.00.', 'A person: who?', 'who', 0, 1500, 0, 23],
-      ['', '1:20 pm', 'TIT1D8RV5K Confirmed. [[Ksh850.00]] paid to {{JAVA HOUSE KIMATHI ST}}. on 27/9/26 at 1:20 PM.New M-PESA balance is Ksh44,277.00. Transaction cost, Ksh0.00.', 'Coffee', 'out', 0, 850, 0, 0],
-      ['Fri, 3 Oct', '9:47 pm', 'TJV6E2NB3D Confirmed. Fuliza M-PESA amount is [[Ksh640.00]]. Access Fee charged Ksh6.40. Total Fuliza M-PESA outstanding amount is Ksh646.40 due on 2/11/26.', 'Fuliza borrowed', 'credit', 0, 0, 640, 6],
-      ['', '9:48 pm', 'TJW3F5YC8L Confirmed. [[Ksh640.00]] paid to {{KPLC PREPAID}} for account 37185520496 on 3/10/26 at 9:48 PM New M-PESA balance is Ksh0.00. Transaction cost, Ksh0.00.', 'Electricity', 'out', 0, 640, 0, 0],
-      ['Sat, 4 Oct', '10:05 am', 'TJX7G9HA2M Confirmed. on 4/10/26 at 10:05 AM [[Ksh3,000.00]] withdrawn from {{0718 MUTHAIGA AGENT}}. New M-PESA balance is Ksh1,354.00. Transaction cost, Ksh53.00.', 'Cash out', 'out', 0, 3000, 0, 53]
+      ['Fri, 26 Sep', '9:14 am', 'TIQ4H2KL7S Confirmed.You have received [[Ksh48,500.00]] from {{ACME DESIGN LTD}} on 26/9/26 at 9:14 AM New M-PESA balance is Ksh49,180.00.', 'Salary in', 'in', 48500, 0, 0, 0, 0],
+      ['', '9:14 am', 'TIQ4H2KL7T Confirmed. Fuliza M-PESA amount is [[Ksh180.00]] repaid. Available Fuliza M-PESA limit is Ksh5,000.00.', 'Fuliza repaid', 'credit', 0, 0, 0, 0, 0],
+      ['', '9:20 am', 'TIQ5J7XW2B Confirmed. [[Ksh5,000.00]] sent to {{ZIIDI MONEY MARKET FUND}} for account 0712xxx486 on 26/9/26 at 9:20 AM. New M-PESA balance is Ksh44,000.00. Transaction cost, Ksh0.00.', 'Saved · Ziidi', 'saved', 0, 0, 0, 0, 5000],
+      ['', '6:41 pm', 'TIR2B7MX0P Confirmed. [[Ksh2,350.00]] paid to {{NAIVAS WESTLANDS}}. on 26/9/26 at 6:41 PM.New M-PESA balance is Ksh41,650.00. Transaction cost, Ksh0.00.', 'Groceries', 'out', 0, 2350, 0, 0, 0],
+      ['Sat, 27 Sep', '11:05 am', 'TIS4P8KD2N Confirmed. You have received [[Ksh1,850.00]] from {{AMINA WANJIRU}} to your Pochi la Biashara on 27/9/26 at 11:05 AM. New Pochi balance is Ksh6,420.00.', 'Side hustle · Pochi', 'in', 1850, 0, 0, 0, 0],
+      ['', '7:02 pm', 'TIS9C3QW1E Confirmed. [[Ksh1,500.00]] sent to {{WANJIRU KAMAU}} 0712xxx486 on 27/9/26 at 7:02 PM. New M-PESA balance is Ksh40,127.00. Transaction cost, Ksh23.00.', 'A person: who?', 'who', 0, 1500, 0, 23, 0],
+      ['Fri, 3 Oct', '9:47 pm', 'TJV6E2NB3D Confirmed. Fuliza M-PESA amount is [[Ksh640.00]]. Access Fee charged Ksh6.40. Total Fuliza M-PESA outstanding amount is Ksh646.40 due on 2/11/26.', 'Fuliza borrowed', 'credit', 0, 0, 640, 6, 0],
+      ['', '9:48 pm', 'TJW3F5YC8L Confirmed. [[Ksh640.00]] paid to {{KPLC PREPAID}} for account 37185520496 on 3/10/26 at 9:48 PM New M-PESA balance is Ksh0.00. Transaction cost, Ksh0.00.', 'Electricity', 'out', 0, 640, 0, 0, 0],
+      ['Sat, 4 Oct', '8:05 am', 'TJX7G9HA2M Confirmed. [[Ksh3,000.00]] moved from {{Pochi la Biashara}} to M-PESA on 4/10/26 at 8:05 AM. Fuliza M-PESA amount of Ksh646.40 repaid. New M-PESA balance is Ksh2,353.60.', 'Pochi → M-PESA', 'move', 0, 0, 0, 0, 0]
     ];
     const mark = (t) => esc(t).replace(/\[\[(.+?)\]\]/g, '<span class="amt">$1</span>').replace(/\{\{(.+?)\}\}/g, '<span class="pay">$1</span>');
     let html = '';
@@ -749,11 +753,11 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
       html += `<div class="row has-tag ${groupStart ? 'first' : 'mid'}${groupEnd ? ' last' : ''}" style="--c:${G[m[4]]}" data-i="${i}"><span class="ava">M</span><div class="bub">${mark(m[2])}<span class="tag">${esc(m[3])}</span></div></div>`;
     });
     feed.innerHTML = html;
-    const T = [['in', 'came in', G.in, 5], ['out', 'went out', G.out, 6], ['credit', 'borrowed from Fuliza', G.credit, 7], ['fee', 'in charges', '#5b6670', 8]];
+    const T = [['in', 'came in', G.in, 5], ['out', 'went out', G.out, 6], ['saved', 'saved to Ziidi', G.saved, 9], ['credit', 'Fuliza', G.credit, 7], ['fee', 'in charges', '#5b6670', 8]];
     $('#heroTally').innerHTML = T.map(([k, l, c]) => `<div style="--c:${c}"><b id="ht-${k}">KES 0</b><small>${l}</small></div>`).join('');
     const rows = $$('#heroFeed .row'); const scan = $('#heroScan'); const convo = feed.parentElement;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const run = { in: 0, out: 0, credit: 0, fee: 0 };
+    const run = { in: 0, out: 0, credit: 0, fee: 0, saved: 0 };
     const paint = () => T.forEach(([k]) => { $('#ht-' + k).textContent = 'KES ' + n0(run[k]); });
     const step = (i) => {
       if (i >= rows.length) { scan.style.opacity = 0; return; }
@@ -766,12 +770,12 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
         scan.style.top = (y + r.offsetHeight / 2) + 'px'; scan.style.opacity = 1;
         setTimeout(() => {
           r.classList.add('on');
-          run.in += m[5]; run.out += m[6]; run.credit += m[7]; run.fee += m[8]; paint();
+          run.in += m[5]; run.out += m[6]; run.credit += m[7]; run.fee += m[8]; run.saved += m[9]; paint();
           setTimeout(() => step(i + 1), 520);
         }, 380);
       }, 420);
     };
-    if (reduce) { rows.forEach((r, i) => { r.classList.add('on'); run.in += M[i][5]; run.out += M[i][6]; run.credit += M[i][7]; run.fee += M[i][8]; }); paint(); return; }
+    if (reduce) { rows.forEach((r, i) => { r.classList.add('on'); run.in += M[i][5]; run.out += M[i][6]; run.credit += M[i][7]; run.fee += M[i][8]; run.saved += M[i][9]; }); paint(); return; }
     paint(); setTimeout(() => step(0), 700);
   }
   heroAnim();

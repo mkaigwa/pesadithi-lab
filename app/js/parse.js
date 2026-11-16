@@ -103,8 +103,12 @@
         txs.push({ ...base, type: 'loan_rollover', dir: 'none', amt: num(r[1]), party: 'M-Shwari', fee: num(r[1]) });
       } else if ((r = t.match(/Loan of Ksh ?([\d,]+\.\d\d) repaid from (?:your )?M-PESA/i))) {
         txs.push({ ...base, type: 'loan_repay', dir: 'none', amt: num(r[1]), party: 'M-Shwari', cleared: /Loan balance is Ksh ?0\.00|repaid in full/i.test(t) });
+      } else if ((r = t.match(new RegExp(A + ' moved from (Pochi la Biashara|M-PESA) to (Pochi la Biashara|M-PESA)', 'i')))) {
+        // Moving money between your own Pochi and M-PESA wallets: not income, not spending
+        txs.push({ ...base, type: 'own_transfer', dir: 'none', amt: num(r[1]), party: 'Pochi la Biashara' });
       } else if ((r = t.match(new RegExp('received ' + A + ' from (.+?) on \\d', 'i')))) {
-        const raw = r[2]; txs.push({ ...base, type: 'received', dir: 'in', amt: num(r[1]), party: stripPhone(raw), person: hasPhone(raw) });
+        const pochi = /\s+(?:to|into|in) your Pochi(?: la Biashara)?/i;
+        const raw = r[2].replace(pochi, ''); txs.push({ ...base, type: 'received', dir: 'in', amt: num(r[1]), party: stripPhone(raw), person: hasPhone(raw), pochi: pochi.test(r[2]) || /Pochi/i.test(t) });
       } else if ((r = t.match(new RegExp(A + ' (sent|paid) to (.+?)(?: for account (.+?))? on \\d', 'i')))) {
         const raw = r[3]; const kind = r[2] === 'paid' ? 'till' : r[4] ? 'paybill' : 'sent';
         txs.push({ ...base, type: kind, dir: 'out', amt: num(r[1]), party: stripPhone(raw), account: r[4] || null, fee: tc(t), person: kind === 'sent' || (kind === 'till' && hasPhone(raw)) });

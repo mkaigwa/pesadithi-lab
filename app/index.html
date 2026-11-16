@@ -35,17 +35,22 @@
   <div class="wrap hero">
    <div>
     <div class="kicker">Your year in mobile money</div>
-    <h1>Every text says what moved. <em>Together they tell your story.</em></h1>
-    <p class="lede">Load your M-PESA statement or money texts. See what came in, what went out, when Fuliza filled the gap, and what all of it cost, in a story you can share.</p>
+    <h1>How many days does half your pay last? <em>Find out in a minute.</em></h1>
+    <p class="lede">Every M-PESA text says what moved. Together they tell your story: when money lands, how fast it goes, when Fuliza fills the gap, what you saved, and what it all cost.</p>
     <div class="btn-row" style="margin-top:26px">
       <button class="btn" id="btnDemo" type="button" disabled>Loading…</button>
-      <a class="btn ghost" href="#start">Use my own data</a>
+      <a class="btn ghost" href="#start" data-pick="paste">Try with five texts</a>
     </div>
-    <p class="small muted" style="margin-top:12px">The demo uses invented data for a fictional person. No upload, no sign-up.</p>
+    <div class="proofrow">
+      <span class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" fill="currentColor"/></svg><span data-i18n="air">Works in airplane mode</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z" fill="currentColor"/></svg><span data-i18n="pin">We never ask for your M-PESA PIN</span></span>
+      <span class="lang" role="group" aria-label="Language for these notes"><button type="button" data-lang="en" aria-pressed="true">English</button><button type="button" data-lang="sw" aria-pressed="false">Kiswahili</button></span>
+    </div>
+    <p class="small muted" style="margin-top:12px" data-i18n="demo">The demo uses invented data for a fictional person. No upload, no sign-up.</p>
     <div class="trust">
-      <div><b>Stays on your device</b>Your file is read by this page in your browser and never uploaded. Switch off Wi-Fi after the page loads and it still works (for a PDF, choose the PDF route first).</div>
-      <div><b>No account, no tracking</b>No sign-up, no cookies, no analytics. Close the tab and it's gone, unless you tick "Remember".</div>
-      <div><b>Open source</b>Every line is public on GitHub, so anyone can check these claims.</div>
+      <div><b data-i18n="t1h">Stays on your device</b><span data-i18n="t1">Your file is read by this page in your browser and never uploaded. Switch off Wi-Fi and data after the page loads and it still works.</span></div>
+      <div><b data-i18n="t2h">No account, no tracking</b><span data-i18n="t2">No sign-up, no cookies. Close the tab and it's gone, unless you tick "Remember".</span></div>
+      <div><b data-i18n="t3h">Open source</b><span data-i18n="t3">Every line is public on GitHub, so anyone can check these claims.</span></div>
     </div>
    </div>
    <div class="phonewrap" aria-label="A Tecno-style Android phone showing M-PESA texts in Google Messages. Each one is read and labelled, with running totals underneath">
@@ -60,7 +65,7 @@
       </div>
     </div></div>
     <div class="tally4" id="heroTally"></div>
-    <p class="cap">Invented texts for Amani, a fictional person. Each amount, payee and type is recognised and labelled.</p>
+    <p class="cap">Invented texts in the style of M-PESA messages, for Amani, a fictional person: salary, a Ziidi saving, a Pochi la Biashara sale, Fuliza, and money moved from Pochi to M-PESA. Each one is recognised and labelled.</p>
    </div>
   </div>
   <!-- RAILS: which wallets it reads -->
@@ -80,7 +85,7 @@
   <!-- WHAT YOU'LL SEE: live minis drawn from the demo -->
   <div class="wrap see" aria-labelledby="seeH">
     <div class="kicker">What you'll see</div>
-    <h2 id="seeH" class="sec-h">Six things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
+    <h2 id="seeH" class="sec-h">Three things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
     <p class="small muted fict">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented.</p>
     <div class="minis" id="minis">
       <article class="mini" data-m="lasts">
@@ -93,26 +98,14 @@
         <div class="mn"><b class="mbig" data-k="cal">…</b><span class="mlab">The month inside the month</span></div>
         <p class="small muted">The days you run low, and the date you lean on Fuliza most.</p>
       </article>
-      <article class="mini" data-m="clock">
-        <div class="mv" data-viz="clock" aria-hidden="true"></div>
-        <div class="mn"><b class="mbig" data-k="clock">…</b><span class="mlab">Your money clock</span></div>
-        <p class="small muted">The hours you spend most, including what goes after 10pm.</p>
-      </article>
+      
       <article class="mini" data-m="fees">
         <div class="mv" data-viz="fees" aria-hidden="true"></div>
         <div class="mn"><b class="mbig" data-k="fees">…</b><span class="mlab">The price you paid</span></div>
         <p class="small muted">Fees, loan charges and penalties, and the part you could have avoided.</p>
       </article>
-      <article class="mini" data-m="sort">
-        <div class="mv" data-viz="sort" aria-hidden="true"></div>
-        <div class="mn"><b class="mbig" data-k="sort">…</b><span class="mlab">Sort your people</span></div>
-        <p class="small muted">Your statement knows names. You know relationships. One swipe each.</p>
-      </article>
-      <article class="mini" data-m="ai">
-        <div class="mv" data-viz="ai"><div class="ai-row" id="aiRow"></div><div class="ai-prompt"><span id="aiType"></span><i class="caret"></i></div></div>
-        <div class="mn"><b class="mbig" data-k="ai">…</b><span class="mlab">Ask your own AI</span></div>
-        <p class="small muted">An anonymised summary and a prompt, sized for free plans. No names, phone numbers or message text leave with it. <a href="#ai">Try it</a></p>
-      </article>
+      
+      
     </div>
     <div class="share-strip">
       <div class="share-card" id="shareCard" aria-hidden="true"></div>
@@ -155,8 +148,51 @@
     </div>
   </div>
 
+  <!-- PLANS: a Nendo beta -->
+  <div class="wrap plans" aria-labelledby="plansH">
+    <div class="kicker">Plans from Nendo <span class="pill beta">Beta · coming soon</span></div>
+    <h2 id="plansH" class="sec-h">Your story is free. <em>A plan turns it into what to do next.</em></h2>
+    <p class="lede-s muted">Each plan is built from your own numbers, on your own phone, and checks in when you load next month's statement. One-off price, no subscription.</p>
+    <div class="plan-cards">
+      <article class="plan">
+        <div class="plan-top"><h3>Fuliza on your terms</h3><span class="price">KES 249</span></div>
+        <p>For people who rely on Fuliza and want it working for them, not the other way round.</p>
+        <ul>
+          <li>The days you usually need it, and the size of the gap</li>
+          <li>What each Fuliza really cost you, and the cheapest way to clear it after payday</li>
+          <li>The habits Safaricom says its limit reviews look at: regular use and repaying on time</li>
+          <li>A month-by-month check: borrowing on purpose, or borrowing by default?</li>
+        </ul>
+      </article>
+      <article class="plan">
+        <div class="plan-top"><h3>First-born plan</h3><span class="price">KES 249</span></div>
+        <p>For anyone carrying parents, siblings or the wider family, who wants to keep giving without running dry by the 20th.</p>
+        <ul>
+          <li>What share of your income goes to family, split into planned support and sudden requests</li>
+          <li>A standing monthly amount you can say yes to, and a buffer for the call you know will come</li>
+          <li>Which weeks family requests collide with your own bills</li>
+          <li>A short script for the family conversation (KES 499 with the script)</li>
+        </ul>
+      </article>
+    </div>
+    <p class="small muted">Plans are a beta from Nendo Limited, priced in Kenya shillings and paid once through M-PESA. Not financial advice. <a href="https://x.com/mkaigwa" rel="noopener">Follow @mkaigwa</a> to hear when they open.</p>
+  </div>
+
+  <div class="wrap">
+    <div class="honest">
+      <b>Before you start, what this can and can't do</b>
+      <ul>
+        <li>It works best with <b>M-PESA</b> (Kenya). <b>MTN MoMo</b> and <b>Airtel Money</b> are in beta: messages vary by country, so some may not be read.</li>
+        <li>Figures come from your statement or SMS. Some costs, such as Fuliza daily charges, are <b>estimates</b>. Your official statement is the final word.</li>
+        <li>Reading SMS straight from a Mac needs a powerful macOS permission. Read <a href="#privacy">Privacy and risks</a> before you choose that route.</li>
+        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN or Airtel.</li>
+        <li>It's a personal, open-source project shared as it is, with no warranty. Bug reports are welcome, but fixes can't be promised. <a href="#privacy">Read the full note</a>.</li>
+      </ul>
+    </div>
+  </div>
+
   <!-- SHARED MONEY: roles -->
-  <div class="wrap shared" aria-labelledby="sharedH">
+  <div class="wrap shared" aria-labelledby="sharedH" hidden>
     <div class="kicker">Shared money <span class="pill beta">In design</span></div>
     <h2 id="sharedH" class="sec-h">Your money is rarely just yours. <em>Pesadithi is learning to tell that story too.</em></h2>
     <p class="lede-s muted">Most of us carry other people in our wallets: a partner, a flat, our parents, a chama. Each role asks a different question, and each needs a different line on what gets shared.</p>
@@ -179,16 +215,6 @@
       <p class="small muted">Which role should come first? Tell Mark on <a href="https://x.com/mkaigwa" rel="noopener">X</a> or open an issue on <a href="https://github.com/mkaigwa/pesadithi-lab/issues" rel="noopener">GitHub</a>.</p>
     </div>
 
-    <div class="honest">
-      <b>Before you start, what this can and can't do</b>
-      <ul>
-        <li>It works best with <b>M-PESA</b> (Kenya). <b>MTN MoMo</b> and <b>Airtel Money</b> are in beta: messages vary by country, so some may not be read.</li>
-        <li>Figures come from your statement or SMS. Some costs, such as Fuliza daily charges, are <b>estimates</b>. Your official statement is the final word.</li>
-        <li>Reading SMS straight from a Mac needs a powerful macOS permission. Read <a href="#privacy">Privacy and risks</a> before you choose that route.</li>
-        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN or Airtel.</li>
-        <li>It's a personal, open-source project shared as it is, with no warranty. Bug reports are welcome, but fixes can't be promised. <a href="#privacy">Read the full note</a>.</li>
-      </ul>
-    </div>
   </div>
 </section>
 
@@ -198,12 +224,12 @@
     <div class="kicker">Step 1 of 3</div>
     <div class="notice" id="notice" role="status" hidden>Load your data first. Nothing is kept between visits, so after a reload the story needs your file again. If you have just loaded it, press "Tell me my story".</div>
     <h1>Where is your money data?</h1>
-    <p class="muted">Pick the one you have. Not sure? Use the M-PESA statement: it works on any phone.</p>
+    <p class="muted">Start by pasting a few texts to see how it works. For your whole year, use the M-PESA statement: it works on any phone.</p>
     <div class="sources" role="group" aria-label="Choose your data source">
-      <button class="source" type="button" data-src="pdf" aria-pressed="false"><h3>M-PESA statement (PDF)</h3><p class="small muted">The official statement Safaricom emails you, opened with the code they send by SMS.</p><div class="meta"><span class="pill rec">Recommended</span><span class="pill">Any phone</span><span class="pill">About 5 minutes</span></div></button>
+      <button class="source" type="button" data-src="paste" aria-pressed="false"><h3>Paste a few texts</h3><p class="small muted">Copy five or more M-PESA texts from your phone and paste them in. The quickest way to see how it works.</p><div class="meta"><span class="pill rec">Start here</span><span class="pill">Any phone</span><span class="pill">1 minute</span></div></button>
+      <button class="source" type="button" data-src="pdf" aria-pressed="false"><h3>M-PESA statement (PDF)</h3><p class="small muted">The official statement Safaricom emails you, opened with the code they send by SMS.</p><div class="meta"><span class="pill rec">Best for your full year</span><span class="pill">Any phone</span><span class="pill">About 5 minutes</span></div></button>
       <button class="source" type="button" data-src="mac" aria-pressed="false"><h3>Messages from a Mac (.json)</h3><p class="small muted">For iPhone users whose texts sync to a Mac. Shows the most detail, including Fuliza and M-Shwari fees.</p><div class="meta"><span class="pill">iPhone + Mac</span><span class="pill risk">Needs Full Disk Access</span></div></button>
       <button class="source" type="button" data-src="android" aria-pressed="false"><h3>Android SMS backup (.xml)</h3><p class="small muted">Export your texts with the SMS Backup &amp; Restore app, then load the file here.</p><div class="meta"><span class="pill">Android</span><span class="pill risk">Backup app reads all texts</span></div></button>
-      <button class="source" type="button" data-src="paste" aria-pressed="false"><h3>Paste messages</h3><p class="small muted">Copy some M-PESA texts from your phone and paste them in. Good for a quick try.</p><div class="meta"><span class="pill">Any phone</span><span class="pill">1 minute</span></div></button>
       <button class="source" type="button" data-src="momo" aria-pressed="false"><h3>MTN MoMo or Airtel Money</h3><p class="small muted">Paste or upload your money texts. Formats differ by country, so some may not be read.</p><div class="meta"><span class="pill beta">Beta</span><span class="pill">🇺🇬 🇬🇭 🇷🇼 🇿🇲 🇰🇪</span></div></button>
     </div>
 
