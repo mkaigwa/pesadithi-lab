@@ -181,17 +181,17 @@ pre.out { white-space: pre-wrap; word-break: break-word; background: var(--panel
 /* story mode (vertical, for screen recording) */
 .sm { position: fixed; inset: 0; background: #0f0f12; z-index: 100; display: grid; place-items: center; }
 .sm[hidden] { display: none; }
-.sm .frame { width: min(100vw, calc(100dvh * 9 / 16)); height: min(100dvh, calc(100vw * 16 / 9)); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 8cqh 8cqw 11cqh; container-type: size; }
+.sm .frame { width: min(100vw, calc(100dvh * 9 / 16)); height: min(100dvh, calc(100vw * 16 / 9)); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 7% 7% 10%; container-type: size; }
 .sm .bar { display: flex; gap: 4px; margin-bottom: 7%; }
 .sm .bar i { flex: 1; height: 3px; background: #e2e2e8; border-radius: 3px; }
 .sm .bar i.on { background: var(--ink); }
 .sm .slide { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-.sm .slide .sk { font-size: clamp(11px, 2.2cqh, 16px); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 2cqh; }
-.sm .slide .sv { font-family: var(--serif); font-size: clamp(34px, 9cqh, 96px); line-height: 1.02; font-variant-numeric: tabular-nums; }
-.sm .slide .st { font-family: var(--serif); font-size: clamp(19px, 4cqh, 40px); line-height: 1.2; margin-top: 2.4cqh; }
-.sm .slide .sd { font-size: clamp(14px, 2.6cqh, 22px); color: var(--muted); margin-top: 2cqh; line-height: 1.45; }
+.sm .slide .sk { font-size: clamp(11px, 2.2cqh, 34px); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 2cqh; }
+.sm .slide .sv { font-family: var(--serif); font-size: clamp(34px, 9cqh, 190px); line-height: 1.02; font-variant-numeric: tabular-nums; }
+.sm .slide .st { font-family: var(--serif); font-size: clamp(19px, 4cqh, 84px); line-height: 1.2; margin-top: 2.4cqh; }
+.sm .slide .sd { font-size: clamp(14px, 2.6cqh, 48px); color: var(--muted); margin-top: 2cqh; line-height: 1.45; }
 .sm .slide svg { margin-top: 3cqh; width: 100%; height: auto; }
-.sm .foot { position: absolute; left: 7%; right: 7%; bottom: 3.2%; display: flex; justify-content: space-between; font-size: clamp(10px, 1.8cqh, 15px); color: var(--faint); }
+.sm .foot { position: absolute; left: 7%; right: 7%; bottom: 3.2%; display: flex; justify-content: space-between; font-size: clamp(10px, 1.8cqh, 32px); color: var(--faint); }
 .sm .ctrl { position: fixed; bottom: 14px; right: 14px; display: flex; gap: 8px; z-index: 101; }
 .sm .ctrl button { background: #24242b; color: #fff; border: 1px solid #5c5c68; min-height: 44px; border-radius: 99px; padding: 8px 14px; font: 500 14px var(--sans); cursor: pointer; }
 .sm .tapl, .sm .tapr { position: absolute; top: 0; bottom: 0; width: 35%; z-index: 2; background: transparent; border: 0; cursor: pointer; }
@@ -232,9 +232,9 @@ details.datatable th, details.datatable td { padding: 4px 12px 4px 0; border-bot
 details.datatable .n { text-align: right; font-variant-numeric: tabular-nums; }
 .sm .ctrl { flex-wrap: wrap; justify-content: flex-end; }
 .sm.rec .ctrl { display: none; }
-.sm .slide .sv.small { font-size: clamp(28px, 6.5cqh, 70px); }
-.sm .slide .surl { margin-top: 4cqh; font: 600 clamp(16px, 3.4cqh, 34px) var(--sans); background: var(--ink); color: #fff; padding: 1.6cqh 2.4cqh; border-radius: 1.6cqh; align-self: flex-start; }
-.sm .smdemo { position: absolute; top: 4.4cqh; right: 8cqw; background: #fff4dc; color: #5a3d00; border: 1px solid #f0d48f; border-radius: 99px; font: 600 clamp(11px, 2cqh, 16px) var(--sans); padding: .6cqh 1.6cqh; z-index: 3; }
+.sm .slide .sv.small { font-size: clamp(28px, 6.5cqh, 136px); }
+.sm .slide .surl { margin-top: 4cqh; font: 600 clamp(16px, 3.4cqh, 68px) var(--sans); background: var(--ink); color: #fff; padding: 1.6cqh 2.4cqh; border-radius: 1.6cqh; align-self: flex-start; }
+.sm .smdemo { position: absolute; top: 4.4cqh; right: 8cqw; background: #fff4dc; color: #5a3d00; border: 1px solid #f0d48f; border-radius: 99px; font: 600 clamp(11px, 2cqh, 36px) var(--sans); padding: .6cqh 1.6cqh; z-index: 3; }
 .sm .smcount { position: absolute; inset: 0; display: grid; place-items: center; font: 600 22cqh var(--serif); background: rgba(255,255,255,.85); z-index: 4; }
 @media (max-width: 720px) {
   .top { position: static; }
@@ -250,3 +250,17 @@ details.datatable .n { text-align: right; font-variant-numeric: tabular-nums; }
   table.budget td:first-child { font-weight: 600; }
 }
 @media (hover: none), (pointer: coarse) { .cats kbd { display: none; } }
+
+/* Round 2 QA fixes */
+html, body { overscroll-behavior-x: none; }
+.h3 { font-size: 22px; }
+.storynav a { min-height: 44px; display: inline-flex; align-items: center; }
+footer .linkbtn { min-height: 44px; padding: 0 4px; }
+.sm.playing .ctrl { opacity: .18; transition: opacity .3s; }
+.sm.playing .ctrl:hover, .sm.playing .ctrl:focus-within { opacity: 1; }
+.sm.rec, .sm.rec * { cursor: none; }
+@media (hover: none), (pointer: coarse) { .kbdonly { display: none; } }
+.scrollhint { margin: 0 0 4px; }
+.cats button { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; overflow-wrap: anywhere; }
+.cats button kbd { float: none; flex: none; }
+.tally .row span:first-child { overflow-wrap: anywhere; min-width: 0; }

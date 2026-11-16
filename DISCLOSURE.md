@@ -6,7 +6,7 @@ Plain words, no small print. If any of this is wrong or unclear, open an issue.
 
 - Your file is opened by JavaScript **inside your browser**. There is no server that receives it.
 - The page loads only its own files (HTML, CSS, scripts, fonts, a PDF reader). A Content Security Policy blocks connections to any other site. You can check: load the page, switch off Wi-Fi and mobile data, then load your file. It still works.
-- **Nothing is saved** unless you tick "Remember my sorting and targets". Then only your category choices and budget targets are stored in your browser, with each person kept as a scrambled code (a one-way hash), never as a name. Transactions are never stored. "Clear my data" removes everything.
+- **Nothing is saved** unless you tick "Remember my sorting and targets". Then only your category choices and budget targets are stored in your browser, with each person kept as a scrambled code (a hash mixed with a random value unique to your browser), never as a name. Transactions are never stored. "Clear my data" removes everything.
 - Hosting: if you use a hosted copy (GitHub Pages or another host), that host sees that you visited the page, like any website. It does not see your file.
 
 ## Each route
@@ -39,7 +39,7 @@ Plain words, no small print. If any of this is wrong or unclear, open an issue.
 ## AI assistants
 
 - Whatever you paste or upload into an AI assistant goes to that company. Check its data settings: on some plans, chats can be used to improve models unless you switch that off.
-- The app's **Ask your AI** summary contains totals, categories, dates and patterns. It never contains people's names, phone numbers or message text. Business names are included unless you untick that option.
+- The app's **Ask your AI** summary contains totals, categories, dates and patterns. It is built to leave out people's names, phone numbers and message text: payees that look like people are counted, not named, and shop names must match a known business pattern word for word. Read the summary before you paste it; no automatic filter is perfect. Business names are included unless you untick that option.
 - A full statement or raw SMS **does** contain names and phone numbers. Share those only if you accept that.
 
 ## Accuracy
@@ -52,6 +52,6 @@ Plain words, no small print. If any of this is wrong or unclear, open an issue.
 
 ## Not affiliated
 
-Pesadithi Lab is independent and open source. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, MTN, Airtel, Anthropic, OpenAI or Google. Product names belong to their owners.
+Pesadithi Lab is independent and open source. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Apple, Google, OpenAI or Anthropic. Product names belong to their owners.
 
 _Menus, app steps and plan limits described in this file were checked in November 2026. Providers change them; their official apps and pages are the final word._

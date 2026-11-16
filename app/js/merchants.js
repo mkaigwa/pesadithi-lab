@@ -27,7 +27,7 @@
     [/glovo|uber eats|bolt food/i, C.eating, 'Food and shop delivery app.'],
     [/\buber\b|\bbolt\b|little cab|faras|yego/i, C.transport, 'Ride-hailing.'],
     [/java|artcaff|art caffe|dormans|connect coffee|coffee|cafe|caffe|bakery|boulangerie|kfc|pizza|chicken|grill|restaurant|ristorante|kitchen|bistro|galitos|cj'?s|mama oliech|cafe javas|coldstone|cold stone|chocolate/i, C.eating, 'Café, restaurant or takeaway.'],
-    [/bar\b|lounge|klub|club\b|pub\b|alchemist|brew|wine/i, C.going, 'Bar, club or lounge.'],
+    [/bar\b|lounge|klub(?:house)?|club(?:house)?\b|pub\b|alchemist|brew|wine/i, C.going, 'Bar, club or lounge.'],
     [/naivas|quick ?mart|carrefour|chandarana|tuskys|cleanshelf|magunas|eastmatt|capital shoppers|mega(?:duka)?|supermarket|greenspoon|zucchini|foodplus|home ?mart|baltic textile/i, C.groceries, 'Supermarket or household shopping.'],
     [/shell|total|rubis|ola energy|astrol|petroleum|vivo|national oil|stabex|hass/i, C.transport, 'Fuel station.'],
     [/autoxpress|servicebay|car ?wash|motorspa|tyre|garage|mechanic|toyota|cmc motors/i, C.car, 'Car service, tyres or car wash.'],
@@ -38,7 +38,7 @@
     [/airtime|bundles|data bundle/i, C.airtime, 'Airtime or data.'],
     [/kra|e-?citizen|ntsa|nssf|nhif|\bsha\b|county|huduma|ura\b|kcca/i, C.gov, 'Government service, tax or statutory payment.'],
     [/hospital|clinic|pharma|chemist|medical|dental|health|elixir|goodlife|lab(?:oratory)?|aga khan university hospital/i, C.health, 'Health, pharmacy or medical bill.'],
-    [/school|academy|university|college|strathmore|kindergarten|institute|tuition|advertising/i, C.edu, 'School fees or a course.'],
+    [/schools?|academy|university|college|secondary|primary|high school|girls|boys|polytechnic|strathmore|kindergarten|institute|tuition|advertising/i, C.edu, 'School fees or a course.'],
     [/apartment|court|estate|rent|properties|realty|homes\b|management ltd|caretaker/i, C.home, 'Rent or housing.'],
     [/church|parish|mosque|harambee|fundraiser|funeral|medical fund|weds|wedding|rotary|rotaract|kibera|foundation/i, C.giving, 'Church, harambee, fundraiser or community giving.'],
     [/bank|credit card|equity paybill|co-?operative|i ?& ?m|im bank|ncba|kcb|absa|stanbic|standard chartered|prime ?bank|dtb|family bank|credit bank|victoria commercial|m-pesa global|m-pesa card/i, C.banks, 'A bank, card or transfer to an account, often your own money moving.'],
@@ -47,11 +47,16 @@
     [/books|sports house|run beyond|mall|boutique|fashion|shoes|jumia|kilimall|miniso|electronics|shop\b|stamp/i, C.shop, 'Shopping.'],
     [/agent|agencies|cash withdrawal/i, C.cash, 'Cash withdrawn at an agent.']
   ];
+  // Matches start at a word start, and short keywords (4 letters or fewer) must be whole words,
+  // so a person's name such as LABAN or CLEMENT never matches a shop keyword
+  function alts(src) { const out = []; let d = 0, cls = false, cur = ''; for (let i = 0; i < src.length; i++) { const c = src[i]; if (c === '\\') { cur += c + src[++i]; continue; } if (c === '[') cls = true; if (c === ']') cls = false; if (!cls && c === '(') d++; if (!cls && c === ')') d--; if (c === '|' && !d && !cls) { out.push(cur); cur = ''; } else cur += c; } out.push(cur); return out; }
+  const bound = (re) => new RegExp(alts(re.source).map((a) => { const core = a.replace(/\\b/g, ''); const letters = core.replace(/\([^()]*\)[?*]/g, '').replace(/.[?*]/g, '').replace(/\\.|\[[^\]]*\]|[()?*+.{}\d,|:^$-]/g, ''); return '(?<![A-Za-z])(?:' + core + ')' + (letters.length <= 4 || /\\b$/.test(a) ? '(?![A-Za-z])' : ''); }).join('|'), 'i');
+  const RB = R.map(([re, cat, note]) => [bound(re), cat, note]);
   function lookup(name, type, person) {
     if (type === 'airtime') return { category: C.airtime, note: 'Airtime or data.' };
     if (type === 'withdraw') return { category: C.cash, note: 'Cash withdrawn at an agent or ATM.' };
     if (type === 'credit_draw' || type === 'credit_repay' || type === 'loan_in' || type === 'loan_repay') return { category: C.credit, note: '' };
-    for (const [re, cat, note] of R) if (re.test(name || '')) return { category: cat, note };
+    for (const [re, cat, note] of RB) if (re.test(name || '')) return { category: cat, note };
     if (person) return { category: C.people, note: 'A person. Sort these in the game to see what they really are.' };
     return { category: C.other, note: '' };
   }

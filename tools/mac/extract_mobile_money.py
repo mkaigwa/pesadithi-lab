@@ -105,7 +105,10 @@ def main():
             continue  # promotions and service notices
         out.append({'date': when.strftime('%Y-%m-%dT%H:%M:%S'), 'sender': sender, 'text': text})
 
-    with open(a.out, 'w') as f:
+    if os.path.exists(a.out):
+        print(f'Note: replacing the older {a.out}')
+    fd = os.open(a.out, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # readable by you only
+    with os.fdopen(fd, 'w') as f:
         json.dump(out, f, ensure_ascii=False, indent=0)
     print(f'Saved {len(out)} money messages from {a.since} to {a.until or "today"} -> {a.out}')
     print(f'Skipped {dropped_otp} messages that looked like codes or PINs.')

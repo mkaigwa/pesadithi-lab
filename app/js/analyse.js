@@ -116,7 +116,7 @@
     /* loans (M-Shwari style) */
     const loans = []; let cur_ = null;
     txs.forEach((t) => {
-      if (t.type === 'loan_in') { cur_ = { taken: t.ts, received: t.amt, principal: null, facility: 0, excise: 0, rollover: 0, repaid: null, due: null }; loans.push(cur_); }
+      if (t.type === 'loan_in') { cur_ = { lender: t.party || 'Loan', taken: t.ts, received: t.amt, principal: null, facility: 0, excise: 0, rollover: 0, repaid: null, due: null }; loans.push(cur_); }
       if (t.type === 'loan_terms' && cur_) { cur_.facility = t.facility || 0; cur_.excise = t.excise || 0; cur_.principal = (t.amt || 0) - (t.facility || 0); cur_.due = t.due; }
       if (t.type === 'loan_rollover' && cur_) cur_.rollover += t.amt;
       if (t.type === 'loan_repay' && cur_ && !cur_.repaid) { cur_.repaidAmt = t.amt; if (t.cleared !== false) cur_.repaid = t.ts; }
@@ -126,7 +126,8 @@
       if (!l.facility && l.repaidAmt) l.facility = Math.max(0, l.repaidAmt - l.received);
       l.days = l.repaid ? Math.round((new Date(l.repaid + 'Z') - new Date(l.taken + 'Z')) / 864e5) : null;
       l.cost = l.facility + l.excise + l.rollover;
-      l.cashbackMissed = l.days != null && l.days > 10 ? Math.round(l.facility * 0.2) : 0;
+      // The 20% early-repayment refund is an M-Shwari rule; other lenders only show their cost
+      l.cashbackMissed = l.lender === 'M-Shwari' && l.days != null && l.days > 10 ? Math.round(l.facility * 0.2) : 0;
     });
     const loanCost = sum(loans, (l) => l.cost);
 

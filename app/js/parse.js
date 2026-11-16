@@ -138,7 +138,8 @@
     const rows = []; let m;
     while ((m = re.exec(t))) {
       let tail = (m[8] || '').trim();
-      if (/^(Receipt|Page|Completion|Disclaimer|M-PESA)/i.test(tail)) tail = '';
+      // Cut page headers and footers that pdf text extraction glues onto a wrapped detail line
+      tail = tail.replace(/\s*(?:\bM-?PESA\b|\bSTATEMENT\b|Customer Name|Mobile Number|Statement Period|\bPage\s+\d|Receipt No|Completion Time|Disclaimer).*$/i, '').trim();
       rows.push({ receipt: m[1], time: m[2], details: (m[3] + (tail && !/\d{4}-/.test(tail) && tail.length < 30 ? (tail.length <= 4 ? '' : ' ') + tail : '')).trim(), status: m[4].toUpperCase(), paidIn: num(m[5]), withdrawn: Math.abs(num(m[6])), balance: num(m[7]) });
     }
     return P.mpesaStatementRows(rows);
@@ -228,12 +229,12 @@
 
   let pdfLib = null;
   P.preloadPdf = function () {
-    if (!pdfLib) pdfLib = import(new URL('vendor/pdf.min.js', document.baseURI).href).then((lib) => { lib.GlobalWorkerOptions.workerSrc = new URL('vendor/pdf.worker.min.js', document.baseURI).href; return lib; }).catch((e) => { pdfLib = null; const err = new Error('PDF reader failed to load'); err.pdLoad = true; err.cause = e; throw err; });
+    if (!pdfLib) pdfLib = import(window.PD_PDFJS_LIB || new URL('vendor/pdf.min.js', document.baseURI).href).then((lib) => { lib.GlobalWorkerOptions.workerSrc = window.PD_PDFJS_WORKER || new URL('vendor/pdf.worker.min.js', document.baseURI).href; try { lib.__pdWorker = new lib.PDFWorker(); } catch (e) { /* falls back to a worker per document */ } return lib; }).catch((e) => { pdfLib = null; const err = new Error('PDF reader failed to load'); err.pdLoad = true; err.cause = e; throw err; });
     return pdfLib;
   };
   P.fromPdf = async function (arrayBuffer, password) {
     const lib = await P.preloadPdf();
-    const doc = await lib.getDocument({ data: arrayBuffer, password: password || undefined, isEvalSupported: false }).promise;
+    const doc = await lib.getDocument({ data: arrayBuffer, password: password || undefined, isEvalSupported: false, worker: lib.__pdWorker || undefined }).promise;
     let text = '';
     for (let p = 1; p <= doc.numPages; p++) {
       const page = await doc.getPage(p);

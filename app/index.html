@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pesadithi Lab: the story of your mobile money</title>
 <meta name="description" content="Turn your M-PESA statement or money SMS into a story about timing: when money arrives, how fast it goes, when you borrow and what it costs. Runs in your browser.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; connect-src 'self' blob: data:; form-action 'none'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; connect-src 'self' blob: data:; form-action 'self'; base-uri 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%2316161a%22/%3E%3Cpath d=%22M7 22c4-9 8-12 18-12%22 stroke=%22%2300968f%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="pesadithi.css">
 </head>
@@ -40,7 +40,7 @@
     </div>
     <p class="small muted" style="margin-top:12px">The demo uses invented data for a fictional person. No upload, no sign-up.</p>
     <div class="trust">
-      <div><b>Stays on your device</b>Your file is read by this page in your browser. It is never uploaded. You can switch off Wi-Fi after the page loads and it still works.</div>
+      <div><b>Stays on your device</b>Your file is read by this page in your browser. It is never uploaded. You can switch off Wi-Fi after the page loads and it still works (for a PDF, choose the PDF route before you go offline).</div>
       <div><b>No account, no tracking</b>No sign-up, no cookies, no analytics. Close the tab and it's gone, unless you tick "Remember".</div>
       <div><b>Open source</b>Every line is public on GitHub, so anyone can check these claims.</div>
     </div>
@@ -71,7 +71,7 @@
 <section id="v-start" data-v="start" hidden>
   <div class="wrap" style="padding-top:44px;padding-bottom:60px">
     <div class="kicker">Step 1 of 3</div>
-    <div class="notice" id="notice" role="status" hidden>Load your data first. Nothing is kept between visits, so after a reload the story needs your file again.</div>
+    <div class="notice" id="notice" role="status" hidden>Load your data first. Nothing is kept between visits, so after a reload the story needs your file again. If you have just loaded it, press "Tell me my story".</div>
     <h1>Where is your money data?</h1>
     <p class="muted">Pick the one you have. Not sure? Use the M-PESA statement: it works on any phone.</p>
     <div class="sources" role="group" aria-label="Choose your data source">
@@ -86,7 +86,7 @@
 
     <div id="loader" hidden>
       <div class="kicker" style="margin-top:28px">Step 2 of 3</div>
-      <h3>Load it</h3>
+      <h2 class="h3">Load it</h2>
       <div class="drop" id="drop">
         <p style="margin:0 0 10px"><b>Drop your file here</b> or</p>
         <label class="btn ghost small" for="file">Choose a file</label>
@@ -108,7 +108,7 @@
 
     <div id="found" class="found" hidden>
       <div class="kicker">Step 3 of 3</div>
-      <h3 id="foundTitle">We found your transactions</h3>
+      <h2 class="h3" id="foundTitle">We found your transactions</h2>
       <p id="foundText" class="muted"></p>
       <details id="skippedBox" hidden><summary class="small">Messages we couldn't read</summary><ul id="skippedList" class="small muted"></ul></details>
       <p style="margin-top:16px"><b>Which period?</b></p>
@@ -132,7 +132,7 @@
   <div class="wrap" style="padding-top:44px">
     <div class="kicker">Sort your people</div>
     <h1>Who are you really sending money to?</h1>
-    <p class="muted">Your statement only knows names. You know the relationships. Sort each person once and your budget gets honest. Press a category, use number keys, or swipe: <b>right</b> repeats your last choice, <b>left</b> skips.</p>
+    <p class="muted">Your statement only knows names. You know the relationships. Sort each person once and your budget gets honest. Tap a category or swipe: <b>right</b> repeats your last choice, <b>left</b> skips.<span class="kbdonly"> On a keyboard: number keys pick, arrows swipe, Backspace undoes.</span></p>
     <div class="progress" aria-hidden="true"><i id="gameBar"></i></div>
     <p class="small muted" id="gameCount" aria-live="polite"></p>
     <div class="game">
@@ -140,8 +140,9 @@
         <div class="deck" id="deck"></div>
         <div class="narr" id="narr" role="status" aria-live="polite"></div>
         <div class="btn-row" id="gameCtrls"><button class="btn ghost small" id="gUndo" type="button">Undo</button><button class="btn ghost small" id="gSkip" type="button">Skip</button><button class="btn ghost small" id="gAdd" type="button">Add a category</button></div>
+        <form id="addCat" class="field" hidden><label for="addCatIn">New category name (up to 40 characters)</label><input id="addCatIn" maxlength="40" placeholder="For example: School fees for my nephew"><div class="btn-row"><button class="btn small" type="submit">Add</button><button class="btn ghost small" id="addCatCancel" type="button">Cancel</button></div></form>
       </div>
-      <aside class="card white tally" aria-label="Running totals"><h3 style="font-size:18px">Your categories so far</h3><div id="tally"><p class="small muted">Nothing sorted yet.</p></div><button class="btn small ghost" id="toBudget" type="button" style="margin-top:14px">Build my budget</button></aside>
+      <aside class="card white tally" aria-label="Running totals"><h2 class="h3" style="font-size:18px">Your categories so far</h2><div id="tally"><p class="small muted">Nothing sorted yet.</p></div><button class="btn small ghost" id="toBudget" type="button" style="margin-top:14px">Build my budget</button></aside>
     </div>
   </div>
 </section>
@@ -155,6 +156,7 @@
     <div class="bigs" id="budgetBigs"></div>
     <div class="scrollx"><table class="budget" id="budgetTable"><thead><tr><th>Category</th><th class="n">Monthly average</th><th class="n">Target</th><th class="n">Difference</th></tr></thead><tbody></tbody></table></div>
     <div class="btn-row" style="margin-top:20px"><button class="btn ghost small" id="bCsv" type="button">Download budget (CSV)</button><button class="btn ghost small" id="bLedger" type="button">Download all transactions (CSV)</button>
+      <span class="small" id="dlState" role="status" aria-live="polite"></span>
       <label class="small check"><input type="checkbox" id="remember"> Remember my sorting and targets in this browser (people are stored as scrambled codes, never names)</label></div>
   </div>
 </section>
@@ -169,7 +171,7 @@
     <p><b>Free or paid plan?</b></p><div class="choices" data-q="plan"><button type="button" data-a="free">Free</button><button type="button" data-a="paid">Paid</button></div>
     <p><b>How much of your usage are you happy to spend on this?</b></p><div class="choices" data-q="budget"><button type="button" data-a="5">A little (about 5%)</button><button type="button" data-a="20">Some (about 20%)</button><button type="button" data-a="50">A lot (about half)</button></div>
     <p><b>What should it look at?</b></p><div class="choices" data-q="share"><button type="button" data-a="summary">This summary (recommended)</button><button type="button" data-a="pdf">My statement PDF</button><button type="button" data-a="sms">My raw messages</button></div>
-    <label class="small check"><input type="checkbox" id="incMerchants" checked> Include shop and business names (never people)</label>
+    <label class="small check"><input type="checkbox" id="incMerchants" checked> Include the names of shops and businesses (people are never named)</label>
     <div class="advice" id="aiAdvice" role="status" aria-live="polite">Answer the questions above.</div>
     <div class="btn-row"><button class="btn" id="copyPrompt" type="button">Copy prompt and summary</button><span class="small muted" id="aiSize"></span><span class="small" id="copyState" role="status" aria-live="polite"></span></div>
     <pre class="out" id="aiOut" tabindex="0" aria-label="Prompt and summary"></pre>
@@ -211,7 +213,7 @@
 
 <div class="sm" id="sm" hidden role="dialog" aria-modal="true" aria-label="Story mode">
   <div class="frame" id="smFrame"><div class="bar" id="smBar"></div><span class="smdemo" id="smDemo" hidden>Demo · invented data</span><div class="slide" id="smSlide"></div><button class="tapl" id="smPrev" aria-label="Previous slide"></button><button class="tapr" id="smNext" aria-label="Next slide"></button><div class="foot"><span>Pesadithi Lab</span><span>github.com/mkaigwa/pesadithi-lab</span></div><div class="smcount" id="smCount" hidden aria-hidden="true"></div></div>
-  <div class="ctrl"><button type="button" id="smPlay">Auto-play</button><button type="button" id="smRec" title="Hides these buttons, counts down from 3, then plays once. Press H to show them again.">Record mode</button><button type="button" id="smClose">Close (Esc)</button></div>
+  <div class="ctrl"><button type="button" id="smPlay">Auto-play</button><button type="button" id="smRec" title="Hides these buttons, counts down from 3, then plays once. Press H to show them again.">Record mode</button><button type="button" id="smClose" aria-keyshortcuts="Escape">Close</button></div>
   <div class="sr" id="smLive" aria-live="polite"></div>
 </div>
 

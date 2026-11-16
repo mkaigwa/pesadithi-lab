@@ -7,12 +7,14 @@
   const S = { raw: null, A: null, demo: false, period: 12, src: null, busy: false, token: 0, lastInput: null, pwFails: 0, game: null, targets: {}, ai: {} };
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem('pesadithi:' + k)); } catch (e) { return null; } },
-    set(k, v) { try { localStorage.setItem('pesadithi:' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
-    any() { try { return Object.keys(localStorage).some((k) => k.startsWith('pesadithi:')); } catch (e) { return false; } },
+    set(k, v) { try { localStorage.setItem('pesadithi:salt', SALT); localStorage.setItem('pesadithi:' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+    any() { try { return Object.keys(localStorage).some((k) => k.startsWith('pesadithi:') && k !== 'pesadithi:salt'); } catch (e) { return false; } },
     clear() { try { Object.keys(localStorage).filter((k) => k.startsWith('pesadithi:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* ignore */ } }
   };
   // People's names are never stored: only a scrambled code (FNV-1a hash) for each name you sorted
-  const h = (s) => { let x = 0x811c9dc5; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(36); };
+  // A random salt per browser, so the codes can't be matched against a list of common names
+  let SALT = ''; try { SALT = localStorage.getItem('pesadithi:salt') || ''; if (!SALT) { SALT = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join(''); } } catch (e) { SALT = String(Math.random()).slice(2); }
+  const h = (s0) => { const s = SALT + '|' + s0; let x = 0x811c9dc5; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(36); };
   const n0 = d3.format(',.0f');
   const cur = () => (S.A ? S.A.cur : 'KES');
   const F = (v) => AN.fmt(v, cur());
@@ -50,6 +52,7 @@
     if (['story', 'sort', 'budget', 'ai'].includes(v) && !S.A) { $('#notice').hidden = false; history.replaceState(null, '', '#start'); show('start'); return; }
     if (ok.includes(v)) show(v);
     else if (document.getElementById(v) && S.A) { show('story'); setTimeout(() => document.getElementById(v).scrollIntoView(), 50); }
+    else if (!S.A && v && v !== 'home' && v !== 'main') { $('#notice').hidden = false; history.replaceState(null, '', '#start'); show('start'); }
     else show('home');
   }
   window.addEventListener('hashchange', route);
@@ -150,7 +153,7 @@
     const curs = d3.rollups(r.txs, (v) => v.length, (t) => t.cur).sort((a, b) => b[1] - a[1]);
     let note = '';
     if (curs.length > 1) { const main = curs[0][0]; const other = r.txs.filter((t) => t.cur !== main); r.skipped = r.skipped.concat(other.map((t) => `(${t.cur}, not used: this story is in ${main}) ${t.party} ${t.amt}`)); r.txs = r.txs.filter((t) => t.cur === main); note = ` We found more than one currency; this story uses ${main} only.`; }
-    S.raw = r; S.game = null;
+    S.raw = r; S.game = null; $('#notice').hidden = true;
     const ts = r.txs.map((t) => t.ts).sort();
     const span = Math.round((dt(ts[ts.length - 1]) - dt(ts[0])) / 864e5) + 1;
     const nTx = r.txs.filter((t) => t.dir === 'in' || t.dir === 'out').length;
@@ -173,7 +176,7 @@
     const d = dt(last); d.setUTCMonth(d.getUTCMonth() - S.period); d.setUTCDate(d.getUTCDate() + 1);
     return { start: d.toISOString().slice(0, 10), last };
   }
-  function periodText() { if (!S.raw) return; const { start, last } = periodRange(); const first = S.raw.txs.map((t) => t.ts).sort()[0].slice(0, 10); $('#periodText').textContent = `Your story will cover ${fmtDate(start && start > first ? start : first)} to ${fmtDate(last)}.`; }
+  function periodText() { if (!S.raw) return; const { start, last } = periodRange(); const first = S.raw.txs.map((t) => t.ts.slice(0, 10)).filter((d) => !start || d >= start).sort()[0]; $('#periodText').textContent = `Your story will cover ${fmtDate(first)} to ${fmtDate(last)}.`; }
   $$('#periods button').forEach((b) => b.addEventListener('click', () => { S.period = +b.dataset.p; $$('#periods button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); periodText(); }));
   $('#btnStory').addEventListener('click', () => { if (!S.raw) return; compute(); go('story'); });
   function compute() {
@@ -185,18 +188,21 @@
   $('#btnDemo').addEventListener('click', async (e) => {
     if (S.busy) return; S.busy = true; e.target.setAttribute('aria-busy', 'true'); e.target.textContent = 'Loading the demo…';
     try { const t = await (await fetch('demo/demo-mpesa-sms.json')).text(); S.raw = P.fromMessages(t, 'demo'); S.demo = true; S.period = 12; compute(); go('story'); }
-    catch (err) { alert('The demo couldn\'t load. If you opened this file straight from your computer, run it through a local web server or use the hosted version.'); }
+    catch (err) { e.target.insertAdjacentHTML('afterend', '<p class="small status err">The demo could not load. If you opened this file straight from your computer, use the hosted version or run a local web server.</p>'); }
     finally { S.busy = false; e.target.removeAttribute('aria-busy'); e.target.textContent = 'See a demo story'; }
   });
-  $('#btnClear').addEventListener('click', () => {
-    if (!confirm('Clear everything from this page, including any saved sorting and targets?')) return;
+  let clearArm = 0;
+  $('#btnClear').addEventListener('click', (e) => {
+    // Two taps instead of confirm(): confirm dialogs are blocked inside some embedded viewers
+    if (Date.now() - clearArm > 5000) { clearArm = Date.now(); e.target.textContent = 'Tap again to clear everything'; setTimeout(() => { if (clearArm && Date.now() - clearArm >= 5000) { clearArm = 0; e.target.textContent = 'Clear my data'; } }, 5100); return; }
+    clearArm = 0; e.target.textContent = 'Clear my data';
     S.raw = null; S.A = null; S.demo = false; S.targets = {}; S.game = null; store.clear(); $('#remember').checked = false;
     resetLoader(); $('#paste').value = ''; $('#pw').value = ''; $$('.source').forEach((x) => x.setAttribute('aria-pressed', 'false')); $('#srcHelp').hidden = true; $('#loader').hidden = true; $('#story').innerHTML = ''; $('#skippedBox').hidden = true;
     setDataUI(false); go('home');
   });
 
   /* ---------------- Chart helpers ---------------- */
-  function svgIn(el, hgt, label, minW) { el.innerHTML = ''; const w = Math.max(minW || 300, el.clientWidth || 700); const svg = d3.select(el).append('svg').attr('width', minW && minW > (el.clientWidth || 0) ? minW : '100%').attr('viewBox', `0 0 ${w} ${hgt}`).attr('role', 'img').attr('aria-label', label); return { svg, w }; }
+  function svgIn(el, hgt, label, minW) { el.innerHTML = ''; const w = Math.max(minW || 300, el.clientWidth || 700); const svg = d3.select(el).on('pointerdown.miss', (ev) => { if (ev.target.tagName === 'svg') el.querySelectorAll('.tip').forEach((t) => (t.hidden = true)); }).append('svg').attr('width', minW && minW > (el.clientWidth || 0) ? minW : '100%').attr('viewBox', `0 0 ${w} ${hgt}`).attr('role', 'img').attr('aria-label', label); return { svg, w }; }
   const TIPS = [];
   function tipFor(el) {
     const t = document.createElement('div'); t.className = 'tip'; t.hidden = true; el.appendChild(t); TIPS.push(t);
@@ -225,7 +231,7 @@
     svg.append('path').datum(A.daily).attr('d', d3.area().x((d) => x(dt(d.date))).y0(mid).y1((d) => yb(d.balance)).curve(d3.curveStepAfter)).style('fill', C.in).style('opacity', .85);
     if (A.hasCredit) svg.append('path').datum(A.daily).attr('d', d3.area().x((d) => x(dt(d.date))).y0(mid).y1((d) => yf(d.owed)).curve(d3.curveStepAfter)).style('fill', C.credit);
     svg.append('line').attr('x1', ml).attr('x2', w).attr('y1', mid).attr('y2', mid).style('stroke', '#8a8a96');
-    svg.append('g').selectAll('line').data(A.daily.filter((d) => d.in >= A.bigCut)).join('line').attr('x1', (d) => x(dt(d.date))).attr('x2', (d) => x(dt(d.date))).attr('y1', 2).attr('y2', 12).style('stroke', C.ink).style('stroke-width', 1.5);
+    svg.append('g').selectAll('line').data(A.daily.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('line').attr('x1', (d) => x(dt(d.date))).attr('x2', (d) => x(dt(d.date))).attr('y1', 2).attr('y2', 12).style('stroke', C.ink).style('stroke-width', 1.5);
     const short = A.nDays < 100;
     svg.append('g').attr('transform', `translate(0,${bot})`).call(d3.axisBottom(x).ticks(Math.max(3, Math.floor(w / 90))).tickSizeOuter(0).tickFormat(d3.utcFormat(short ? '%-d %b' : '%b'))).call((g) => g.select('.domain').remove());
     const t = tipFor(el), rule = svg.append('line').attr('y1', top).attr('y2', bot).style('stroke', '#999').attr('visibility', 'hidden'), bis = d3.bisector((d) => dt(d.date)).center;
@@ -259,13 +265,14 @@
     hit(svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (d) => ml + (+d.date.slice(8, 10) - 1) * cell + 1).attr('y', (d) => months.indexOf(d.date.slice(0, 7)) * cell + 1).attr('width', cell - 2).attr('height', cell - 2).attr('rx', 2)
       .style('fill', (d) => (val(d) > 0 ? col : C.grid)).style('opacity', (d) => (val(d) > 0 ? op(val(d)) : 1)),
     (ev, d) => t.show(ev, `<b>${fmtDate(d.date)}</b><br>${crd ? `<span>Owed to ${credit()}</span> ${F(d.owed)}<br>` : ''}<span>Spent</span> ${F(d.out)}${d.in ? `<br><span>Received</span> ${F(d.in)}` : ''}<br><span>Balance</span> ${F(d.balance)}`), t);
-    svg.append('g').selectAll('circle').data(rows.filter((d) => d.in >= A.bigCut)).join('circle').attr('cx', (d) => ml + (+d.date.slice(8, 10) - 0.5) * cell).attr('cy', (d) => months.indexOf(d.date.slice(0, 7)) * cell + cell / 2).attr('r', Math.max(2.5, cell * .17)).style('fill', C.ink).style('pointer-events', 'none');
+    svg.append('g').selectAll('circle').data(rows.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('circle').attr('cx', (d) => ml + (+d.date.slice(8, 10) - 0.5) * cell).attr('cy', (d) => months.indexOf(d.date.slice(0, 7)) * cell + cell / 2).attr('r', Math.max(2.5, cell * .17)).style('fill', C.ink).style('pointer-events', 'none');
     const y0 = gh + barH + 6, key = crd ? 'creditDraw' : 'out';
     const yb = d3.scaleLinear().domain([0, d3.max(A.dom, (d) => d[key]) || 1]).range([y0, gh + 14]);
     hit(svg.append('g').selectAll('rect').data(A.dom).join('rect').attr('x', (d) => ml + (d.day - 1) * cell + 1).attr('width', cell - 2).attr('y', (d) => yb(d[key])).attr('height', (d) => y0 - yb(d[key])).attr('rx', 2).style('fill', col),
       (ev, d) => t.show(ev, `<b>The ${ord(d.day)}</b><br><span>${crd ? credit() + ' used' : 'Spent'}, whole period</span> ${F(d[key])}<br><span>Received, whole period</span> ${F(d.in)}`), t);
     [1, 10, 20, 31].forEach((d) => svg.append('text').attr('x', ml + (d - .5) * cell).attr('y', y0 + 16).attr('text-anchor', 'middle').text(d));
     svg.append('text').attr('x', ml - 8).attr('y', y0 - 2).attr('text-anchor', 'end').text('By date');
+    if (wNeed > (el.clientWidth || 0) + 4) { const hnt = document.createElement('p'); hnt.className = 'small muted scrollhint'; hnt.textContent = 'Swipe sideways to see the rest of the month →'; el.before(hnt); }
     dataTable(el, 'Totals by date of the month', ['Date', 'Received', 'Spent'].concat(crd ? [credit() + ' used'] : []), A.dom.map((d) => [ord(d.day), n0(d.in), n0(d.out)].concat(crd ? [n0(d.creditDraw)] : [])));
   }
   function heatChart(el, A) {
@@ -310,7 +317,7 @@
     const every = Math.ceil(rows.length / Math.max(2, Math.floor(w / 50)));
     svg.append('g').attr('transform', `translate(0,${hgt - 24})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8).tickFormat((m, i) => (i % every ? '' : d3.utcFormat('%b')(dt(m + '-01'))))).call((g) => g.select('.domain').remove());
     const t = tipFor(el);
-    hit(svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.month) - x.step() * .14).attr('width', x.step()).attr('height', hgt - 24).style('fill', 'transparent'), (ev, r) => t.show(ev, `<b>${d3.utcFormat('%B %Y')(dt(r.month + '-01'))}</b>` + keys.map((k) => `<br><span>${k[1]}</span> ${F(r[k[0]])}`).join('')), t);
+    hit(svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.month) - x.step() * .14).attr('width', x.step()).attr('height', hgt - 24).style('fill', 'transparent'), (ev, r) => t.show(ev, `<b>${d3.utcFormat('%B %Y')(dt(r.month + '-01'))}</b>` + keys.filter((k) => r[k[0]]).map((k) => `<br><span>${k[1]}</span> ${F(r[k[0]])}`).join('') || '<br>No fees'), t);
     dataTable(el, 'Fees by month', ['Month'].concat(keys.map((k) => k[1])), rows.map((r) => [d3.utcFormat('%b %Y')(dt(r.month + '-01'))].concat(keys.map((k) => n0(r[k[0]])))));
     return keys;
   }
@@ -339,7 +346,7 @@
   function suggestions(A) {
     const out = [];
     if (A.hasCredit && A.lowDay && A.bigInDays.some((d) => d >= 20) && A.lowDay.day <= 22) out.push(`Most of the money arrives around the ${A.bigInDays.slice(0, 2).map(ord).join(' and ')}, but the balance is lowest around the ${ord(A.lowDay.day)}. Moving part of it to land around the ${ord(Math.max(1, A.lowDay.day - 2))} could close the gap that ${credit()} fills.`);
-    if (A.loans.some((l) => l.rollover || l.cashbackMissed)) out.push(`Set a phone reminder for day 8 of every loan. In this period, timing cost ${F(A.avoidableTotal)} in late penalties and missed early-repayment refunds.`);
+    if (A.loans.some((l) => l.rollover || l.cashbackMissed)) { const pen = d3.sum(A.loans, (l) => l.rollover), cb = d3.sum(A.loans, (l) => l.cashbackMissed); out.push(`Set a phone reminder for day 8 of every loan. In this period, repayment timing cost ${F(pen + cb)}${pen && cb ? ` (${F(pen)} in late penalties and ${F(cb)} in missed early-repayment refunds)` : pen ? ' in late penalties' : ' in missed early-repayment refunds'}.`); }
     if (A.habits.peopleFees > A.txFees * 0.3 && A.habits.peopleFees > 0) out.push(`Sending money to people cost ${F(A.habits.peopleFees)} in fees across ${pl(A.habits.peopleSends, 'send')}. Fewer, larger transfers to the same person cost less than many small ones.`);
     if (A.habits.cafePerWeek >= 3) out.push(`Café and restaurant payments come to about ${F(A.habits.cafeSpend / A.monthsEq)} a month. Pick one or two days a week to bring your own.`);
     if (A.habits.lateNightShare > 0.12) out.push(`${pct(A.habits.lateNightShare)} of spending happens between 10pm and 4am. Decide on a late-night limit before going out.`);
@@ -357,19 +364,19 @@
     chapters.push(['cover', 'Overview', ch('cover', `${S.demo ? '<span>Demo: invented data</span> · ' : ''}${A.cur} · ${fmtDate(A.start)} to ${fmtDate(A.end)}`, A.hasCredit ? `${n0(A.creditDays)} of ${pl(A.nDays, 'day')} ended owing ${cn}` : `${FB(A.totalIn)} in, ${FB(A.totalOut)} out`,
       `<p class="lede">${S.demo ? 'Meet Amani, a fictional person with invented data, so you can see how the story reads. ' : ''}Here is what ${pl(A.txCount, 'transaction')} say about timing: when money arrives, how fast it goes, and what filling the gaps costs.</p>
       <div class="bigs">${big(FB(A.totalIn), 'came in')}${big(FB(A.totalOut), 'went out' + (ownShare > 0.05 ? `, ${pct(ownShare)} of it to ${their} own banks, cards or savings` : ''))}${A.lifespan != null ? big(A.lifespan.toFixed(1) + ' days', 'until half of a big payment is spent (typical)') : ''}${big(FB(A.feesTotal), 'in fees and charges' + (A.avoidableTotal ? `, ${F(A.avoidableTotal)} avoidable` : ''))}</div>
-      <div class="btn-row">${S.demo ? '<a class="btn" href="#start">Now try it with my own data</a>' : ''}<button class="btn ghost small" type="button" data-act="storymode">Watch as a tall story</button><a class="btn ghost small" href="#sort">Sort the people</a><a class="btn ghost small" href="#ai">Ask your AI</a></div>`, 'h1')]);
-    chapters.push(['shape', 'The shape', ch('shape', num() + 'the shape of the period', A.hasCredit ? `Above the line, money held. Below it, money owed to ${cn}.` : 'The balance, day by day', `<p class="muted">Each day's closing balance${A.hasCredit ? ` rises above the line; ${cn} owed drops below it` : ''}. Ticks along the top mark money coming in of ${F(A.bigCut)} or more.</p><div class="chart" data-c="river"></div><div class="legend"><span><i style="background:${C.in}"></i>Balance</span>${A.hasCredit ? `<span><i style="background:${C.credit}"></i>Owed to ${cn}</span>` : ''}<span><i style="background:${C.ink}"></i>Big payment in</span></div>${tl ? `<p class="insight">Between ${d3.utcFormat('%B %Y')(dt(tl.first.month + '-01'))} and ${d3.utcFormat('%B %Y')(dt(tl.last.month + '-01'))}, money in per month moved from ${F(tl.first.in)} to ${F(tl.last.in)}, and money out from ${F(tl.first.out)} to ${F(tl.last.out)}. (Full months only.)</p>` : ''}`)]);
+      <div class="btn-row">${S.demo ? '<a class="btn" href="#start">Now try it with my own data</a>' : ''}<button class="btn ghost small" type="button" data-act="storymode">Story mode (vertical)</button><a class="btn ghost small" href="#sort">Sort the people</a><a class="btn ghost small" href="#ai">Ask your AI</a></div>`, 'h1')]);
+    chapters.push(['shape', 'The shape', ch('shape', num() + 'the shape of the period', A.hasCredit ? `Above the line, money held. Below it, money owed to ${cn}.` : 'The balance, day by day', `<p class="muted">Each day's closing balance${A.hasCredit ? ` rises above the line; ${cn} owed drops below it` : ''}. Ticks along the top mark money coming in of ${F(A.bigCut)} or more.</p><div class="chart" data-c="river"></div><div class="legend"><span><i style="background:${C.in}"></i>Balance</span>${A.hasCredit ? `<span><i style="background:${C.credit}"></i>Owed to ${cn}</span>` : ''}<span><i style="background:${C.ink}"></i>Big payment in</span></div>${tl ? `<p class="insight">Between ${d3.utcFormat('%B %Y')(dt(tl.first.month + '-01'))} and ${d3.utcFormat('%B %Y')(dt(tl.last.month + '-01'))}, money in per month ${tl.first.in === tl.last.in ? `stayed at ${F(tl.first.in)}` : `moved from ${F(tl.first.in)} to ${F(tl.last.in)}`}, and money out ${tl.first.out === tl.last.out ? `stayed at ${F(tl.first.out)}` : `moved from ${F(tl.first.out)} to ${F(tl.last.out)}`}. (Full months only.)</p>` : ''}`)]);
     if (A.lifespan != null) chapters.push(['drain', 'How long it lasts', ch('drain', num() + 'how long money lasts', `Half of a big payment is spent within ${A.lifespan.toFixed(1)} days`, `<p class="muted">For each payment in of ${F(A.bigCut)} or more (${pl(A.bigInsCount, 'payment')}), how much is still unspent, day by day. Transfers to ${their} own banks, savings and business payroll don't count as spending.</p><div class="chart" data-c="drain"></div>${A.lifespan75 != null ? `<p class="insight">Three quarters is gone by day ${A.lifespan75.toFixed(1)}. ${A.lifespan75 < 15 ? 'That leaves the rest of the month running on what is left, or on credit.' : 'That is a steady pace.'}</p>` : ''}`)]);
     chapters.push(['month', 'The month', ch('month', num() + 'the month inside the month', A.lowDay ? `The balance is usually lowest around the ${ord(A.lowDay.day)}` : 'When in the month money moves', `<p class="muted">Each square is a day, shaded by ${A.hasCredit ? `how much was owed to ${cn} at the end of it` : 'how much was spent'}. Black dots mark big payments in. The bars underneath add up each date across the period.</p><div class="chart scrollx" data-c="cal"></div>${A.bigInDays.length ? `<p class="insight">The biggest payments in land around the ${A.bigInDays.map(ord).join(', ')}.${A.hasCredit && A.dom.some((d) => d.creditDraw) ? ` ${cn} is used most on the ${ord(d3.greatest(A.dom, (d) => d.creditDraw).day)}.` : ''}</p>` : ''}`)]);
-    chapters.push(['clock', 'Money clock', ch('clock', num() + 'the money clock', `Spending peaks on ${WD[A.habits.peakWeekday]}, around ${hourLabel(A.habits.peakHour)}`, `<p class="muted">Payments by day and hour. Darker squares hold more money. Transfers to ${their} own accounts are left out.</p><div class="chart scrollx" data-c="heat"></div><div class="bigs">${big(pct(A.habits.lateNightShare), 'of spending happens between 10pm and 4am')}${big(pct(A.habits.weekendShare), 'happens at weekends')}${big(n0(A.habits.cafeVisits), `café and restaurant payments, about ${Math.round(A.habits.cafePerWeek)} a week`)}</div>`)]);
-    chapters.push(['where', 'Where it goes', ch('where', num() + 'where it goes', topCat ? `Of every ${A.cur} 100 spent, ${Math.round(topCat.total / d3.sum(spendCats, (c) => c.total) * 100)} went to ${topCat.category.toLowerCase()}` : 'Where it goes', `<p class="muted">Spending only. Money moved to ${their} own banks, cards and savings (${F(A.ownOut)}) is left out. Each square is 1 in every 100.</p><div class="chart" data-c="units"></div><h3 style="margin-top:30px">Who got paid most</h3><p class="small muted">With a note on who each business is. Payment platforms hide the real shop behind them.</p><div class="mcards">${A.merchants.slice(0, 9).map((m) => `<div class="mcard"><div class="n">${esc(titleCase(m.name))}</div><div class="c">${esc(m.category)} · ${pl(m.count, 'payment')}</div><div class="a">${F(m.total)}</div>${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}</div>`).join('')}</div><p class="small muted">${pl(A.people.length, 'person', 'people')} received ${F(d3.sum(A.people, (p) => p.total))} across ${pl(A.habits.peopleSends, 'send')}. <a href="#sort">Sort them</a> to see what that money really is.</p>`)]);
+    chapters.push(['clock', 'Money clock', ch('clock', num() + 'the money clock', `Spending peaks on ${WD[A.habits.peakWeekday]}, around ${hourLabel(A.habits.peakHour)}`, `<p class="muted">Payments by day and hour. Darker squares hold more money. Transfers to ${their} own accounts are left out.</p><div class="chart scrollx" data-c="heat"></div><div class="bigs">${big(pct(A.habits.lateNightShare), 'of spending happens between 10pm and 4am')}${big(pct(A.habits.weekendShare), 'happens at weekends')}${A.habits.cafeVisits ? big(n0(A.habits.cafeVisits), `café and restaurant payments, about ${Math.round(A.habits.cafePerWeek)} a week`) : ''}</div>`)]);
+    chapters.push(['where', 'Where it goes', ch('where', num() + 'where it goes', topCat ? `Of every ${A.cur} 100 spent, ${Math.round(topCat.total / d3.sum(spendCats, (c) => c.total) * 100)} went to ${topCat.category.toLowerCase()}` : 'Where it goes', `<p class="muted">Spending only.${A.ownOut ? ` Money moved to ${their} own banks, cards and savings (${F(A.ownOut)}) is left out.` : ''} Each square is 1 in every 100.</p><div class="chart" data-c="units"></div><h3 style="margin-top:30px">Who got paid most</h3><p class="small muted">With a note on who each business is. Payment platforms hide the real shop behind them.</p><div class="mcards">${A.merchants.slice(0, 9).map((m) => `<div class="mcard"><div class="n">${esc(titleCase(m.name))}</div><div class="c">${esc(m.category)} · ${pl(m.count, 'payment')}</div><div class="a">${F(m.total)}</div>${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}</div>`).join('')}</div><p class="small muted">${pl(A.people.length, 'person', 'people')} received ${F(d3.sum(A.people, (p) => p.total))} across ${pl(A.habits.peopleSends, 'send')}. <a href="#sort">Sort them</a> to see what that money really is.</p>`)]);
     if (A.hasCredit || A.loans.length) {
       const loanP = d3.sum(A.loans, (l) => l.principal);
-      chapters.push(['credit', 'Borrowing', ch('credit', num() + 'borrowing', A.hasCredit ? `${pl(A.draws.length, cn + ' top-up')}, typically ${F(A.habits.medianDraw)}${A.draws.length && A.habits.drawsAfter7pm / A.draws.length > .3 ? ', often in the evening' : ''}` : pl(A.loans.length, 'loan'), `<div class="bigs">${A.hasCredit ? big(F(A.creditDrawn), `${cn} used across ${pl(A.draws.length, 'top-up')}`) + big(n0(A.habits.drawsAfter7pm), 'top-ups after 7pm') + big(n0(A.habits.redraw), `times money came in, cleared ${cn}, and ${cn} was used again the same day`) : ''}${A.loans.length ? big(F(loanP), `borrowed in ${pl(A.loans.length, 'loan')}, costing ${F(A.loanCost)}`) : ''}</div>${A.loans.filter((l) => l.days != null).length ? `<h3>Every loan, side by side</h3><p class="small muted">Each bar runs from the day of borrowing to the day of repaying. Green: repaid inside 10 days. Purple: by the due date. Red: late, with a penalty.</p><div class="chart" data-c="loans"></div>` : ''}${A.hasCredit ? `<p class="insight">${cn} cost about ${F(A.creditFees)}: ${F(A.accessFees)} in access fees${A.creditFeesEstimated ? ' (estimated at 1% of what was used, because statements don\'t list it)' : ''} plus an estimated ${F(A.dailyCharges)} in daily charges${A.creditFeesEstimated ? ', which statements don\'t show' : ''}.${A.loans.length ? ` Per ${A.cur} 100 borrowed, ${cn} cost about ${(A.creditFees / (A.creditDrawn || 1) * 100).toFixed(1)} and loans about ${(A.loanCost / (loanP || 1) * 100).toFixed(1)}.` : ''}</p>` : ''}${S.raw.kind === 'statement' && A.loans.length ? '<p class="small muted">Statements show the total repaid, not the penalty on its own, so late fees are included in loan costs here but not listed separately.</p>' : ''}`)]);
+      chapters.push(['credit', 'Borrowing', ch('credit', num() + 'borrowing', A.hasCredit ? `${pl(A.draws.length, cn + ' top-up')}, typically ${F(A.habits.medianDraw)}${A.draws.length && A.habits.drawsAfter7pm / A.draws.length > .3 ? ', often in the evening' : ''}` : pl(A.loans.length, 'loan'), `<div class="bigs">${A.hasCredit ? big(F(A.creditDrawn), `${cn} used across ${pl(A.draws.length, 'top-up')}`) + big(n0(A.habits.drawsAfter7pm), 'top-ups after 7pm') + big(n0(A.habits.redraw), `times money came in, cleared ${cn}, and ${cn} was used again the same day`) : ''}${A.loans.length ? big(F(loanP), `borrowed in ${pl(A.loans.length, 'loan')}, costing ${F(A.loanCost)}`) : ''}</div>${A.loans.filter((l) => l.days != null).length ? `<h3>Every loan, side by side</h3><p class="small muted">Each bar runs from the day of borrowing to the day of repaying. Green: repaid inside 10 days. Purple: by the due date. Red: late, with a penalty.</p><div class="chart" data-c="loans"></div>` : ''}${A.hasCredit ? `<p class="insight">${cn} cost about ${F(A.creditFees)}: ${F(A.accessFees)} in access fees${A.creditFeesEstimated ? ' (estimated at 1% of what was used, because statements don\'t list it)' : ''} ${A.dailyCharges > 0 ? ` plus an estimated ${F(A.dailyCharges)} in daily charges` : ''}${A.creditFeesEstimated ? '. Statements don\'t show daily charges, so the real cost is higher' : ''}.${A.loans.length ? ` Per ${A.cur} 100 borrowed, ${cn} cost about ${(A.creditFees / (A.creditDrawn || 1) * 100).toFixed(1)} and loans about ${(A.loanCost / (loanP || 1) * 100).toFixed(1)}.` : ''}</p>` : ''}${S.raw.kind === 'statement' && A.loans.length ? '<p class="small muted">Statements show the total repaid, not the penalty on its own, so late fees are included in loan costs here but not listed separately.</p>' : ''}`)]);
     }
-    chapters.push(['price', 'The price', ch('price', num() + 'the price paid', A.avoidableTotal ? `${F(A.avoidableTotal)} that could have been kept` : `${F(A.feesTotal)} in fees and charges`, `<div class="chart" data-c="fees"></div><div class="legend" id="feesLegend"></div>${A.avoidable.length ? `<h3 style="margin-top:26px">Avoidable</h3><div class="ledger">${A.avoidable.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(a.what)}</div><div class="nt">${esc(a.note)}</div></div><div class="a ${/penalty/i.test(a.what) ? 'bad' : ''}">${F(a.amount)}</div></div>`).join('')}</div>` : ''}${A.toCheck.length ? `<h3 style="margin-top:26px">Worth checking</h3><p class="small muted">The same amount to the same place within 30 minutes. It may be deliberate, or a payment that went through twice. Reversed payments are already left out.</p><div class="ledger">${A.toCheck.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(titleCase(a.party))}</div><div class="nt">${esc(a.note)}</div></div><div class="a">${F(a.amount)}</div></div>`).join('')}</div>` : ''}`)]);
+    chapters.push(['price', 'The price', ch('price', num() + 'the price paid', A.avoidableTotal ? `${F(A.avoidableTotal)} that could have been kept` : `${F(A.feesTotal)} in fees and charges`, `${S.raw.kind === 'statement' ? '<p class="small muted">Read from a statement. Statements list every transaction cost line by line but leave out Fuliza daily charges and loan penalties, while SMS show those but not every cost. So the same months can give a different fee total from each source.</p>' : ''}<div class="chart" data-c="fees"></div><div class="legend" id="feesLegend"></div>${A.avoidable.length ? `<h3 style="margin-top:26px">Avoidable</h3><div class="ledger">${A.avoidable.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(a.what)}</div><div class="nt">${esc(a.note)}</div></div><div class="a ${/penalty/i.test(a.what) ? 'bad' : ''}">${F(a.amount)}</div></div>`).join('')}</div>` : ''}${A.toCheck.length ? `<h3 style="margin-top:26px">Worth checking</h3><p class="small muted">The same amount to the same place within 30 minutes. It may be deliberate, or a payment that went through twice. Reversed payments are already left out.</p><div class="ledger">${A.toCheck.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(titleCase(a.party))}</div><div class="nt">${esc(a.note)}</div></div><div class="a">${F(a.amount)}</div></div>`).join('')}</div>` : ''}`)]);
     if (A.biggest.length) chapters.push(['outliers', 'Stand-outs', ch('outliers', num() + 'payments that stood out', 'Unusual payments', `<p class="muted">Payments much bigger than usual for that place, or to places paid only once or twice. Regular bills, rent and cash withdrawals are left out.</p><div class="ledger">${A.biggest.map((t) => `<div class="row"><div class="d">${fmtDate(t.ts)}</div><div><div class="w">${esc(t.person ? 'A person' : titleCase(t.party))}</div><div class="nt">${esc(t.category)}${t.note ? ' · ' + esc(t.note) : ''}</div></div><div class="a">${F(t.amt)}</div></div>`).join('')}</div>${A.spikeDays.length ? `<p class="insight">The heaviest days were ${A.spikeDays.slice(0, 3).map((d) => `${fmtDate(d.date)} (${F(d.out)})`).join(', ')}.</p>` : ''}`)]);
-    chapters.push(['try', 'What to try', ch('try', num() + 'what to try', sug.length === 1 ? 'One small change the data points to' : `${['', 'One', 'Two', 'Three'][sug.length]} small changes the data points to`, sug.map((s, i) => `<div class="try"><b>Try ${i + 1}</b>${esc(s)}</div>`).join('') + `<div class="next">${S.demo ? '<a href="#start"><b>Try it with my data</b><span class="small muted">Statement PDF, SMS export or pasted messages. Stays on your device.</span></a>' : ''}<a href="#sort"><b>Sort the people</b><span class="small muted">Label who gets sent money, in a quick swipe game.</span></a><a href="#budget"><b>Build a budget</b><span class="small muted">Monthly averages and targets by category.</span></a><a href="#ai"><b>Ask your AI</b><span class="small muted">A prompt and summary for Claude, ChatGPT or Gemini, with no people's names.</span></a><button type="button" data-act="storymode"><b>Story mode</b><span class="small muted">A tall 9:16 version to screen-record and share.</span></button></div>`)]);
+    chapters.push(['try', 'What to try', ch('try', num() + 'what to try', sug.length === 1 ? 'One small change the data points to' : `${['', 'One', 'Two', 'Three'][sug.length]} small changes the data points to`, sug.map((s, i) => `<div class="try"><b>Try ${i + 1}</b>${esc(s)}</div>`).join('') + `<div class="next">${S.demo ? '<a href="#start"><b>Try it with my data</b><span class="small muted">Statement PDF, SMS export or pasted messages. Stays on your device.</span></a>' : ''}<a href="#sort"><b>Sort the people</b><span class="small muted">Label who gets sent money, in a quick swipe game.</span></a><a href="#budget"><b>Build a budget</b><span class="small muted">Monthly averages and targets by category.</span></a><a href="#ai"><b>Ask your AI</b><span class="small muted">A prompt and summary for Claude, ChatGPT or Gemini, with no people's names.</span></a><button type="button" data-act="storymode"><b>Story mode (vertical)</b><span class="small muted">A tall 9:16 version to screen-record and share.</span></button></div>`)]);
     el.innerHTML = chapters.map((c) => c[2]).join('');
     $('#chapterNav').innerHTML = chapters.map((c) => `<a href="#${c[0]}" data-ch="${c[0]}">${c[1]}</a>`).join('');
     drawCharts();
@@ -380,7 +387,7 @@
   }
   function drawCharts() {
     const A = S.A; if (!A) return;
-    $$('.datatable').forEach((d) => d.remove());
+    $$('.datatable, .scrollhint').forEach((d) => d.remove());
     $$('[data-c]').forEach((el) => {
       const c = el.dataset.c;
       try {
@@ -457,13 +464,17 @@
   }
   $('#gUndo').addEventListener('click', undo);
   $('#gSkip').addEventListener('click', () => pick(null, 'l'));
-  $('#gAdd').addEventListener('click', () => {
-    const raw = prompt('Name your new category, for example "School fees for my nephew" (up to 40 characters)'); if (raw == null) return;
-    const c = raw.trim().replace(/\s+/g, ' ');
+  $('#gAdd').addEventListener('click', () => { $('#addCat').hidden = false; $('#addCatIn').focus(); });
+  const closeAdd = () => { $('#addCat').hidden = true; $('#addCatIn').value = ''; $('#gAdd').focus(); };
+  $('#addCatCancel').addEventListener('click', closeAdd);
+  $('#addCatIn').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); closeAdd(); } });
+  $('#addCat').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const c = $('#addCatIn').value.trim().replace(/\s+/g, ' ');
     if (!c) { $('#narr').textContent = 'A category needs a name.'; return; }
     if (c.length > 40) { $('#narr').textContent = 'Please keep category names to 40 characters.'; return; }
     if (GCATS.concat(S.game.extra).some((x) => x.toLowerCase() === c.toLowerCase())) { $('#narr').textContent = `"${c}" is already a category.`; return; }
-    S.game.extra.push(c); saveGame(); renderGame(); $('#narr').textContent = `Added "${c}".`;
+    S.game.extra.push(c); saveGame(); $('#addCat').hidden = true; $('#addCatIn').value = ''; renderGame(true); $('#narr').textContent = `Added "${c}". It is now a choice on the card.`;
   });
   $('#toBudget').addEventListener('click', () => go('budget'));
 
@@ -485,15 +496,25 @@
       $('#tSum').textContent = any ? F(sum) : '–';
     };
     $$('#budgetTable input').forEach((inp) => inp.addEventListener('input', () => {
-      const r = rows[+inp.dataset.i]; let clean = inp.value.replace(/[^\d]/g, '').slice(0, 10);
-      if (+clean > 1e9) clean = '1000000000';
-      if (clean !== inp.value) inp.value = clean;
-      if (!clean) delete S.targets[r.category]; else S.targets[r.category] = parseInt(clean, 10);
+      const r = rows[+inp.dataset.i]; const raw = inp.value.trim(); const cell = $('#bd' + inp.dataset.i);
+      if (!raw) { delete S.targets[r.category]; }
+      else {
+        // Accept "1,500", "KES 1500", "1500.50" and "2.5k"; refuse anything else instead of guessing
+        const m = raw.replace(/^(kes|ksh|ugx|tzs|rwf|ghs|zmw)\.?\s*/i, '').replace(/,/g, '').match(/^(\d+(?:\.\d+)?)\s*(k|m)?$/i);
+        if (!m) { delete S.targets[r.category]; upd(); cell.textContent = 'Type a whole amount, like 15000 or 15k'; cell.className = 'n over'; return; }
+        let v = Math.round(parseFloat(m[1]) * (m[2] ? (m[2].toLowerCase() === 'k' ? 1e3 : 1e6) : 1));
+        if (v > 1e9) { v = 1e9; }
+        S.targets[r.category] = v;
+      }
       if ($('#remember').checked) store.set('targets', S.targets); upd();
     }));
     upd();
   }
-  function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+  function download(name, text, type) {
+    // Some embedded viewers block downloads, so copy as well and say so
+    $('#dlState').textContent = `Saved ${name}.`;
+    try { navigator.clipboard.writeText(text).then(() => { $('#dlState').textContent = `Saved ${name}. It is also copied, so you can paste it into a spreadsheet if no file appeared.`; }, () => {}); } catch (e) { /* no clipboard */ }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
   const csv = (rows) => rows.map((r) => r.map((v) => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(',')).join('\n');
   $('#bCsv').addEventListener('click', () => { const rows = budgetRows(); download('pesadithi-budget.csv', csv([['category', 'monthly_average', 'monthly_target']].concat(rows.map((r) => [r.category, Math.round(r.monthly), S.targets[r.category] != null ? S.targets[r.category] : '']))), 'text/csv'); });
   $('#bLedger').addEventListener('click', () => { const A = S.A; download('pesadithi-transactions.csv', csv([['date_time', 'direction', 'type', 'party', 'category', 'amount', 'fee', 'balance', 'currency']].concat(A.txs.map((t) => [t.ts, t.dir, t.type, t.party || '', t.category || '', t.amt, t.fee || 0, t.bal == null ? '' : t.bal, t.cur]))), 'text/csv'); });
@@ -549,21 +570,22 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   $('#copyPrompt').addEventListener('click', async () => { const t = $('#aiOut').textContent; try { await navigator.clipboard.writeText(t); $('#copyState').textContent = 'Copied. Paste it into your assistant.'; } catch (e) { const r = document.createRange(); r.selectNodeContents($('#aiOut')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('#copyState').textContent = 'Selected. Press Ctrl+C or Cmd+C to copy.'; } });
 
   /* ---------------- Story mode (tall 9:16, for screen recording) ---------------- */
-  const SM = { i: 0, slides: [], timer: null, opener: null, rec: false };
+  const SM = { i: 0, slides: [], timer: null, opener: null, rec: false, count: null };
+  function stopCount() { clearInterval(SM.count); SM.count = null; $('#smCount').hidden = true; }
   function slides() {
     const A = S.A; const s = []; const d = S.demo; const cn = credit(); const their = d ? 'her' : 'your';
     if (A.hasCredit) s.push({ k: d ? 'Meet Amani · invented data' : 'Your money story', v: `${A.creditDays} days`, t: `of ${A.nDays} ended owing ${cn}.`, dd: d ? 'Amani is fictional. Her patterns are the kind this tool finds.' : 'Here is why, in under a minute.' });
     else s.push({ k: d ? 'Meet Amani · invented data' : 'Your money story', v: n0(A.txCount), t: `transactions in ${pl(Math.round(A.monthsEq), 'month')}.`, dd: 'Here is what they say about timing.' });
-    s.push({ k: 'Money in, money out', v: kfmt(A.totalIn), t: `${A.cur} came in. ${kfmt(A.totalOut)} went out.`, dd: A.ownOut > A.totalOut * .05 ? `${pct(A.ownOut / A.totalOut)} of what went out moved to ${their} own banks, cards or savings.` : `Net: ${A.totalIn >= A.totalOut ? '+' : '−'}${kfmt(Math.abs(A.totalIn - A.totalOut))}.` });
+    s.push({ k: 'Money in, money out', v: FB(A.totalIn), t: `came in. ${FB(A.totalOut)} went out.`, dd: A.ownOut > A.totalOut * .05 ? `${pct(A.ownOut / A.totalOut)} of what went out moved to ${their} own banks, cards or savings.` : `Net: ${A.totalIn >= A.totalOut ? '+' : '−'}${kfmt(Math.abs(A.totalIn - A.totalOut))}.` });
     if (A.lifespan != null) s.push({ k: 'How long it lasts', v: A.lifespan.toFixed(1) + ' days', t: 'until half of a big payment is spent.', dd: A.lifespan75 ? `Three quarters gone by day ${A.lifespan75.toFixed(1)}.` : '', viz: 'drain' });
     if (A.hasCredit && A.lowDay) s.push({ k: 'The gap', v: `The ${ord(A.lowDay.day)}`, t: `is when ${their} balance is usually lowest.`, dd: A.bigInDays.length ? `Money lands around the ${ord(A.bigInDays[0])}. ${cn} fills the gap.` : '', viz: 'dom' });
     s.push({ k: 'The money clock', v: hourLabel(A.habits.peakHour), t: `on ${WD[A.habits.peakWeekday]} is peak spending time.`, dd: `${pct(A.habits.lateNightShare)} of spending happens between 10pm and 4am.` });
     if (A.habits.cafeVisits > 10) s.push({ k: 'A habit', v: `${Math.round(A.habits.cafePerWeek)} a week`, t: 'café and restaurant visits.', dd: `${F(A.habits.cafeSpend / A.monthsEq)} a month.` });
     if (A.loans.length) s.push({ k: 'Borrowing', v: `${A.cur} ${Math.round(A.loanCost / (d3.sum(A.loans, (l) => l.principal) || 1) * 100)}`, t: 'paid for every 100 borrowed on loans.', dd: A.hasCredit ? `${cn}: about ${A.cur} ${(A.creditFees / (A.creditDrawn || 1) * 100).toFixed(1)} per 100.` : '' });
-    s.push({ k: 'The price', v: kfmt(A.feesTotal), t: `${A.cur} in fees and charges.`, dd: A.avoidableTotal ? `${F(A.avoidableTotal)} of it was avoidable.` : '' });
-    const tip = A.loans.some((l) => l.rollover || l.cashbackMissed) ? { v: 'Repay by day 10', t: 'Avoid late penalties and earn the early-repayment refund.' } : A.hasCredit && A.lowDay ? { v: `Move money to the ${ord(Math.max(1, A.lowDay.day - 2))}`, t: `Close the gap before ${cn} has to.` } : { v: 'Sort your people', t: 'See what the money you send really is.' };
+    s.push({ k: 'The price', v: F(A.feesTotal), t: 'in fees and charges.', dd: A.avoidableTotal ? `${F(A.avoidableTotal)} of it was avoidable.` : '' });
+    const tip = A.loans.some((l) => l.rollover || l.cashbackMissed) ? { v: 'Repay by day 10', t: d3.sum(A.loans, (l) => l.rollover) ? 'Avoid late penalties and earn the early-repayment refund.' : 'Earn back part of the loan fee with the early-repayment refund.' } : A.hasCredit && A.lowDay ? { v: `Move money to the ${ord(Math.max(1, A.lowDay.day - 2))}`, t: `Close the gap before ${cn} has to.` } : { v: 'Sort your people', t: 'See what the money you send really is.' };
     s.push({ k: 'Try this', v: tip.v, t: tip.t, dd: '', small: true });
-    s.push({ k: 'Pesadithi Lab', v: 'Read your own', t: 'Free, open source, and your data stays on your phone.', dd: '', url: 'github.com/mkaigwa/pesadithi-lab' });
+    s.push({ k: 'Pesadithi Lab', v: 'Read your own', t: 'Free, open source, and your data stays on your device.', dd: '', url: 'github.com/mkaigwa/pesadithi-lab' });
     return s;
   }
   function miniViz(kind) {
@@ -574,13 +596,14 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   }
   function openStoryMode(ev) {
     if (!S.A) return; SM.opener = (ev && ev.currentTarget) || document.activeElement; SM.slides = slides(); SM.i = 0;
-    $('#sm').hidden = false; document.body.style.overflow = 'hidden'; $('#smDemo').hidden = !S.demo; $('#sm').classList.remove('rec');
+    stopCount(); stopPlay(); SM.rec = false; $('#sm').hidden = false; document.body.style.overflow = 'hidden'; $('#smDemo').hidden = !S.demo; $('#sm').classList.remove('rec', 'playing');
     history.pushState({ sm: 1 }, ''); drawSlide(); $('#smPlay').focus();
   }
   function closeStoryMode(fromPop) {
-    if ($('#sm').hidden) return; $('#sm').hidden = true; document.body.style.overflow = ''; stopPlay(); SM.rec = false; $('#sm').classList.remove('rec');
+    if ($('#sm').hidden) return; $('#sm').hidden = true; document.body.style.overflow = ''; stopCount(); stopPlay(); SM.rec = false; $('#sm').classList.remove('rec', 'playing');
     if (!fromPop && history.state && history.state.sm) history.back();
-    if (SM.opener && SM.opener.isConnected) SM.opener.focus();
+    const op = SM.opener && SM.opener.isConnected && SM.opener.offsetParent ? SM.opener : $('#btnStoryMode');
+    setTimeout(() => { if (op && op.offsetParent) { op.focus({ preventScroll: true }); op.scrollIntoView({ block: 'center' }); } }, 80);
   }
   window.addEventListener('popstate', () => { if (!$('#sm').hidden) closeStoryMode(true); });
   function drawSlide() {
@@ -590,13 +613,13 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     $('#smLive').textContent = `Slide ${SM.i + 1} of ${SM.slides.length}: ${s.v} ${s.t}`;
   }
   const dwell = (s) => Math.max(3000, Math.min(6500, 1600 + ((s.v + ' ' + s.t + ' ' + (s.dd || '')).split(/\s+/).length) * 220));
-  function stopPlay() { clearTimeout(SM.timer); SM.timer = null; $('#smPlay').textContent = 'Auto-play'; }
-  function schedule() { clearTimeout(SM.timer); SM.timer = setTimeout(() => { if (SM.i < SM.slides.length - 1) { SM.i++; drawSlide(); schedule(); } else { stopPlay(); if (SM.rec) { setTimeout(() => { $('#sm').classList.remove('rec'); SM.rec = false; }, 1500); } } }, dwell(SM.slides[SM.i])); }
-  function play() { if (SM.i >= SM.slides.length - 1) { SM.i = 0; drawSlide(); } $('#smPlay').textContent = 'Pause'; schedule(); }
-  function step(nn) { SM.i = Math.max(0, Math.min(SM.slides.length - 1, SM.i + nn)); drawSlide(); if (SM.timer) schedule(); }
+  function stopPlay() { clearTimeout(SM.timer); SM.timer = null; $('#smPlay').textContent = 'Auto-play'; $('#sm').classList.remove('playing'); }
+  function schedule() { clearTimeout(SM.timer); SM.timer = setTimeout(() => { if (SM.i < SM.slides.length - 1) { SM.i++; drawSlide(); schedule(); } else { stopPlay(); /* in Record mode the last frame holds, chrome hidden, until a tap or H */ } }, dwell(SM.slides[SM.i])); }
+  function play() { if (SM.i >= SM.slides.length - 1) { SM.i = 0; drawSlide(); } $('#smPlay').textContent = 'Pause'; $('#sm').classList.add('playing'); schedule(); }
+  function step(nn) { if (SM.rec && !SM.timer && !SM.count) { SM.rec = false; $('#sm').classList.remove('rec'); $('#smPlay').focus(); return; } SM.i = Math.max(0, Math.min(SM.slides.length - 1, SM.i + nn)); drawSlide(); if (SM.timer) schedule(); }
   $('#smNext').addEventListener('click', () => step(1)); $('#smPrev').addEventListener('click', () => step(-1)); $('#smClose').addEventListener('click', () => closeStoryMode());
   $('#smPlay').addEventListener('click', () => (SM.timer ? stopPlay() : play()));
-  $('#smRec').addEventListener('click', () => { SM.rec = true; SM.i = 0; drawSlide(); stopPlay(); $('#sm').classList.add('rec'); let c = 3; $('#smCount').hidden = false; $('#smCount').textContent = c; const iv = setInterval(() => { c--; if (c > 0) $('#smCount').textContent = c; else { clearInterval(iv); $('#smCount').hidden = true; play(); } }, 1000); });
+  $('#smRec').addEventListener('click', () => { stopCount(); SM.rec = true; SM.i = 0; drawSlide(); stopPlay(); $('#sm').classList.add('rec'); let c = 3; $('#smCount').hidden = false; $('#smCount').textContent = c; SM.count = setInterval(() => { c--; if (c > 0) $('#smCount').textContent = c; else { stopCount(); play(); } }, 1000); });
   $('#btnStoryMode').addEventListener('click', openStoryMode);
   document.addEventListener('keydown', (e) => {
     if ($('#sm').hidden) return;
@@ -604,7 +627,7 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     if (e.key === 'Tab') { const f = $$('#sm button').filter((b) => b.offsetParent !== null); const i = f.indexOf(document.activeElement); if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } return; }
     if (e.key === 'ArrowRight' || (e.key === ' ' && !(document.activeElement && document.activeElement.tagName === 'BUTTON'))) { e.preventDefault(); step(1); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
-    if (e.key === 'h' || e.key === 'H') $('#sm').classList.toggle('rec');
+    if (e.key === 'h' || e.key === 'H') { $('#sm').classList.toggle('rec'); if (!$('#sm').classList.contains('rec')) SM.rec = false; }
   });
 
   /* ---------------- Start ---------------- */

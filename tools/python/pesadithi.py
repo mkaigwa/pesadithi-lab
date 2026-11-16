@@ -12,7 +12,7 @@ Usage:
   python3 pesadithi.py messages.json --months 12
   python3 pesadithi.py statement.pdf --months 6   # asks for the PDF password without showing it
 """
-import argparse, csv, datetime as dt, json, re, statistics as st, sys, xml.etree.ElementTree as ET
+import os, argparse, csv, datetime as dt, json, re, statistics as st, sys, xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 
 A = r'Ksh ?([\d,]+\.\d\d)'
@@ -209,6 +209,7 @@ def analyse(txs, months):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('input'); ap.add_argument('--password'); ap.add_argument('--months', type=int, default=12); ap.add_argument('--outdir', default='.')
     a = ap.parse_args()
+    os.makedirs(a.outdir, exist_ok=True)
     if a.input.lower().endswith('.pdf') and not a.password:
         import getpass
         a.password = getpass.getpass('PDF password from the M-PESA SMS (not your PIN; hidden as you type): ')
