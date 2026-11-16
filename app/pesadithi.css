@@ -641,3 +641,5 @@ h1 em, h2 em, h3 em { font-weight: var(--ew); }
 .wl[data-logo="mtn"] img { height: 42px; margin: -6px 0 -2px; }
 .rl-logos { display: flex; gap: 10px; align-items: center; margin: 4px 0 2px; }
 .wl-sm { font-style: normal; font-size: 12px; } .wl-sm img { height: 26px; }
+
+.wl[data-logo="airtel"] img { height: 40px; margin: -5px 0 -1px; }
