@@ -810,7 +810,7 @@ html[data-theme="dark"] .ai img[src$="chatgpt.png"] { filter: invert(1); }
 /* Hero: the period word turns over without moving the line below */
 .hero-h em { display: block; }
 .hero h1.hero-h { max-width: none; }
-.rot { display: inline-grid; vertical-align: baseline; color: inherit; }
+.rot { display: inline-grid; vertical-align: baseline; color: #c0392b; }
 .rot b { grid-area: 1 / 1; font-weight: inherit; opacity: 0; transform: translateY(28%); transition: opacity .45s, transform .45s cubic-bezier(.3,.7,.2,1); white-space: nowrap; }
 .rot b.on { opacity: 1; transform: none; }
 .rot b.out { opacity: 0; transform: translateY(-28%); }
@@ -904,6 +904,7 @@ html[data-theme="dark"] .wsw[data-wall="sunset"] { background:linear-gradient(17
 html[data-theme="dark"] .ai-bubble .caret { background:#131313; }
 html[data-theme="dark"] .ai-att { background:#131313; }
 html[data-theme="dark"] .ai-clip { background:var(--mint, #1d2521); }
+html[data-theme="dark"] .rot { color:#dd7e74; }
 html[data-theme="dark"] /* Ask your AI page: what to do next, html[data-theme="dark"] per assistant */
 .ai-next { background:#131313; }
 html[data-theme="dark"] .ai-priv { background:#181a19; }
