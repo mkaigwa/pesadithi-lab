@@ -13,25 +13,6 @@
   ['#btnDemo2', '#btnDemo3'].forEach((id) => { const b = $(id); if (b) b.addEventListener('click', () => { const d = $('#btnDemo'); if (d && !d.disabled) d.click(); }); });
   $$('[data-pick]').forEach((a) => a.addEventListener('click', () => { const k = a.dataset.pick; setTimeout(() => { const s = $(`.source[data-src="${k}"]`); if (s && s.getAttribute('aria-pressed') !== 'true') s.click(); }, 60); }));
 
-  /* ---------- Trust notes in English or Kiswahili ---------- */
-  const I18N = {
-    sw: {
-      air: 'Inafanya kazi hata kwa airplane mode', pin: 'Hatutawahi kukuuliza PIN yako ya M-PESA',
-      demo: 'Demo inatumia data ya kubuni ya mtu asiyekuwepo. Hakuna kupakia, hakuna kujisajili.',
-      t1h: 'Inabaki kwenye simu yako', t1: 'Faili yako inasomwa na ukurasa huu ndani ya kivinjari chako, haitumwi popote. Zima Wi-Fi na data baada ya ukurasa kufunguka, na bado inafanya kazi.',
-      t2h: 'Hakuna akaunti, hakuna ufuatiliaji', t2: 'Hakuna kujisajili, hakuna cookies. Funga ukurasa na kila kitu kinatoweka, isipokuwa ukichagua "Kumbuka".',
-      t3h: 'Msimbo uko wazi', t3: 'Kila mstari uko wazi kwenye GitHub, ili mtu yeyote aweze kukagua ahadi hizi.'
-    }
-  };
-  const EN = {}; $$('[data-i18n]').forEach((el) => { EN[el.dataset.i18n] = el.textContent; });
-  const setLang = (l) => {
-    $$('[data-i18n]').forEach((el) => { const k = el.dataset.i18n; el.textContent = l === 'sw' && I18N.sw[k] ? I18N.sw[k] : EN[k]; });
-    $$('.lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
-    try { localStorage.setItem('pesadithi:lang', l); } catch (e) { /* not remembered */ }
-  };
-  $$('.lang button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
-  try { if (localStorage.getItem('pesadithi:lang') === 'sw') setLang('sw'); } catch (e) { /* English */ }
-
   /* ---------- AI logo slots: official files dropped into vendor/logos/ are used; otherwise a neutral lettermark ---------- */
   const LM = { chatgpt: 'GPT', claude: 'Cl', gemini: 'Ge', deepseek: 'DS', copilot: 'Co' };
   const AIS = { chatgpt: 'ChatGPT', claude: 'Claude', gemini: 'Gemini', deepseek: 'DeepSeek', copilot: 'Copilot' };
@@ -75,7 +56,7 @@
       card: ['Ours · October', [['Rent', '45,000', 'You'], ['School fees', '38,500', 'Amina'], ['Groceries', '21,340', 'You 60 · Amina 40'], ['Home help', '12,000', 'Amina']], 'Tightest week together: 22 to 28 Oct']
     },
     flat: {
-      alt: 'Three young roommates in their living room, one holding up a phone and another an electricity token receipt',
+      alt: 'Three young roommates on a sofa looking at one phone together, one holding an electricity token receipt',
       q: 'Who owes whom, without the awkward conversation?',
       share: 'Only the flat: rent, KPLC tokens, Wi-Fi, water, gas, the cleaner.',
       keep: 'Everything else. A roommate never sees how you spend.',
@@ -84,7 +65,7 @@
       card: ['Flat 4B · October', [['Rent', '36,000', 'Split 3 ways'], ['KPLC tokens', '2,850', ''], ['Wi-Fi', '3,999', ''], ['Your share', '14,283', 'You paid 21,700']], 'Kevin owes you 2,340 · Wanjiru owes you 5,077']
     },
     sib: {
-      alt: 'Three adult siblings on a veranda bench at the family home among tea fields, looking at a phone together',
+      alt: 'Three adult siblings of different ages around their elderly parents on a veranda among tea fields, showing them a phone',
       q: 'Are we carrying Mum and Dad fairly?',
       share: 'The family envelope: upkeep, medical bills, a younger sibling\'s school fees.',
       keep: 'Incomes. Siblings see contributions, never what each person earns.',
