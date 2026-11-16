@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pesadithi · Guess Amani's year</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2B2F38; --muted:#6B7280; --line:#E6E8EC; --bg:#FFFFFF; --sky:#EEF8FF;
+  --blue:#1CB0F6; --blue-d:#1497D4; --blue-l:#DDF4FF;
+  --in:#58CC02; --in-d:#46A302; --in-l:#E7F9D6;
+  --out:#FF4B4B; --out-d:#E03535; --out-l:#FFE3E3;
+  --borrow:#8E4DF0; --borrow-d:#7337D3; --borrow-l:#EFE4FF;
+  --sun:#FFC800; --sun-d:#E8A500; --sun-l:#FFF6CC;
+  --orange:#FF9600; --orange-l:#FFF0DC;
+  --r:18px;
+  --display:'Fredoka', 'Nunito', system-ui, sans-serif;
+  --body:'Nunito', system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{font-family:var(--body);font-weight:700;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:1fr;height:100dvh}
+.lesson{display:flex;flex-direction:column;height:100dvh;min-width:0;position:relative}
+.side{display:none}
+@media (min-width:1000px){
+  .app{grid-template-columns:1fr 360px;max-width:1180px;margin:0 auto;gap:40px;padding:0 32px}
+  .side{display:flex;flex-direction:column;gap:16px;padding:28px 0;overflow:auto}
+}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;gap:14px;padding:16px 18px 8px;max-width:720px;width:100%;margin:0 auto}
+.icon-btn{border:0;background:none;padding:6px;border-radius:12px;color:#AFB4BC;display:grid;place-items:center}
+.icon-btn:hover{background:#F3F4F6}
+.icon-btn:focus-visible,.btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.cell:focus-visible,.step:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.bar{flex:1;height:16px;background:#E9EBEF;border-radius:99px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;width:0;background:var(--sun);border-radius:99px;transition:width .6s cubic-bezier(.3,1.4,.5,1);position:relative}
+.bar i::after{content:"";position:absolute;left:8px;right:8px;top:4px;height:4px;border-radius:9px;background:rgba(255,255,255,.45)}
+.pill{display:flex;align-items:center;gap:5px;font-family:var(--display);font-weight:700;font-size:18px}
+.pill.flame{color:var(--orange)}
+.pill.gem{color:var(--blue)}
+.pill.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(1.35)}60%{transform:scale(.92)}}
+
+/* ---------- stage ---------- */
+.stage{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 20px 24px;width:100%;max-width:720px;margin:0 auto;scroll-behavior:smooth}
+.screen{animation:slideIn .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.kicker{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--borrow);display:flex;align-items:center;gap:8px;margin:10px 0 6px}
+.kicker .lvl{background:var(--borrow-l);padding:3px 10px;border-radius:99px}
+.kicker.boss{color:var(--orange)} .kicker.boss .lvl{background:var(--orange-l)}
+h1,h2{font-family:var(--display);font-weight:700;letter-spacing:-.01em;margin:0}
+h2.q{font-size:26px;line-height:1.18;margin:4px 0 14px}
+@media (min-width:600px){h2.q{font-size:30px}}
+
+/* mascot + bubble */
+.talk{display:flex;align-items:flex-end;gap:10px;margin:6px 0 18px}
+.dithi{width:76px;height:76px;flex:none}
+.dithi svg{width:100%;height:100%;overflow:visible}
+.dithi.hop svg{animation:hop .7s cubic-bezier(.3,1.6,.5,1)}
+.dithi.shake svg{animation:shake .5s}
+.dithi.idle svg{animation:breathe 3s ease-in-out infinite}
+@keyframes hop{30%{transform:translateY(-18px) rotate(-6deg)}60%{transform:translateY(0) scale(1.06,.94)}}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes breathe{50%{transform:translateY(-3px)}}
+.bubble{position:relative;border:2px solid var(--line);border-radius:16px;padding:11px 14px;font-size:16px;line-height:1.35;background:#fff;max-width:440px}
+.bubble::before{content:"";position:absolute;left:-10px;bottom:16px;width:16px;height:16px;background:#fff;border-left:2px solid var(--line);border-bottom:2px solid var(--line);transform:rotate(45deg)}
+
+/* ---------- buttons ---------- */
+.btn{border:0;border-radius:16px;padding:15px 22px;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.04em;text-transform:uppercase;width:100%;
+  background:var(--blue);color:#fff;box-shadow:0 5px 0 var(--blue-d);transition:transform .08s,box-shadow .08s,filter .2s}
+.btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--blue-d)}
+.btn:disabled{background:#E5E7EB;color:#AFB4BC;box-shadow:0 5px 0 #D5D8DD;cursor:default}
+.btn:disabled:active{transform:none}
+.btn.ghost{background:#fff;color:var(--blue);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.sun{background:var(--sun);color:#5B4300;box-shadow:0 5px 0 var(--sun-d)}
+.btn.orange{background:var(--orange);box-shadow:0 5px 0 #D97F00}
+.btn.purple{background:var(--borrow);box-shadow:0 5px 0 var(--borrow-d)}
+
+/* options */
+.opts{display:grid;gap:12px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;border:2px solid var(--line);border-radius:16px;padding:14px 14px;background:#fff;box-shadow:0 4px 0 var(--line);font-size:17px;font-weight:800;transition:transform .08s, box-shadow .08s, background .15s,border-color .15s}
+.opt:active{transform:translateY(4px);box-shadow:0 0 0 var(--line)}
+.opt .k{flex:none;width:30px;height:30px;border:2px solid var(--line);border-radius:9px;display:grid;place-items:center;font-size:14px;color:#9CA3AF}
+.opt small{display:block;font-weight:700;color:var(--muted);font-size:13px;margin-top:2px}
+.opt[aria-pressed="true"]{border-color:#84D8FF;background:var(--blue-l);box-shadow:0 4px 0 #84D8FF;color:var(--blue-d)}
+.opt[aria-pressed="true"] .k{border-color:#84D8FF;color:var(--blue-d)}
+.opt.big{flex-direction:column;justify-content:center;text-align:center;padding:20px 10px;gap:8px;font-family:var(--display);font-size:20px}
+.opt.big .em{font-size:40px;line-height:1}
+.opt.right{border-color:var(--blue);background:var(--blue-l);box-shadow:0 4px 0 var(--blue)}
+.opt.wrong{border-color:#FFB4A8;background:#FFF1EC;box-shadow:0 4px 0 #FFB4A8;opacity:.8}
+.opts.locked .opt{pointer-events:none}
+
+/* slider */
+.boss-q .guess{border-color:#FFD29C;box-shadow:0 4px 0 #FFD29C}
+.guess{border:2px solid var(--line);border-radius:22px;padding:18px 18px 22px;box-shadow:0 4px 0 var(--line)}
+.readout{text-align:center;font-family:var(--display);font-weight:700;font-size:58px;line-height:1;color:var(--blue);margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.readout.idle{color:#C9CDD3}
+.unit{text-align:center;color:var(--muted);font-size:15px;margin-bottom:16px}
+.srow{display:flex;align-items:center;gap:12px}
+.step{flex:none;width:46px;height:46px;border-radius:14px;border:2px solid var(--line);background:#fff;box-shadow:0 3px 0 var(--line);font-family:var(--display);font-size:24px;color:var(--blue);display:grid;place-items:center}
+.step:active{transform:translateY(3px);box-shadow:none}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:16px;border-radius:99px;background:linear-gradient(90deg,var(--blue) var(--p,50%),#E9EBEF var(--p,50%));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 3px 0 var(--blue-d);cursor:grab}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 3px 0 var(--blue-d);cursor:grab}
+input[type=range]:focus-visible::-webkit-slider-thumb{outline:3px solid var(--sun);outline-offset:2px}
+.ends{display:flex;justify-content:space-between;color:#9CA3AF;font-size:13px;margin-top:8px;padding:0 58px}
+
+/* chips + calendar */
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.chip{border:2px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 4px 0 var(--line);padding:14px 0;font-family:var(--display);font-weight:700;font-size:18px}
+.chip[aria-pressed="true"]{border-color:#84D8FF;background:var(--blue-l);color:var(--blue-d);box-shadow:0 4px 0 #84D8FF}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cell{aspect-ratio:1;border:2px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 3px 0 var(--line);font-family:var(--display);font-weight:600;font-size:16px;display:grid;place-items:center;position:relative;padding:0}
+.cell[aria-pressed="true"]{border-color:#84D8FF;background:var(--blue-l);color:var(--blue-d);box-shadow:0 3px 0 #84D8FF}
+.cal.locked .cell{pointer-events:none}
+
+/* ---------- reveal ---------- */
+.reveal{margin-top:20px;border-radius:22px;background:var(--sky);padding:18px;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.92) translateY(10px)}}
+.reveal h3{font-family:var(--display);font-size:20px;margin:0 0 6px}
+.reveal p{margin:6px 0;font-size:16px;line-height:1.45;font-weight:700;color:#3F4652}
+.big-n{font-family:var(--display);font-weight:700;font-size:clamp(44px,13vw,64px);line-height:1;margin:2px 0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.meter{position:relative;height:84px;margin:2px 10px 12px}
+.meter .tr{position:absolute;left:0;right:0;top:37px;height:10px;border-radius:99px;background:#fff}
+.meter .gap{position:absolute;top:37px;height:10px;border-radius:99px;background:repeating-linear-gradient(90deg,#BFE6FB 0 6px,transparent 6px 10px)}
+.meter .pin{position:absolute;top:0;transform:translateX(calc(var(--x,50) * -1%));display:flex;flex-direction:column;align-items:center;gap:3px;transition:left 1s cubic-bezier(.2,1.2,.4,1)}
+.meter .pin span{font-family:var(--display);font-size:13px;padding:3px 9px;border-radius:99px;color:#fff;white-space:nowrap}
+.meter .pin i{width:22px;height:22px;border-radius:50%;border:4px solid #fff;margin-top:0;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.meter .you span,.meter .you i{background:var(--blue)} .meter .real span,.meter .real i{background:var(--ink)}
+.meter .real{top:31px} .meter .real span{order:2;margin-top:2px} .meter .real i{order:1;margin-top:0}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.tile{background:#fff;border-radius:16px;padding:12px;border:2px solid var(--line)}
+.tile b{display:block;font-family:var(--display);font-size:22px;line-height:1.1}
+.tile span{font-size:13px;color:var(--muted)}
+.c-in{color:var(--in-d)} .c-out{color:var(--out-d)} .c-b{color:var(--borrow)} .c-blue{color:var(--blue-d)}
+.vs{display:grid;gap:10px;margin:8px 0}
+.vs .row{display:grid;grid-template-columns:42px 1fr;align-items:center;gap:10px;font-size:14px}
+.vs .track{height:34px;border-radius:12px;background:#fff;overflow:hidden}
+.vs .fill{height:100%;border-radius:12px;display:flex;align-items:center;padding:0 12px;color:#fff;font-family:var(--display);font-size:17px;white-space:nowrap;width:0;transition:width 1s cubic-bezier(.2,.9,.3,1)}
+.months{display:grid;gap:5px;margin:12px 0 6px}
+.mrow{display:grid;grid-template-columns:34px 1fr 26px;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.dots{display:grid;grid-template-columns:repeat(31,1fr);gap:2px}
+.dots i{aspect-ratio:1;border-radius:3px;background:#DCE3EA}
+.dots i.none{background:transparent}
+.dots i.on{background:var(--borrow);transform:scale(0);animation:dot .35s forwards}
+@keyframes dot{to{transform:scale(1)}}
+.mrow b{font-family:var(--display);color:var(--borrow);text-align:right}
+.mrow b.z{color:#C3C8CF}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+.hbars{display:grid;gap:8px;margin-top:10px}
+.hb{display:grid;grid-template-columns:1fr;gap:3px;font-size:14px}
+.hb .lab{display:flex;justify-content:space-between;gap:10px}.hb .lab span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hb .lab b{white-space:nowrap}
+.hb .t{height:14px;border-radius:99px;background:#fff;overflow:hidden}
+.hb .t i{display:block;height:100%;border-radius:99px;background:var(--out);width:0;transition:width .9s cubic-bezier(.2,.9,.3,1)}
+.hb.me .lab{color:var(--blue-d)}
+.chart{width:100%;height:auto;display:block;margin-top:8px}
+.list{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+.list li{background:#fff;border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;font-size:14px;border:2px solid var(--line)}
+.list li b{font-family:var(--display);white-space:nowrap}
+.sms{font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:600;background:#fff;border-radius:14px;border:2px dashed #D6DBE1;padding:10px 12px;color:#4B5563;margin-top:10px;line-height:1.45}
+
+/* ---------- footer / feedback ---------- */
+.foot{border-top:2px solid var(--line);background:#fff;padding:14px 20px calc(16px + env(safe-area-inset-bottom));transition:background .25s}
+.foot .inner{max-width:720px;margin:0 auto;display:grid;gap:12px}
+.fb{display:none;align-items:center;gap:12px}
+.fb .badge{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#fff;font-size:24px;flex:none}
+.fb strong{font-family:var(--display);font-size:22px;display:block;line-height:1.1}
+.fb span{font-size:15px}
+.foot.perfect{background:var(--blue-l);border-color:transparent}
+.foot.perfect .fb{display:flex;color:var(--blue-d)}
+.foot.close{background:var(--sun-l);border-color:transparent}
+.foot.close .fb{display:flex;color:#8A6400}
+.foot.miss{background:var(--orange-l);border-color:transparent}
+.foot.miss .fb{display:flex;color:#B35F00}
+.foot.perfect .btn{background:var(--blue)}
+.foot.close .btn{background:var(--sun);color:#5B4300;box-shadow:0 5px 0 var(--sun-d)}
+.foot.miss .btn{background:var(--orange);box-shadow:0 5px 0 #D97F00}
+.xpfly{position:fixed;font-family:var(--display);font-weight:700;font-size:22px;color:var(--blue);pointer-events:none;animation:fly 1.1s ease-out forwards;z-index:30}
+@keyframes fly{from{opacity:1;transform:translateY(0) scale(.8)}to{opacity:0;transform:translateY(-70px) scale(1.2)}}
+
+/* ---------- intro ---------- */
+.intro{text-align:center;padding-top:10px}
+.intro .dithi{width:118px;height:118px;margin:6px auto 0}
+.intro .path{transform:scale(.82);transform-origin:top center;margin-bottom:-60px}
+.intro h1{font-size:36px;line-height:1.05;margin:12px 0 8px}
+.intro h1 em{font-style:normal;color:var(--blue)}
+.intro p.lead{font-size:17px;color:#4B5563;max-width:400px;margin:0 auto 18px;line-height:1.45}
+.path{position:relative;margin:8px auto 10px;width:260px;display:grid;gap:8px}
+.node{width:56px;height:50px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:20px;color:#fff;background:#E5E7EB;box-shadow:0 6px 0 #CDD1D6;margin:0 auto;position:relative}
+.node.cur{background:var(--blue);box-shadow:0 6px 0 var(--blue-d)}
+.node.cur::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:4px solid #BDE8FD;animation:ring 1.8s ease-in-out infinite}
+@keyframes ring{50%{transform:scale(1.08);opacity:.6}}
+.node.done{background:var(--sun);box-shadow:0 6px 0 var(--sun-d);color:#5B4300}
+.node.boss{background:#FFE1BD;box-shadow:0 6px 0 #F5C48A}
+.node svg{width:26px;height:26px}
+.demo{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:#6B7280;background:#F3F4F6;border-radius:99px;padding:5px 11px;margin:4px 0}
+.credit{font-size:12.5px;color:#9CA3AF;text-align:center;margin-top:14px}
+.credit a{color:inherit}
+
+/* ---------- end ---------- */
+.end{text-align:center}
+.trophy{font-family:var(--display);font-size:30px;margin:6px 0 2px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.st{border:2px solid;border-radius:16px;overflow:hidden}
+.st .h{font-family:var(--display);font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:5px 0}
+.st .v{font-family:var(--display);font-size:24px;padding:10px 0;background:#fff}
+.st.a{border-color:var(--sun);} .st.a .h{background:var(--sun);color:#5B4300} .st.a .v{color:#B88500}
+.st.b{border-color:var(--blue)} .st.b .h{background:var(--blue)} .st.b .v{color:var(--blue-d)}
+.st.c{border-color:var(--orange)} .st.c .h{background:var(--orange)} .st.c .v{color:#D97F00}
+.card{position:relative;margin:8px auto 16px;max-width:360px;border-radius:28px;padding:22px 20px 18px;text-align:left;color:#fff;overflow:hidden;
+  background:linear-gradient(160deg,#1CB0F6 0%,#4B7BF5 52%,#8E4DF0 100%);box-shadow:0 8px 0 #5B3DC2}
+.card .brand{font-family:var(--display);font-size:15px;opacity:.9;display:flex;justify-content:space-between}
+.card h3{font-family:var(--display);font-size:27px;line-height:1.05;margin:10px 0 14px;padding-right:70px}
+.card .stk{position:absolute;right:14px;top:36px;width:78px;height:78px;transform:rotate(10deg)}
+.card .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card .g{background:rgba(255,255,255,.16);border-radius:16px;padding:10px 12px}
+.card .g b small{font-size:12px;opacity:.85;margin-right:3px}
+.card .g b{font-family:var(--display);font-size:20px;display:block;line-height:1.1;white-space:nowrap}
+.card .g span{font-size:12.5px;opacity:.92}
+.card .g.wide{grid-column:span 2;display:flex;align-items:center;gap:12px}
+.card .foot2{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12.5px;opacity:.95}
+.card .score{background:var(--sun);color:#5B4300;border-radius:99px;padding:4px 11px;font-family:var(--display);font-size:14px;white-space:nowrap;flex:none}
+.card .foot2{gap:10px}
+.card .sp{position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)}
+.actions{display:grid;gap:12px;max-width:360px;margin:0 auto}
+.toast{position:fixed;left:50%;top:64px;transform:translateX(-50%) translateY(-14px);background:var(--ink);color:#fff;border-radius:14px;padding:10px 16px;font-size:15px;opacity:0;transition:.3s;pointer-events:none;z-index:40}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* ---------- side panel (desktop) ---------- */
+.panel{border:2px solid var(--line);border-radius:20px;padding:18px}
+.panel h4{font-family:var(--display);font-size:19px;margin:0 0 10px}
+.panel .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:15px}
+.panel .row + .row{border-top:2px solid #F1F2F4}
+.panel .row b{font-family:var(--display);font-size:20px}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.plist li{display:flex;gap:10px;align-items:center;font-size:14.5px;color:#9CA3AF}
+.plist li i{width:24px;height:24px;border-radius:50%;background:#E5E7EB;flex:none;display:grid;place-items:center;font-style:normal;font-size:12px;color:#fff;font-family:var(--display)}
+.plist li.done{color:var(--ink)} .plist li.done i{background:var(--sun);color:#5B4300}
+.plist li.cur{color:var(--blue-d)} .plist li.cur i{background:var(--blue)}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:20}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .dots i.on{transform:none}
+}
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="app">
+  <main class="lesson">
+    <header class="top" id="top" hidden>
+      <button class="icon-btn" id="quit" aria-label="Back to start">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="bar" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0" id="bar"><i id="barFill"></i></div>
+      <div class="pill flame" id="streakPill" aria-label="Streak"><svg width="20" height="22" viewBox="0 0 20 24"><path d="M10 1c1 4 6 6 6 13a6 6 0 0 1-12 0c0-3 1.5-5 3-6 0 2 1 3.5 2.5 3.5C8 7 9 4 10 1z" fill="#FF9600"/><path d="M10 13c.6 2 3 3 3 5.5a3 3 0 0 1-6 0c0-1.6 1-2.6 1.6-3 .1 1 .6 1.5 1.2 1.5-.4-1.4-.3-2.8.2-4z" fill="#FFC800"/></svg><span id="streak">0</span></div>
+      <div class="pill gem" id="xpPill" aria-label="XP"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2l9 7-9 13L3 9z" fill="#1CB0F6"/><path d="M12 2l4 7H8z" fill="#84D8FF"/></svg><span id="xp">0</span></div>
+    </header>
+    <section class="stage" id="stage" aria-live="polite"></section>
+    <footer class="foot" id="foot" hidden>
+      <div class="inner">
+        <div class="fb" id="fb" role="status"><div class="badge" id="fbBadge" aria-hidden="true"></div><div><strong id="fbTitle"></strong><span id="fbText"></span></div></div>
+        <button class="btn" id="mainBtn" disabled>Check</button>
+      </div>
+    </footer>
+  </main>
+  <aside class="side" aria-label="Your run">
+    <div class="panel">
+      <h4>Your run</h4>
+      <div class="row"><span>Streak</span><b style="color:var(--orange)" id="sStreak">0</b></div>
+      <div class="row"><span>XP earned</span><b style="color:var(--blue)" id="sXp">0</b></div>
+      <div class="row"><span>Spot-on guesses</span><b style="color:var(--borrow)" id="sSpot">0</b></div>
+    </div>
+    <div class="panel">
+      <h4>Amani's year, 9 levels</h4>
+      <ul class="plist" id="plist"></ul>
+    </div>
+    <div class="panel" style="font-size:14px;color:var(--muted);line-height:1.45">
+      <div class="demo" style="margin:0 0 8px">Invented demo data</div>
+      <div>Amani is a fictional person in Nairobi. Every figure here comes from invented demo data covering 17 Nov 2025 to 14 Nov 2026, in Kenya shillings.</div>
+      <div class="credit" style="text-align:left">Pesadithi · made by Mark Kaigwa · <a href="https://mark.co.ke" target="_blank" rel="noopener">mark.co.ke</a></div>
+    </div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const D = {"_note":"Invented demo data for Amani, a fictional person in Nairobi. KES. 12 months.","person":"Amani","currency":"KES","start":"2025-11-17","end":"2026-11-14","days":363,"transactions":716,"totals":{"in":1908200,"out":1837790,"movedToOwnAccounts":36000,"fees":12624,"avoidable":1890},"fuliza":{"daysOwing":40,"draws":30,"drawn":44425,"cost":697,"medianDraw":631.5,"drawsAfter7pm":6},"halfLifeDays":7.7,"threeQuarterDays":16.5,"lowestBalanceDayOfMonth":25,"bigInflowDays":[26,9,21],"habits":{"peakWeekday":5,"peakHour":10,"lateNightShare":0.04878481954056799,"weekendShare":0.446861176940709,"cafeVisits":363,"cafeSpend":381390,"cafePerWeek":7,"peopleSends":102,"peopleFees":2322,"redraw":0},"months":[{"month":"2025-11","in":148250,"out":22440,"daysOwingFuliza":9,"partial":true},{"month":"2025-12","in":165100,"out":162820,"daysOwingFuliza":3,"partial":false},{"month":"2026-01","in":152750,"out":168460,"daysOwingFuliza":15,"partial":false},{"month":"2026-02","in":152750,"out":124150,"daysOwingFuliza":12,"partial":false},{"month":"2026-03","in":172950,"out":155070,"daysOwingFuliza":0,"partial":false},{"month":"2026-04","in":154450,"out":157550,"daysOwingFuliza":0,"partial":false},{"month":"2026-05","in":160600,"out":162760,"daysOwingFuliza":0,"partial":false},{"month":"2026-06","in":152750,"out":155880,"daysOwingFuliza":0,"partial":false},{"month":"2026-07","in":154450,"out":159260,"daysOwingFuliza":1,"partial":false},{"month":"2026-08","in":172950,"out":164550,"daysOwingFuliza":0,"partial":false},{"month":"2026-09","in":162250,"out":149940,"daysOwingFuliza":0,"partial":false},{"month":"2026-10","in":154450,"out":152600,"daysOwingFuliza":0,"partial":false},{"month":"2026-11","in":4500,"out":102310,"daysOwingFuliza":0,"partial":true}],"daily":[{"date":"2025-11-17","in":0,"out":450,"balance":0,"fulizaOwed":4862},{"date":"2025-11-18","in":0,"out":2550,"balance":0,"fulizaOwed":7457},{"date":"2025-11-19","in":0,"out":0,"balance":0,"fulizaOwed":7457},{"date":"2025-11-20","in":0,"out":0,"balance":0,"fulizaOwed":7457},{"date":"2025-11-21","in":0,"out":420,"balance":0,"fulizaOwed":7882},{"date":"2025-11-22","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-23","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-24","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-25","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-26","in":148250,"out":1070,"balance":140368,"fulizaOwed":0},{"date":"2025-11-27","in":0,"out":550,"balance":138748,"fulizaOwed":0},{"date":"2025-11-28","in":0,"out":4650,"balance":134098,"fulizaOwed":0},{"date":"2025-11-29","in":0,"out":12550,"balance":121548,"fulizaOwed":0},{"date":"2025-11-30","in":0,"out":200,"balance":121348,"fulizaOwed":0},{"date":"2025-12-01","in":0,"out":1650,"balance":120698,"fulizaOwed":0},{"date":"2025-12-02","in":0,"out":39830,"balance":79747,"fulizaOwed":0},{"date":"2025-12-03","in":0,"out":15350,"balance":64647,"fulizaOwed":0},{"date":"2025-12-04","in":0,"out":2730,"balance":61652,"fulizaOwed":0},{"date":"2025-12-05","in":0,"out":5600,"balance":58527,"fulizaOwed":0},{"date":"2025-12-06","in":0,"out":13900,"balance":41993,"fulizaOwed":0},{"date":"2025-12-07","in":0,"out":2900,"balance":39093,"fulizaOwed":0},{"date":"2025-12-08","in":0,"out":3160,"balance":36973,"fulizaOwed":0},{"date":"2025-12-09","in":4500,"out":1250,"balance":40413,"fulizaOwed":0},{"date":"2025-12-10","in":0,"out":1260,"balance":37903,"fulizaOwed":0},{"date":"2025-12-11","in":0,"out":550,"balance":37353,"fulizaOwed":0},{"date":"2025-12-12","in":0,"out":4180,"balance":33173,"fulizaOwed":0},{"date":"2025-12-13","in":0,"out":14300,"balance":19073,"fulizaOwed":0},{"date":"2025-12-14","in":0,"out":4000,"balance":17350,"fulizaOwed":0},{"date":"2025-12-15","in":0,"out":650,"balance":14200,"fulizaOwed":0},{"date":"2025-12-16","in":0,"out":610,"balance":13590,"fulizaOwed":0},{"date":"2025-12-17","in":0,"out":610,"balance":12980,"fulizaOwed":0},{"date":"2025-12-18","in":0,"out":3930,"balance":9023,"fulizaOwed":0},{"date":"2025-12-19","in":0,"out":5100,"balance":3923,"fulizaOwed":0},{"date":"2025-12-20","in":0,"out":10500,"balance":0,"fulizaOwed":6642},{"date":"2025-12-21","in":12350,"out":2500,"balance":5708,"fulizaOwed":0},{"date":"2025-12-22","in":0,"out":1350,"balance":2858,"fulizaOwed":0},{"date":"2025-12-23","in":0,"out":1330,"balance":515,"fulizaOwed":0},{"date":"2025-12-24","in":0,"out":4000,"balance":0,"fulizaOwed":3573},{"date":"2025-12-25","in":0,"out":610,"balance":0,"fulizaOwed":4189},{"date":"2025-12-26","in":148250,"out":0,"balance":144061,"fulizaOwed":0},{"date":"2025-12-27","in":0,"out":14900,"balance":129161,"fulizaOwed":0},{"date":"2025-12-28","in":0,"out":3500,"balance":125648,"fulizaOwed":0},{"date":"2025-12-29","in":0,"out":350,"balance":125298,"fulizaOwed":0},{"date":"2025-12-30","in":0,"out":1350,"balance":124048,"fulizaOwed":0},{"date":"2025-12-31","in":0,"out":870,"balance":123078,"fulizaOwed":0},{"date":"2026-01-01","in":0,"out":1780,"balance":121291,"fulizaOwed":0},{"date":"2026-01-02","in":0,"out":41080,"balance":80103,"fulizaOwed":0},{"date":"2026-01-03","in":0,"out":25750,"balance":55253,"fulizaOwed":0},{"date":"2026-01-04","in":0,"out":4700,"balance":49520,"fulizaOwed":0},{"date":"2026-01-05","in":0,"out":3450,"balance":46495,"fulizaOwed":0},{"date":"2026-01-06","in":0,"out":6270,"balance":41061,"fulizaOwed":0},{"date":"2026-01-07","in":0,"out":1550,"balance":38178,"fulizaOwed":0},{"date":"2026-01-08","in":0,"out":34850,"balance":36058,"fulizaOwed":0},{"date":"2026-01-09","in":4500,"out":6330,"balance":2370,"fulizaOwed":2568},{"date":"2026-01-10","in":0,"out":6500,"balance":0,"fulizaOwed":5194},{"date":"2026-01-11","in":0,"out":250,"balance":0,"fulizaOwed":5447},{"date":"2026-01-12","in":0,"out":1730,"balance":0,"fulizaOwed":6588},{"date":"2026-01-13","in":0,"out":350,"balance":0,"fulizaOwed":7561},{"date":"2026-01-14","in":0,"out":900,"balance":4259,"fulizaOwed":0},{"date":"2026-01-15","in":0,"out":1510,"balance":1849,"fulizaOwed":0},{"date":"2026-01-16","in":0,"out":2220,"balance":0,"fulizaOwed":374},{"date":"2026-01-17","in":0,"out":7300,"balance":0,"fulizaOwed":7747},{"date":"2026-01-18","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-19","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-20","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-21","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-22","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-23","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-24","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-25","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-26","in":148250,"out":0,"balance":140503,"fulizaOwed":0},{"date":"2026-01-27","in":0,"out":780,"balance":127123,"fulizaOwed":0},{"date":"2026-01-28","in":0,"out":1650,"balance":125159,"fulizaOwed":0},{"date":"2026-01-29","in":0,"out":1480,"balance":124679,"fulizaOwed":0},{"date":"2026-01-30","in":0,"out":5930,"balance":118336,"fulizaOwed":0},{"date":"2026-01-31","in":0,"out":12100,"balance":105623,"fulizaOwed":0},{"date":"2026-02-01","in":0,"out":4000,"balance":101623,"fulizaOwed":0},{"date":"2026-02-02","in":0,"out":40080,"balance":61885,"fulizaOwed":0},{"date":"2026-02-03","in":0,"out":15900,"balance":45428,"fulizaOwed":0},{"date":"2026-02-04","in":0,"out":3200,"balance":42201,"fulizaOwed":0},{"date":"2026-02-05","in":0,"out":3610,"balance":39176,"fulizaOwed":0},{"date":"2026-02-06","in":0,"out":5810,"balance":33582,"fulizaOwed":0},{"date":"2026-02-07","in":0,"out":8500,"balance":24522,"fulizaOwed":0},{"date":"2026-02-08","in":0,"out":8900,"balance":19295,"fulizaOwed":0},{"date":"2026-02-09","in":4500,"out":0,"balance":19795,"fulizaOwed":0},{"date":"2026-02-10","in":0,"out":2050,"balance":19245,"fulizaOwed":0},{"date":"2026-02-11","in":0,"out":1500,"balance":16822,"fulizaOwed":0},{"date":"2026-02-12","in":0,"out":4390,"balance":11767,"fulizaOwed":0},{"date":"2026-02-13","in":0,"out":7850,"balance":4217,"fulizaOwed":0},{"date":"2026-02-14","in":0,"out":9400,"balance":0,"fulizaOwed":5568},{"date":"2026-02-15","in":0,"out":0,"balance":0,"fulizaOwed":5568},{"date":"2026-02-16","in":0,"out":480,"balance":0,"fulizaOwed":6053},{"date":"2026-02-17","in":0,"out":1330,"balance":0,"fulizaOwed":7397},{"date":"2026-02-18","in":0,"out":350,"balance":0,"fulizaOwed":7750},{"date":"2026-02-19","in":0,"out":0,"balance":0,"fulizaOwed":7750},{"date":"2026-02-20","in":0,"out":0,"balance":0,"fulizaOwed":7750},{"date":"2026-02-21","in":0,"out":200,"balance":0,"fulizaOwed":7952},{"date":"2026-02-22","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-23","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-24","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-25","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-26","in":148250,"out":0,"balance":140298,"fulizaOwed":0},{"date":"2026-02-27","in":0,"out":0,"balance":140298,"fulizaOwed":0},{"date":"2026-02-28","in":0,"out":6600,"balance":133698,"fulizaOwed":0},{"date":"2026-03-01","in":0,"out":2500,"balance":131198,"fulizaOwed":0},{"date":"2026-03-02","in":0,"out":38850,"balance":92590,"fulizaOwed":0},{"date":"2026-03-03","in":0,"out":15780,"balance":76360,"fulizaOwed":0},{"date":"2026-03-04","in":0,"out":3600,"balance":73340,"fulizaOwed":0},{"date":"2026-03-05","in":0,"out":3000,"balance":69702,"fulizaOwed":0},{"date":"2026-03-06","in":0,"out":6280,"balance":64718,"fulizaOwed":0},{"date":"2026-03-07","in":0,"out":12100,"balance":51288,"fulizaOwed":0},{"date":"2026-03-08","in":0,"out":6700,"balance":47048,"fulizaOwed":0},{"date":"2026-03-09","in":12350,"out":1920,"balance":56898,"fulizaOwed":0},{"date":"2026-03-10","in":0,"out":1050,"balance":54165,"fulizaOwed":0},{"date":"2026-03-11","in":0,"out":610,"balance":53305,"fulizaOwed":0},{"date":"2026-03-12","in":0,"out":3000,"balance":50253,"fulizaOwed":0},{"date":"2026-03-13","in":0,"out":2930,"balance":47323,"fulizaOwed":0},{"date":"2026-03-14","in":0,"out":9000,"balance":38323,"fulizaOwed":0},{"date":"2026-03-15","in":0,"out":2500,"balance":35823,"fulizaOwed":0},{"date":"2026-03-16","in":0,"out":1640,"balance":34433,"fulizaOwed":0},{"date":"2026-03-17","in":0,"out":0,"balance":34433,"fulizaOwed":0},{"date":"2026-03-18","in":0,"out":1500,"balance":32668,"fulizaOwed":0},{"date":"2026-03-19","in":0,"out":1630,"balance":31031,"fulizaOwed":0},{"date":"2026-03-20","in":0,"out":3860,"balance":27171,"fulizaOwed":0},{"date":"2026-03-21","in":12350,"out":7600,"balance":36721,"fulizaOwed":0},{"date":"2026-03-22","in":0,"out":2500,"balance":29421,"fulizaOwed":0},{"date":"2026-03-23","in":0,"out":1080,"balance":28328,"fulizaOwed":0},{"date":"2026-03-24","in":0,"out":250,"balance":28078,"fulizaOwed":0},{"date":"2026-03-25","in":0,"out":480,"balance":27598,"fulizaOwed":0},{"date":"2026-03-26","in":148250,"out":1080,"balance":174755,"fulizaOwed":0},{"date":"2026-03-27","in":0,"out":3730,"balance":171025,"fulizaOwed":0},{"date":"2026-03-28","in":0,"out":13400,"balance":157625,"fulizaOwed":0},{"date":"2026-03-29","in":0,"out":5500,"balance":152125,"fulizaOwed":0},{"date":"2026-03-30","in":0,"out":450,"balance":151675,"fulizaOwed":0},{"date":"2026-03-31","in":0,"out":550,"balance":151125,"fulizaOwed":0},{"date":"2026-04-01","in":0,"out":550,"balance":150575,"fulizaOwed":0},{"date":"2026-04-02","in":0,"out":39980,"balance":110474,"fulizaOwed":0},{"date":"2026-04-03","in":0,"out":18580,"balance":91794,"fulizaOwed":0},{"date":"2026-04-04","in":0,"out":10700,"balance":81074,"fulizaOwed":0},{"date":"2026-04-05","in":0,"out":9300,"balance":75249,"fulizaOwed":0},{"date":"2026-04-06","in":0,"out":5600,"balance":66752,"fulizaOwed":0},{"date":"2026-04-07","in":0,"out":1650,"balance":64445,"fulizaOwed":0},{"date":"2026-04-08","in":0,"out":3650,"balance":62325,"fulizaOwed":0},{"date":"2026-04-09","in":6200,"out":1510,"balance":66962,"fulizaOwed":0},{"date":"2026-04-10","in":0,"out":5750,"balance":61402,"fulizaOwed":0},{"date":"2026-04-11","in":0,"out":12800,"balance":47879,"fulizaOwed":0},{"date":"2026-04-12","in":0,"out":2000,"balance":44837,"fulizaOwed":0},{"date":"2026-04-13","in":0,"out":1400,"balance":44037,"fulizaOwed":0},{"date":"2026-04-14","in":0,"out":1350,"balance":42061,"fulizaOwed":0},{"date":"2026-04-15","in":0,"out":780,"balance":41281,"fulizaOwed":0},{"date":"2026-04-16","in":0,"out":1130,"balance":55071,"fulizaOwed":0},{"date":"2026-04-17","in":0,"out":4200,"balance":49741,"fulizaOwed":0},{"date":"2026-04-18","in":0,"out":6900,"balance":42813,"fulizaOwed":0},{"date":"2026-04-19","in":0,"out":4000,"balance":38813,"fulizaOwed":0},{"date":"2026-04-20","in":0,"out":610,"balance":38203,"fulizaOwed":0},{"date":"2026-04-21","in":0,"out":450,"balance":37753,"fulizaOwed":0},{"date":"2026-04-22","in":0,"out":1080,"balance":36660,"fulizaOwed":0},{"date":"2026-04-23","in":0,"out":100,"balance":36560,"fulizaOwed":0},{"date":"2026-04-24","in":0,"out":3700,"balance":33310,"fulizaOwed":0},{"date":"2026-04-25","in":0,"out":8200,"balance":24653,"fulizaOwed":0},{"date":"2026-04-26","in":148250,"out":8400,"balance":167990,"fulizaOwed":0},{"date":"2026-04-27","in":0,"out":610,"balance":163880,"fulizaOwed":0},{"date":"2026-04-28","in":0,"out":0,"balance":163880,"fulizaOwed":0},{"date":"2026-04-29","in":0,"out":1770,"balance":162103,"fulizaOwed":0},{"date":"2026-04-30","in":0,"out":800,"balance":161303,"fulizaOwed":0},{"date":"2026-05-01","in":0,"out":3020,"balance":158283,"fulizaOwed":0},{"date":"2026-05-02","in":0,"out":51900,"balance":106275,"fulizaOwed":0},{"date":"2026-05-03","in":0,"out":16500,"balance":89675,"fulizaOwed":0},{"date":"2026-05-04","in":0,"out":2500,"balance":87155,"fulizaOwed":0},{"date":"2026-05-05","in":0,"out":3420,"balance":84130,"fulizaOwed":0},{"date":"2026-05-06","in":0,"out":6210,"balance":78726,"fulizaOwed":0},{"date":"2026-05-07","in":0,"out":2820,"balance":74623,"fulizaOwed":0},{"date":"2026-05-08","in":0,"out":6000,"balance":68603,"fulizaOwed":0},{"date":"2026-05-09","in":12350,"out":7100,"balance":73853,"fulizaOwed":0},{"date":"2026-05-10","in":0,"out":2500,"balance":71353,"fulizaOwed":0},{"date":"2026-05-11","in":0,"out":550,"balance":70803,"fulizaOwed":0},{"date":"2026-05-12","in":0,"out":420,"balance":70383,"fulizaOwed":0},{"date":"2026-05-13","in":0,"out":480,"balance":69903,"fulizaOwed":0},{"date":"2026-05-14","in":0,"out":1200,"balance":68703,"fulizaOwed":0},{"date":"2026-05-15","in":0,"out":4200,"balance":64503,"fulizaOwed":0},{"date":"2026-05-16","in":0,"out":12500,"balance":52003,"fulizaOwed":0},{"date":"2026-05-17","in":0,"out":300,"balance":51696,"fulizaOwed":0},{"date":"2026-05-18","in":0,"out":3730,"balance":48546,"fulizaOwed":0},{"date":"2026-05-19","in":0,"out":1250,"balance":30373,"fulizaOwed":0},{"date":"2026-05-20","in":0,"out":930,"balance":29443,"fulizaOwed":0},{"date":"2026-05-21","in":0,"out":1250,"balance":28186,"fulizaOwed":0},{"date":"2026-05-22","in":0,"out":0,"balance":28186,"fulizaOwed":0},{"date":"2026-05-23","in":0,"out":9700,"balance":18486,"fulizaOwed":0},{"date":"2026-05-24","in":0,"out":7000,"balance":15434,"fulizaOwed":0},{"date":"2026-05-25","in":0,"out":480,"balance":10954,"fulizaOwed":0},{"date":"2026-05-26","in":148250,"out":800,"balance":159204,"fulizaOwed":0},{"date":"2026-05-27","in":0,"out":1610,"balance":156894,"fulizaOwed":0},{"date":"2026-05-28","in":0,"out":780,"balance":156314,"fulizaOwed":0},{"date":"2026-05-29","in":0,"out":610,"balance":155397,"fulizaOwed":0},{"date":"2026-05-30","in":0,"out":10500,"balance":144897,"fulizaOwed":0},{"date":"2026-05-31","in":0,"out":2500,"balance":142397,"fulizaOwed":0},{"date":"2026-06-01","in":0,"out":550,"balance":141847,"fulizaOwed":0},{"date":"2026-06-02","in":0,"out":41200,"balance":100516,"fulizaOwed":0},{"date":"2026-06-03","in":0,"out":17050,"balance":83343,"fulizaOwed":0},{"date":"2026-06-04","in":0,"out":3100,"balance":80823,"fulizaOwed":0},{"date":"2026-06-05","in":0,"out":7460,"balance":72725,"fulizaOwed":0},{"date":"2026-06-06","in":0,"out":15700,"balance":58591,"fulizaOwed":0},{"date":"2026-06-07","in":0,"out":0,"balance":58591,"fulizaOwed":0},{"date":"2026-06-08","in":0,"out":2100,"balance":54848,"fulizaOwed":0},{"date":"2026-06-09","in":0,"out":420,"balance":54428,"fulizaOwed":0},{"date":"2026-06-10","in":0,"out":850,"balance":53771,"fulizaOwed":0},{"date":"2026-06-11","in":0,"out":1230,"balance":52334,"fulizaOwed":0},{"date":"2026-06-12","in":0,"out":4650,"balance":47684,"fulizaOwed":0},{"date":"2026-06-13","in":0,"out":11200,"balance":36484,"fulizaOwed":0},{"date":"2026-06-14","in":0,"out":5000,"balance":35471,"fulizaOwed":0},{"date":"2026-06-15","in":0,"out":1350,"balance":30114,"fulizaOwed":0},{"date":"2026-06-16","in":0,"out":780,"balance":29334,"fulizaOwed":0},{"date":"2026-06-17","in":0,"out":1500,"balance":27811,"fulizaOwed":0},{"date":"2026-06-18","in":0,"out":1950,"balance":26296,"fulizaOwed":0},{"date":"2026-06-19","in":0,"out":0,"balance":26296,"fulizaOwed":0},{"date":"2026-06-20","in":0,"out":9050,"balance":17639,"fulizaOwed":0},{"date":"2026-06-21","in":4500,"out":3500,"balance":21276,"fulizaOwed":0},{"date":"2026-06-22","in":0,"out":480,"balance":17296,"fulizaOwed":0},{"date":"2026-06-23","in":0,"out":1450,"balance":15846,"fulizaOwed":0},{"date":"2026-06-24","in":0,"out":2420,"balance":13397,"fulizaOwed":0},{"date":"2026-06-25","in":0,"out":1070,"balance":12327,"fulizaOwed":0},{"date":"2026-06-26","in":148250,"out":2860,"balance":157717,"fulizaOwed":0},{"date":"2026-06-27","in":0,"out":12100,"balance":145617,"fulizaOwed":0},{"date":"2026-06-28","in":0,"out":4100,"balance":145004,"fulizaOwed":0},{"date":"2026-06-29","in":0,"out":1260,"balance":140244,"fulizaOwed":0},{"date":"2026-06-30","in":0,"out":1500,"balance":138721,"fulizaOwed":0},{"date":"2026-07-01","in":0,"out":650,"balance":138071,"fulizaOwed":0},{"date":"2026-07-02","in":0,"out":39500,"balance":98463,"fulizaOwed":0},{"date":"2026-07-03","in":0,"out":18670,"balance":79693,"fulizaOwed":0},{"date":"2026-07-04","in":0,"out":13700,"balance":66173,"fulizaOwed":0},{"date":"2026-07-05","in":0,"out":5500,"balance":62948,"fulizaOwed":0},{"date":"2026-07-06","in":0,"out":5730,"balance":55464,"fulizaOwed":0},{"date":"2026-07-07","in":0,"out":1330,"balance":53354,"fulizaOwed":0},{"date":"2026-07-08","in":0,"out":2750,"balance":51234,"fulizaOwed":0},{"date":"2026-07-09","in":6200,"out":650,"balance":56784,"fulizaOwed":0},{"date":"2026-07-10","in":0,"out":4650,"balance":51484,"fulizaOwed":0},{"date":"2026-07-11","in":0,"out":10200,"balance":41734,"fulizaOwed":0},{"date":"2026-07-12","in":0,"out":0,"balance":41734,"fulizaOwed":0},{"date":"2026-07-13","in":0,"out":650,"balance":56052,"fulizaOwed":0},{"date":"2026-07-14","in":0,"out":1200,"balance":54202,"fulizaOwed":0},{"date":"2026-07-15","in":0,"out":550,"balance":53652,"fulizaOwed":0},{"date":"2026-07-16","in":0,"out":1030,"balance":52872,"fulizaOwed":0},{"date":"2026-07-17","in":0,"out":870,"balance":51752,"fulizaOwed":0},{"date":"2026-07-18","in":0,"out":10900,"balance":40819,"fulizaOwed":0},{"date":"2026-07-19","in":0,"out":2500,"balance":22194,"fulizaOwed":0},{"date":"2026-07-20","in":0,"out":1300,"balance":20887,"fulizaOwed":0},{"date":"2026-07-21","in":0,"out":610,"balance":20277,"fulizaOwed":0},{"date":"2026-07-22","in":0,"out":780,"balance":19497,"fulizaOwed":0},{"date":"2026-07-23","in":0,"out":2430,"balance":18567,"fulizaOwed":0},{"date":"2026-07-24","in":0,"out":9060,"balance":12234,"fulizaOwed":0},{"date":"2026-07-25","in":0,"out":15150,"balance":8334,"fulizaOwed":7051},{"date":"2026-07-26","in":148250,"out":0,"balance":140947,"fulizaOwed":0},{"date":"2026-07-27","in":0,"out":480,"balance":140467,"fulizaOwed":0},{"date":"2026-07-28","in":0,"out":450,"balance":140017,"fulizaOwed":0},{"date":"2026-07-29","in":0,"out":1550,"balance":138454,"fulizaOwed":0},{"date":"2026-07-30","in":0,"out":420,"balance":138034,"fulizaOwed":0},{"date":"2026-07-31","in":0,"out":6000,"balance":132634,"fulizaOwed":0},{"date":"2026-08-01","in":0,"out":7900,"balance":124121,"fulizaOwed":0},{"date":"2026-08-02","in":0,"out":42000,"balance":84500,"fulizaOwed":0},{"date":"2026-08-03","in":0,"out":15300,"balance":66900,"fulizaOwed":0},{"date":"2026-08-04","in":0,"out":1950,"balance":64628,"fulizaOwed":0},{"date":"2026-08-05","in":0,"out":3420,"balance":61603,"fulizaOwed":0},{"date":"2026-08-06","in":0,"out":7580,"balance":53546,"fulizaOwed":0},{"date":"2026-08-07","in":0,"out":0,"balance":53546,"fulizaOwed":0},{"date":"2026-08-08","in":0,"out":10300,"balance":51426,"fulizaOwed":0},{"date":"2026-08-09","in":12350,"out":2500,"balance":55576,"fulizaOwed":0},{"date":"2026-08-10","in":0,"out":650,"balance":52426,"fulizaOwed":0},{"date":"2026-08-11","in":0,"out":1060,"balance":51366,"fulizaOwed":0},{"date":"2026-08-12","in":0,"out":3900,"balance":47414,"fulizaOwed":0},{"date":"2026-08-13","in":0,"out":1130,"balance":46284,"fulizaOwed":0},{"date":"2026-08-14","in":0,"out":0,"balance":46284,"fulizaOwed":0},{"date":"2026-08-15","in":0,"out":11300,"balance":34984,"fulizaOwed":0},{"date":"2026-08-16","in":0,"out":6400,"balance":28584,"fulizaOwed":0},{"date":"2026-08-17","in":0,"out":970,"balance":27714,"fulizaOwed":0},{"date":"2026-08-18","in":0,"out":2610,"balance":24984,"fulizaOwed":0},{"date":"2026-08-19","in":0,"out":0,"balance":24984,"fulizaOwed":0},{"date":"2026-08-20","in":0,"out":780,"balance":24204,"fulizaOwed":0},{"date":"2026-08-21","in":12350,"out":4110,"balance":32444,"fulizaOwed":0},{"date":"2026-08-22","in":0,"out":13300,"balance":20644,"fulizaOwed":0},{"date":"2026-08-23","in":0,"out":2500,"balance":16621,"fulizaOwed":0},{"date":"2026-08-24","in":0,"out":3000,"balance":13592,"fulizaOwed":0},{"date":"2026-08-25","in":0,"out":930,"balance":12655,"fulizaOwed":0},{"date":"2026-08-26","in":148250,"out":610,"balance":160905,"fulizaOwed":0},{"date":"2026-08-27","in":0,"out":900,"balance":159395,"fulizaOwed":0},{"date":"2026-08-28","in":0,"out":5750,"balance":154645,"fulizaOwed":0},{"date":"2026-08-29","in":0,"out":9700,"balance":144632,"fulizaOwed":0},{"date":"2026-08-30","in":0,"out":4000,"balance":139902,"fulizaOwed":0},{"date":"2026-08-31","in":0,"out":0,"balance":139902,"fulizaOwed":0},{"date":"2026-09-01","in":0,"out":870,"balance":139032,"fulizaOwed":0},{"date":"2026-09-02","in":0,"out":39890,"balance":99034,"fulizaOwed":0},{"date":"2026-09-03","in":0,"out":16520,"balance":82864,"fulizaOwed":0},{"date":"2026-09-04","in":0,"out":6620,"balance":75767,"fulizaOwed":0},{"date":"2026-09-05","in":0,"out":8600,"balance":72742,"fulizaOwed":0},{"date":"2026-09-06","in":0,"out":9950,"balance":61145,"fulizaOwed":0},{"date":"2026-09-07","in":0,"out":1330,"balance":55815,"fulizaOwed":0},{"date":"2026-09-08","in":0,"out":2100,"balance":53695,"fulizaOwed":0},{"date":"2026-09-09","in":6200,"out":1020,"balance":58862,"fulizaOwed":0},{"date":"2026-09-10","in":0,"out":0,"balance":58862,"fulizaOwed":0},{"date":"2026-09-11","in":0,"out":3020,"balance":55842,"fulizaOwed":0},{"date":"2026-09-12","in":0,"out":8500,"balance":47642,"fulizaOwed":0},{"date":"2026-09-13","in":0,"out":450,"balance":46878,"fulizaOwed":0},{"date":"2026-09-14","in":0,"out":420,"balance":46458,"fulizaOwed":0},{"date":"2026-09-15","in":0,"out":1060,"balance":61158,"fulizaOwed":0},{"date":"2026-09-16","in":0,"out":550,"balance":60608,"fulizaOwed":0},{"date":"2026-09-17","in":0,"out":1380,"balance":59478,"fulizaOwed":0},{"date":"2026-09-18","in":0,"out":5400,"balance":53808,"fulizaOwed":0},{"date":"2026-09-19","in":0,"out":11300,"balance":42808,"fulizaOwed":0},{"date":"2026-09-20","in":0,"out":4000,"balance":38501,"fulizaOwed":0},{"date":"2026-09-21","in":7800,"out":900,"balance":46301,"fulizaOwed":0},{"date":"2026-09-22","in":0,"out":480,"balance":44921,"fulizaOwed":0},{"date":"2026-09-23","in":0,"out":620,"balance":44301,"fulizaOwed":0},{"date":"2026-09-24","in":0,"out":1780,"balance":42508,"fulizaOwed":0},{"date":"2026-09-25","in":0,"out":7750,"balance":34758,"fulizaOwed":0},{"date":"2026-09-26","in":148250,"out":8700,"balance":174308,"fulizaOwed":0},{"date":"2026-09-27","in":0,"out":4600,"balance":152495,"fulizaOwed":0},{"date":"2026-09-28","in":0,"out":1130,"balance":151365,"fulizaOwed":0},{"date":"2026-09-29","in":0,"out":650,"balance":150715,"fulizaOwed":0},{"date":"2026-09-30","in":0,"out":350,"balance":150365,"fulizaOwed":0},{"date":"2026-10-01","in":0,"out":1070,"balance":149295,"fulizaOwed":0},{"date":"2026-10-02","in":0,"out":39880,"balance":109307,"fulizaOwed":0},{"date":"2026-10-03","in":0,"out":27900,"balance":81307,"fulizaOwed":0},{"date":"2026-10-04","in":0,"out":5500,"balance":75787,"fulizaOwed":0},{"date":"2026-10-05","in":0,"out":3550,"balance":72762,"fulizaOwed":0},{"date":"2026-10-06","in":0,"out":5730,"balance":67228,"fulizaOwed":0},{"date":"2026-10-07","in":0,"out":450,"balance":65998,"fulizaOwed":0},{"date":"2026-10-08","in":0,"out":3100,"balance":63878,"fulizaOwed":0},{"date":"2026-10-09","in":0,"out":650,"balance":62215,"fulizaOwed":0},{"date":"2026-10-10","in":0,"out":11000,"balance":51215,"fulizaOwed":0},{"date":"2026-10-11","in":0,"out":4250,"balance":46965,"fulizaOwed":0},{"date":"2026-10-12","in":0,"out":550,"balance":46415,"fulizaOwed":0},{"date":"2026-10-13","in":0,"out":850,"balance":45865,"fulizaOwed":0},{"date":"2026-10-14","in":0,"out":450,"balance":45108,"fulizaOwed":0},{"date":"2026-10-15","in":0,"out":650,"balance":44458,"fulizaOwed":0},{"date":"2026-10-16","in":0,"out":600,"balance":43845,"fulizaOwed":0},{"date":"2026-10-17","in":0,"out":8900,"balance":36445,"fulizaOwed":0},{"date":"2026-10-18","in":0,"out":2500,"balance":32402,"fulizaOwed":0},{"date":"2026-10-19","in":0,"out":450,"balance":31945,"fulizaOwed":0},{"date":"2026-10-20","in":0,"out":900,"balance":31045,"fulizaOwed":0},{"date":"2026-10-21","in":6200,"out":480,"balance":37245,"fulizaOwed":0},{"date":"2026-10-22","in":0,"out":650,"balance":36115,"fulizaOwed":0},{"date":"2026-10-23","in":0,"out":610,"balance":35505,"fulizaOwed":0},{"date":"2026-10-24","in":0,"out":11000,"balance":26505,"fulizaOwed":0},{"date":"2026-10-25","in":0,"out":3500,"balance":20976,"fulizaOwed":0},{"date":"2026-10-26","in":148250,"out":350,"balance":169226,"fulizaOwed":0},{"date":"2026-10-27","in":0,"out":0,"balance":169226,"fulizaOwed":0},{"date":"2026-10-28","in":0,"out":1380,"balance":167483,"fulizaOwed":0},{"date":"2026-10-29","in":0,"out":480,"balance":167003,"fulizaOwed":0},{"date":"2026-10-30","in":0,"out":3320,"balance":163983,"fulizaOwed":0},{"date":"2026-10-31","in":0,"out":11900,"balance":151876,"fulizaOwed":0},{"date":"2026-11-01","in":0,"out":1500,"balance":150376,"fulizaOwed":0},{"date":"2026-11-02","in":0,"out":39150,"balance":111018,"fulizaOwed":0},{"date":"2026-11-03","in":0,"out":15610,"balance":95918,"fulizaOwed":0},{"date":"2026-11-04","in":0,"out":3050,"balance":92488,"fulizaOwed":0},{"date":"2026-11-05","in":0,"out":4860,"balance":89213,"fulizaOwed":0},{"date":"2026-11-06","in":0,"out":9550,"balance":77756,"fulizaOwed":0},{"date":"2026-11-07","in":0,"out":9200,"balance":68556,"fulizaOwed":0},{"date":"2026-11-08","in":0,"out":2100,"balance":66436,"fulizaOwed":0},{"date":"2026-11-09","in":4500,"out":550,"balance":70936,"fulizaOwed":0},{"date":"2026-11-10","in":0,"out":1060,"balance":69326,"fulizaOwed":0},{"date":"2026-11-11","in":0,"out":450,"balance":68869,"fulizaOwed":0},{"date":"2026-11-12","in":0,"out":730,"balance":68139,"fulizaOwed":0},{"date":"2026-11-13","in":0,"out":2250,"balance":65889,"fulizaOwed":0},{"date":"2026-11-14","in":0,"out":12250,"balance":54089,"fulizaOwed":0}],"dayOfMonth":[{"day":1,"in":0,"out":26040,"fulizaDrawn":0},{"day":2,"in":0,"out":493340,"fulizaDrawn":0},{"day":3,"in":0,"out":218910,"fulizaDrawn":0},{"day":4,"in":0,"out":61350,"fulizaDrawn":0},{"day":5,"in":0,"out":61770,"fulizaDrawn":0},{"day":6,"in":0,"out":98310,"fulizaDrawn":0},{"day":7,"in":0,"out":41830,"fulizaDrawn":0},{"day":8,"in":0,"out":85710,"fulizaDrawn":0},{"day":9,"in":73650,"out":23900,"fulizaDrawn":1013},{"day":10,"in":0,"out":37320,"fulizaDrawn":4130},{"day":11,"in":0,"out":36470,"fulizaDrawn":250},{"day":12,"in":0,"out":34050,"fulizaDrawn":1743},{"day":13,"in":0,"out":43840,"fulizaDrawn":350},{"day":14,"in":0,"out":45170,"fulizaDrawn":5513},{"day":15,"in":0,"out":24550,"fulizaDrawn":0},{"day":16,"in":0,"out":27940,"fulizaDrawn":851},{"day":17,"in":0,"out":27810,"fulizaDrawn":9080},{"day":18,"in":0,"out":42320,"fulizaDrawn":2920},{"day":19,"in":0,"out":26230,"fulizaDrawn":0},{"day":20,"in":0,"out":31930,"fulizaDrawn":6577},{"day":21,"in":55550,"out":22020,"fulizaDrawn":620},{"day":22,"in":0,"out":20620,"fulizaDrawn":0},{"day":23,"in":0,"out":19820,"fulizaDrawn":0},{"day":24,"in":0,"out":42210,"fulizaDrawn":3537},{"day":25,"in":0,"out":38170,"fulizaDrawn":7841},{"day":26,"in":1779000,"out":23870,"fulizaDrawn":0},{"day":27,"in":0,"out":40260,"fulizaDrawn":0},{"day":28,"in":0,"out":43390,"fulizaDrawn":0},{"day":29,"in":0,"out":35900,"fulizaDrawn":0},{"day":30,"in":0,"out":28820,"fulizaDrawn":0},{"day":31,"in":0,"out":33920,"fulizaDrawn":0}],"heat":[{"weekday":0,"hour":0,"amount":0,"count":0},{"weekday":0,"hour":1,"amount":0,"count":0},{"weekday":0,"hour":2,"amount":0,"count":0},{"weekday":0,"hour":3,"amount":0,"count":0},{"weekday":0,"hour":4,"amount":0,"count":0},{"weekday":0,"hour":5,"amount":0,"count":0},{"weekday":0,"hour":6,"amount":0,"count":0},{"weekday":0,"hour":7,"amount":9050,"count":9},{"weekday":0,"hour":8,"amount":13990,"count":30},{"weekday":0,"hour":9,"amount":15000,"count":1},{"weekday":0,"hour":10,"amount":115850,"count":5},{"weekday":0,"hour":11,"amount":0,"count":0},{"weekday":0,"hour":12,"amount":0,"count":0},{"weekday":0,"hour":13,"amount":16580,"count":25},{"weekday":0,"hour":14,"amount":0,"count":0},{"weekday":0,"hour":15,"amount":0,"count":0},{"weekday":0,"hour":16,"amount":0,"count":0},{"weekday":0,"hour":17,"amount":2000,"count":1},{"weekday":0,"hour":18,"amount":11700,"count":6},{"weekday":0,"hour":19,"amount":600,"count":1},{"weekday":0,"hour":20,"amount":0,"count":0},{"weekday":0,"hour":21,"amount":4200,"count":2},{"weekday":0,"hour":22,"amount":0,"count":0},{"weekday":0,"hour":23,"amount":0,"count":0},{"weekday":1,"hour":0,"amount":0,"count":0},{"weekday":1,"hour":1,"amount":0,"count":0},{"weekday":1,"hour":2,"amount":0,"count":0},{"weekday":1,"hour":3,"amount":0,"count":0},{"weekday":1,"hour":4,"amount":0,"count":0},{"weekday":1,"hour":5,"amount":0,"count":0},{"weekday":1,"hour":6,"amount":0,"count":0},{"weekday":1,"hour":7,"amount":9100,"count":7},{"weekday":1,"hour":8,"amount":16860,"count":34},{"weekday":1,"hour":9,"amount":45000,"count":3},{"weekday":1,"hour":10,"amount":77600,"count":5},{"weekday":1,"hour":11,"amount":0,"count":0},{"weekday":1,"hour":12,"amount":0,"count":0},{"weekday":1,"hour":13,"amount":18410,"count":27},{"weekday":1,"hour":14,"amount":0,"count":0},{"weekday":1,"hour":15,"amount":0,"count":0},{"weekday":1,"hour":16,"amount":0,"count":0},{"weekday":1,"hour":17,"amount":0,"count":0},{"weekday":1,"hour":18,"amount":9900,"count":2},{"weekday":1,"hour":19,"amount":3400,"count":4},{"weekday":1,"hour":20,"amount":0,"count":0},{"weekday":1,"hour":21,"amount":2100,"count":1},{"weekday":1,"hour":22,"amount":0,"count":0},{"weekday":1,"hour":23,"amount":0,"count":0},{"weekday":2,"hour":0,"amount":0,"count":0},{"weekday":2,"hour":1,"amount":0,"count":0},{"weekday":2,"hour":2,"amount":0,"count":0},{"weekday":2,"hour":3,"amount":0,"count":0},{"weekday":2,"hour":4,"amount":0,"count":0},{"weekday":2,"hour":5,"amount":0,"count":0},{"weekday":2,"hour":6,"amount":0,"count":0},{"weekday":2,"hour":7,"amount":9150,"count":7},{"weekday":2,"hour":8,"amount":16070,"count":34},{"weekday":2,"hour":9,"amount":30000,"count":2},{"weekday":2,"hour":10,"amount":39250,"count":5},{"weekday":2,"hour":11,"amount":0,"count":0},{"weekday":2,"hour":12,"amount":0,"count":0},{"weekday":2,"hour":13,"amount":16360,"count":23},{"weekday":2,"hour":14,"amount":0,"count":0},{"weekday":2,"hour":15,"amount":0,"count":0},{"weekday":2,"hour":16,"amount":0,"count":0},{"weekday":2,"hour":17,"amount":8000,"count":3},{"weekday":2,"hour":18,"amount":8800,"count":6},{"weekday":2,"hour":19,"amount":5450,"count":7},{"weekday":2,"hour":20,"amount":0,"count":0},{"weekday":2,"hour":21,"amount":4200,"count":2},{"weekday":2,"hour":22,"amount":0,"count":0},{"weekday":2,"hour":23,"amount":0,"count":0},{"weekday":3,"hour":0,"amount":0,"count":0},{"weekday":3,"hour":1,"amount":0,"count":0},{"weekday":3,"hour":2,"amount":0,"count":0},{"weekday":3,"hour":3,"amount":0,"count":0},{"weekday":3,"hour":4,"amount":0,"count":0},{"weekday":3,"hour":5,"amount":0,"count":0},{"weekday":3,"hour":6,"amount":0,"count":0},{"weekday":3,"hour":7,"amount":12300,"count":10},{"weekday":3,"hour":8,"amount":16180,"count":34},{"weekday":3,"hour":9,"amount":15000,"count":1},{"weekday":3,"hour":10,"amount":77950,"count":7},{"weekday":3,"hour":11,"amount":32400,"count":1},{"weekday":3,"hour":12,"amount":0,"count":0},{"weekday":3,"hour":13,"amount":20280,"count":29},{"weekday":3,"hour":14,"amount":0,"count":0},{"weekday":3,"hour":15,"amount":0,"count":0},{"weekday":3,"hour":16,"amount":0,"count":0},{"weekday":3,"hour":17,"amount":6000,"count":2},{"weekday":3,"hour":18,"amount":9150,"count":7},{"weekday":3,"hour":19,"amount":4800,"count":6},{"weekday":3,"hour":20,"amount":0,"count":0},{"weekday":3,"hour":21,"amount":4200,"count":2},{"weekday":3,"hour":22,"amount":0,"count":0},{"weekday":3,"hour":23,"amount":0,"count":0},{"weekday":4,"hour":0,"amount":0,"count":0},{"weekday":4,"hour":1,"amount":0,"count":0},{"weekday":4,"hour":2,"amount":0,"count":0},{"weekday":4,"hour":3,"amount":0,"count":0},{"weekday":4,"hour":4,"amount":0,"count":0},{"weekday":4,"hour":5,"amount":0,"count":0},{"weekday":4,"hour":6,"amount":0,"count":0},{"weekday":4,"hour":7,"amount":8550,"count":7},{"weekday":4,"hour":8,"amount":13510,"count":28},{"weekday":4,"hour":9,"amount":30000,"count":2},{"weekday":4,"hour":10,"amount":77900,"count":6},{"weekday":4,"hour":11,"amount":0,"count":0},{"weekday":4,"hour":12,"amount":0,"count":0},{"weekday":4,"hour":13,"amount":18750,"count":27},{"weekday":4,"hour":14,"amount":0,"count":0},{"weekday":4,"hour":15,"amount":0,"count":0},{"weekday":4,"hour":16,"amount":0,"count":0},{"weekday":4,"hour":17,"amount":3000,"count":1},{"weekday":4,"hour":18,"amount":16750,"count":6},{"weekday":4,"hour":19,"amount":900,"count":2},{"weekday":4,"hour":20,"amount":103400,"count":33},{"weekday":4,"hour":21,"amount":2100,"count":1},{"weekday":4,"hour":22,"amount":0,"count":0},{"weekday":4,"hour":23,"amount":14900,"count":5},{"weekday":5,"hour":0,"amount":8200,"count":3},{"weekday":5,"hour":1,"amount":25100,"count":7},{"weekday":5,"hour":2,"amount":0,"count":0},{"weekday":5,"hour":3,"amount":0,"count":0},{"weekday":5,"hour":4,"amount":0,"count":0},{"weekday":5,"hour":5,"amount":0,"count":0},{"weekday":5,"hour":6,"amount":0,"count":0},{"weekday":5,"hour":7,"amount":14650,"count":11},{"weekday":5,"hour":8,"amount":0,"count":0},{"weekday":5,"hour":9,"amount":30000,"count":2},{"weekday":5,"hour":10,"amount":40050,"count":9},{"weekday":5,"hour":11,"amount":323350,"count":47},{"weekday":5,"hour":12,"amount":0,"count":0},{"weekday":5,"hour":13,"amount":0,"count":0},{"weekday":5,"hour":14,"amount":0,"count":0},{"weekday":5,"hour":15,"amount":0,"count":0},{"weekday":5,"hour":16,"amount":0,"count":0},{"weekday":5,"hour":17,"amount":2000,"count":1},{"weekday":5,"hour":18,"amount":10650,"count":4},{"weekday":5,"hour":19,"amount":5550,"count":6},{"weekday":5,"hour":20,"amount":111000,"count":39},{"weekday":5,"hour":21,"amount":2100,"count":1},{"weekday":5,"hour":22,"amount":0,"count":0},{"weekday":5,"hour":23,"amount":19000,"count":7},{"weekday":6,"hour":0,"amount":8200,"count":3},{"weekday":6,"hour":1,"amount":12500,"count":5},{"weekday":6,"hour":2,"amount":0,"count":0},{"weekday":6,"hour":3,"amount":0,"count":0},{"weekday":6,"hour":4,"amount":0,"count":0},{"weekday":6,"hour":5,"amount":0,"count":0},{"weekday":6,"hour":6,"amount":0,"count":0},{"weekday":6,"hour":7,"amount":9600,"count":6},{"weekday":6,"hour":8,"amount":0,"count":0},{"weekday":6,"hour":9,"amount":15000,"count":1},{"weekday":6,"hour":10,"amount":142000,"count":39},{"weekday":6,"hour":11,"amount":0,"count":0},{"weekday":6,"hour":12,"amount":0,"count":0},{"weekday":6,"hour":13,"amount":0,"count":0},{"weekday":6,"hour":14,"amount":0,"count":0},{"weekday":6,"hour":15,"amount":0,"count":0},{"weekday":6,"hour":16,"amount":0,"count":0},{"weekday":6,"hour":17,"amount":5000,"count":2},{"weekday":6,"hour":18,"amount":8700,"count":6},{"weekday":6,"hour":19,"amount":4100,"count":4},{"weekday":6,"hour":20,"amount":0,"count":0},{"weekday":6,"hour":21,"amount":8400,"count":4},{"weekday":6,"hour":22,"amount":0,"count":0},{"weekday":6,"hour":23,"amount":0,"count":0}],"drain":[{"day":0,"remaining":1},{"day":1,"remaining":0.98},{"day":2,"remaining":0.958},{"day":3,"remaining":0.932},{"day":4,"remaining":0.895},{"day":5,"remaining":0.865},{"day":6,"remaining":0.752},{"day":7,"remaining":0.554},{"day":8,"remaining":0.466},{"day":9,"remaining":0.435},{"day":10,"remaining":0.414},{"day":11,"remaining":0.382},{"day":12,"remaining":0.345},{"day":13,"remaining":0.304},{"day":14,"remaining":0.281},{"day":15,"remaining":0.26},{"day":16,"remaining":0.244},{"day":17,"remaining":0.222},{"day":18,"remaining":0.201},{"day":19,"remaining":0.179},{"day":20,"remaining":0.16},{"day":21,"remaining":0.146},{"day":22,"remaining":0.13},{"day":23,"remaining":0.111},{"day":24,"remaining":0.093},{"day":25,"remaining":0.083},{"day":26,"remaining":0.076},{"day":27,"remaining":0.061},{"day":28,"remaining":0.05},{"day":29,"remaining":0.039},{"day":30,"remaining":0.029}],"spendingByCategory":[{"category":"Rent & housing","total":462000,"count":12},{"category":"Eating out & coffee","total":381390,"count":363},{"category":"Groceries & household","total":323350,"count":47},{"category":"People","total":236650,"count":88},{"category":"Bills & utilities","total":103900,"count":34},{"category":"Transport & fuel","total":102500,"count":33},{"category":"Going out","total":87900,"count":30},{"category":"Education","total":32400,"count":1},{"category":"Subscriptions & entertainment","total":27300,"count":13},{"category":"Cash","total":26000,"count":10},{"category":"Car & parking","total":12300,"count":14},{"category":"Airtime & data","total":6100,"count":31}],"topPlaces":[{"name":"ZARA COURT APARTMENTS","category":"Rent & housing","payments":12,"total":462000,"note":"Rent or housing."},{"name":"NAIVAS WESTLANDS","category":"Groceries & household","payments":12,"total":88450,"note":"Supermarket or household shopping."},{"name":"CHANDARANA FOOD PLUS YAYA","category":"Groceries & household","payments":13,"total":87300,"note":"Supermarket or household shopping."},{"name":"QUICKMART KILIMANI","category":"Groceries & household","payments":13,"total":86250,"note":"Supermarket or household shopping."},{"name":"PIZZA INN WESTLANDS","category":"Eating out & coffee","payments":46,"total":67560,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"JAVA HOUSE KIMATHI ST","category":"Eating out & coffee","payments":54,"total":65830,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"CARREFOUR JUNCTION","category":"Groceries & household","payments":9,"total":61350,"note":"Supermarket or household shopping."},{"name":"CJS RESTAURANT KOINANGE","category":"Eating out & coffee","payments":37,"total":61090,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"KFC JUNCTION","category":"Eating out & coffee","payments":47,"total":59870,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"SAFARICOM HOME FIBRE","category":"Bills & utilities","payments":12,"total":59400,"note":"Phone or home internet."},{"name":"KPLC PREPAID","category":"Bills & utilities","payments":22,"total":44500,"note":"Electricity or water."},{"name":"K1 KLUBHOUSE","category":"Going out","payments":15,"total":43200,"note":"Bar, club or lounge."},{"name":"TOTALENERGIES WAIYAKI WAY","category":"Transport & fuel","payments":13,"total":40500,"note":"Fuel station."},{"name":"KAREN BLIXEN COFFEE GARDEN","category":"Eating out & coffee","payments":30,"total":37080,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"RUBIS KILELESHWA","category":"Transport & fuel","payments":11,"total":34500,"note":"Fuel station."}],"people":{"count":7,"total":248950,"top":[{"name":"MAMA WANJIKU","sends":12,"total":180000},{"name":"KEVIN OTIENO","sends":20,"total":14300},{"name":"FAITH MWENDE","sends":15,"total":12950},{"name":"JOSEPH MAINA MECHANIC","sends":14,"total":12300},{"name":"BRIAN KIPCHUMBA","sends":12,"total":10000},{"name":"ESTHER NJERI","sends":12,"total":9850},{"name":"MERCY ADHIAMBO","sends":17,"total":9550}]},"loans":[{"taken":"2026-01-14","lender":"M-Shwari","borrowed":12000,"days":13,"cost":1080,"latePenalty":0,"refundMissed":180},{"taken":"2026-04-16","lender":"M-Shwari","borrowed":14000,"days":33,"cost":2520,"latePenalty":1260,"refundMissed":210},{"taken":"2026-07-13","lender":"M-Shwari","borrowed":15000,"days":6,"cost":1350,"latePenalty":0,"refundMissed":0},{"taken":"2026-09-15","lender":"M-Shwari","borrowed":16000,"days":12,"cost":1440,"latePenalty":0,"refundMissed":240}],"feesByMonth":[{"month":"2025-11","transaction":20,"credit":34.4,"loans":0,"penalties":0},{"month":"2025-12","transaction":443,"credit":107.24,"loans":0,"penalties":0},{"month":"2026-01","transaction":514,"credit":151.57,"loans":1080,"penalties":0},{"month":"2026-02","transaction":446,"credit":78.72999999999999,"loans":0,"penalties":0},{"month":"2026-03","transaction":453,"credit":0,"loans":0,"penalties":0},{"month":"2026-04","transaction":512,"credit":0,"loans":1260,"penalties":1260},{"month":"2026-05","transaction":436,"credit":0,"loans":0,"penalties":0},{"month":"2026-06","transaction":546,"credit":0,"loans":0,"penalties":0},{"month":"2026-07","transaction":468,"credit":72.31,"loans":1350,"penalties":0},{"month":"2026-08","transaction":519,"credit":0,"loans":0,"penalties":0},{"month":"2026-09","transaction":407,"credit":0,"loans":1440,"penalties":0},{"month":"2026-10","transaction":439,"credit":0,"loans":0,"penalties":0},{"month":"2026-11","transaction":334,"credit":0,"loans":0,"penalties":0}],"avoidable":[{"date":"2026-01-14","what":"Early-repayment cashback missed","amount":180},{"date":"2026-04-16","what":"Loan rollover penalty","amount":1260},{"date":"2026-04-16","what":"Early-repayment cashback missed","amount":210},{"date":"2026-09-15","what":"Early-repayment cashback missed","amount":240}],"doublePayments":[{"date":"2026-03-08","place":"MULTICHOICE KENYA LIMITED","amount":2100}],"sampleTexts":["UK7H0VHLK4 Confirmed. Ksh9,200.00 paid to QUICKMART KILIMANI. on 7/11/26 at 11:54 AM.New M-PESA balance is Ksh68,555.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK8UJXCQH5 Confirmed. Ksh2,100.00 sent to MULTICHOICE KENYA LIMITED for account 7012334 on 8/11/26 at 9:05 PM New M-PESA balance is Ksh66,435.62. Transaction cost, Ksh20.00.Amount you can transact within the day is 499,000.00.","UK9ZSE6TN9 Confirmed. Ksh550.00 paid to DORMANS COFFEE YAYA. on 9/11/26 at 8:18 AM.New M-PESA balance is Ksh70,385.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK9J9I5033 Confirmed.You have received Ksh4,500.00 from PATRICK OCHIENG 0798223104 on 9/11/26 at 7:12 PM New M-PESA balance is Ksh70,935.62. Separate personal and business funds through Pochi la Biashara on *334#.","UK0CPOQVBW Confirmed. Ksh610.00 paid to JAVA HOUSE KIMATHI ST. on 10/11/26 at 8:33 AM.New M-PESA balance is Ksh69,775.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK0ZVFLWXN Confirmed. Ksh450.00 paid to PIZZA INN WESTLANDS. on 10/11/26 at 1:22 PM.New M-PESA balance is Ksh69,325.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK1R0OQZZ6 Confirmed. Ksh450.00 sent to KEVIN OTIENO 0712334907 on 11/11/26 at 7:42 AM. New M-PESA balance is Ksh68,868.62. Transaction cost, Ksh7.00.  Amount you can transact within the day is 499,000.00.","UK214XTIEG Confirmed. Ksh480.00 paid to ARTCAFFE WESTGATE. on 12/11/26 at 8:10 AM.New M-PESA balance is Ksh68,388.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK2U6T2JZM confirmed.You bought Ksh250.00 of airtime on 12/11/26 at 10:57 AM.New M-PESA balance is Ksh68,138.62. Transaction cost, Ksh0.00.","UK3H2SUADI Confirmed. Ksh450.00 paid to CJS RESTAURANT KOINANGE. on 13/11/26 at 1:34 PM.New M-PESA balance is Ksh67,688.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK3IODJ60K Confirmed. Ksh1,800.00 paid to KAREN BLIXEN COFFEE GARDEN. on 13/11/26 at 8:52 PM.New M-PESA balance is Ksh65,888.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK4XRXEFFJ Confirmed. Ksh9,200.00 paid to CHANDARANA FOOD PLUS YAYA. on 14/11/26 at 11:07 AM.New M-PESA balance is Ksh56,688.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK4SMLNWHJ Confirmed. Ksh450.00 sent to KEVIN OTIENO 0712334907 on 14/11/26 at 7:27 PM. New M-PESA balance is Ksh53,631.62. Transaction cost, Ksh7.00.  Amount you can transact within the day is 499,000.00.","UK4GHM21LQ Confirmed. Ksh2,600.00 paid to KFC JUNCTION. on 14/11/26 at 8:27 PM.New M-PESA balance is Ksh54,088.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00."]};
+</script>
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = n => Number(n).toLocaleString('en-GB', {maximumFractionDigits: 1});
+const kes = n => 'KES ' + fmt(n);
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* ---- derived (all from data) ---- */
+const wkCount = Array(7).fill(0), wkAmt = Array(7).fill(0);
+D.heat.forEach(h => { wkCount[h.weekday] += h.count; wkAmt[h.weekday] += h.amount; });
+const peakDay = D.habits.peakWeekday;
+const places = D.topPlaces.filter(p => p.category === 'Eating out & coffee').sort((a,b) => b.payments - a.payments).slice(0,4);
+const ppl = D.people.top;
+const net = D.totals.in - D.totals.out;
+const fz = D.fuliza;
+const fee = D.totals.fees;
+
+/* ---- mascot ---- */
+function dithi(mood='happy'){
+  const mouth = {
+    happy:'<path d="M41 62q9 9 18 0" stroke="#5B4300" stroke-width="4.5" fill="none" stroke-linecap="round"/>',
+    wow:'<ellipse cx="50" cy="64" rx="6" ry="7.5" fill="#5B4300"/><ellipse cx="50" cy="67" rx="3.5" ry="3" fill="#FF7A7A"/>',
+    cheer:'<path d="M38 59q12 16 24 0z" fill="#5B4300"/><path d="M43 64q7 5 14 0" fill="#FF7A7A"/>',
+    hmm:'<path d="M42 64q8 -4 16 1" stroke="#5B4300" stroke-width="4.5" fill="none" stroke-linecap="round"/>'
+  }[mood];
+  const arms = mood==='cheer'
+    ? '<path d="M14 52 Q2 36 8 26" stroke="#E8A500" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M86 52 Q98 36 92 26" stroke="#E8A500" stroke-width="7" stroke-linecap="round" fill="none"/>'
+    : '<path d="M14 58 Q4 64 8 74" stroke="#E8A500" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M86 58 Q96 64 92 74" stroke="#E8A500" stroke-width="7" stroke-linecap="round" fill="none"/>';
+  return `<svg viewBox="0 0 100 104" aria-hidden="true">${arms}
+    <ellipse cx="50" cy="100" rx="24" ry="4" fill="#000" opacity=".07"/>
+    <circle cx="50" cy="52" r="38" fill="#E8A500"/><circle cx="50" cy="48" r="38" fill="#FFC800"/>
+    <circle cx="50" cy="48" r="29" fill="none" stroke="#FFE066" stroke-width="4"/>
+    <path d="M27 30 q6 -10 16 -12" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none" opacity=".7"/>
+    <ellipse cx="38" cy="46" rx="6.5" ry="8" fill="#fff"/><ellipse cx="62" cy="46" rx="6.5" ry="8" fill="#fff"/>
+    <circle cx="39.5" cy="47.5" r="4" fill="#2B2F38"/><circle cx="63.5" cy="47.5" r="4" fill="#2B2F38"/>
+    <circle cx="41" cy="45.5" r="1.4" fill="#fff"/><circle cx="65" cy="45.5" r="1.4" fill="#fff"/>
+    <circle cx="29" cy="58" r="4.5" fill="#FF9EA0" opacity=".55"/><circle cx="71" cy="58" r="4.5" fill="#FF9EA0" opacity=".55"/>
+    ${mouth}</svg>`;
+}
+
+/* ---- charts ---- */
+function drainChart(guess){
+  const W=330,H=170,pl=34,pr=10,pt=12,pb=26, x=d=>pl+(d/30)*(W-pl-pr), y=v=>pt+(1-v)*(H-pt-pb);
+  const pts = D.drain.map(p=>`${x(p.day).toFixed(1)},${y(p.remaining).toFixed(1)}`).join(' ');
+  const hl = D.halfLifeDays, tq = D.threeQuarterDays;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of payday money left by days since payday. Half is gone by day ${hl}, three quarters by day ${tq}.">
+    ${[0,.5,1].map(v=>`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="#D6E6F2" stroke-width="2" stroke-dasharray="${v===.5?'5 5':''}"/><text x="${pl-6}" y="${y(v)+4}" font-size="11" text-anchor="end" fill="#6B7280">${v*100}%</text>`).join('')}
+    <polygon points="${x(0)},${y(0)} ${pts} ${x(30)},${y(0)}" fill="#FF4B4B" opacity=".14"/>
+    <polyline points="${pts}" fill="none" stroke="#FF4B4B" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <line x1="${x(hl)}" x2="${x(hl)}" y1="${y(.5)}" y2="${y(0)}" stroke="#E03535" stroke-width="2.5"/>
+    <circle cx="${x(hl)}" cy="${y(.5)}" r="7" fill="#fff" stroke="#E03535" stroke-width="4"/>
+    <text x="${x(hl)+10}" y="${y(.5)-10}" font-size="13" font-weight="800" fill="#E03535">day ${hl}</text>
+    ${guess!=null?`<line x1="${x(guess)}" x2="${x(guess)}" y1="${pt}" y2="${y(0)}" stroke="#1CB0F6" stroke-width="3" stroke-dasharray="4 4"/><text x="${Math.min(x(guess)+6,W-60)}" y="${pt+12}" font-size="12" font-weight="800" fill="#1497D4">your guess</text>`:''}
+    ${[0,7,14,21,28].map(d=>`<text x="${x(d)}" y="${H-6}" font-size="11" text-anchor="middle" fill="#6B7280">${d===0?'payday':'+'+d}</text>`).join('')}
+  </svg>`;
+}
+function fulizaMonths(){
+  const byMonth = {};
+  D.daily.forEach(d => { const k=d.date.slice(0,7); (byMonth[k] ||= []).push(d); });
+  let delay=0;
+  return `<div class="months" role="img" aria-label="Calendar of the year. Purple squares mark the ${fz.daysOwing} days that ended owing Fuliza: ${D.months.map(m=>MON[+m.month.slice(5)-1]+' '+m.daysOwingFuliza).join(', ')}.">` +
+    D.months.map(m => {
+      const days = byMonth[m.month] || [];
+      const first = days.length ? +days[0].date.slice(8) : 1;
+      let cells = '';
+      for (let i=1;i<first;i++) cells += '<i class="none"></i>';
+      days.forEach(d => { if (d.fulizaOwed>0){ cells += `<i class="on" style="animation-delay:${(delay+=28)}ms"></i>`; } else cells += '<i></i>'; });
+      const n = m.daysOwingFuliza;
+      return `<div class="mrow"><span>${MON[+m.month.slice(5)-1]}${m.month.endsWith('-01')||m.month==='2025-11'?' '+m.month.slice(2,4):''}</span><div class="dots">${cells}</div><b class="${n?'':'z'}">${n}</b></div>`;
+    }).join('') + '</div>';
+}
+function hbars(rows, key, me, label, color){
+  const max = Math.max(...rows.map(r=>r[key]));
+  return `<div class="hbars">${rows.map(r=>`<div class="hb ${r===me?'me':''}"><div class="lab"><span>${label(r)}</span><b>${r===me?'★ ':''}${key==='total'?kes(r[key]):fmt(r[key])}</b></div><div class="t"><i data-w="${(r[key]/max*100).toFixed(1)}" style="background:${color}"></i></div></div>`).join('')}</div>`;
+}
+function weekBars(sel){
+  const max = Math.max(...wkCount), W=330,H=150,bw=34,gap=(W-7*bw)/6;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Transactions by weekday: ${DAYS.map((d,i)=>d+' '+wkCount[i]).join(', ')}.">${wkCount.map((c,i)=>{
+    const h=(c/max)*(H-44), x=i*(bw+gap), y=H-22-h, pk=i===peakDay;
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="9" fill="${pk?'#FF4B4B':'#FFC2C2'}"/>
+      <text x="${x+bw/2}" y="${y-6}" font-size="12" font-weight="800" text-anchor="middle" fill="${pk?'#E03535':'#6B7280'}">${c}</text>
+      <text x="${x+bw/2}" y="${H-5}" font-size="12" font-weight="800" text-anchor="middle" fill="${i===sel?'#1497D4':'#6B7280'}">${DAYS[i]}${i===sel?' •':''}</text>`;}).join('')}</svg>`;
+}
+function domCal(sel){
+  const max = Math.max(...D.dayOfMonth.map(d=>d.fulizaDrawn));
+  return `<div class="cal locked" role="img" aria-label="Days of the month shaded by Fuliza borrowed. Lowest balance on the ${D.lowestBalanceDayOfMonth}th; the main pay lands on the 26th.">${D.dayOfMonth.map(d=>{
+    const a = d.fulizaDrawn/max, low = d.day===D.lowestBalanceDayOfMonth, pay = d.day===D.bigInflowDays[0];
+    const bg = pay ? 'var(--in)' : a>0 ? `rgba(142,77,240,${0.15+a*0.75})` : '#fff';
+    const col = pay ? '#fff' : a>0.5 ? '#fff' : 'var(--ink)';
+    return `<div class="cell" style="background:${bg};color:${col};${low?'border-color:#2B2F38;border-width:3px;':''}${d.day===sel?'outline:3px dashed var(--blue);outline-offset:2px;':''}">${d.day}</div>`;}).join('')}</div>
+  <div class="legend"><span><i style="background:var(--borrow)"></i>Fuliza borrowed</span><span><i style="background:var(--in)"></i>Payday</span><span><i style="border:2px solid #2B2F38"></i>Thinnest</span></div>`;
+}
+
+/* ---- the levels ---- */
+const L = [
+ { kicker:'Warm-up', title:'In or out', mood:'happy',
+   say:`Hi, I'm Dithi. Amani made ${fmt(D.transactions)} money moves this year. Let's see how well you can read them.`,
+   q:'Over the whole year, did more money come in, or go out?',
+   type:'big', options:[{id:'in',em:'⬇️',t:'More came in'},{id:'out',em:'⬆️',t:'More went out'}], answer:'in',
+   reveal:()=>`<h3>In wins, but only just</h3>
+     <div class="vs"><div class="row"><span>In</span><div class="track"><div class="fill" style="background:var(--in)" data-w="100">${kes(D.totals.in)}</div></div></div>
+     <div class="row"><span>Out</span><div class="track"><div class="fill" style="background:var(--out)" data-w="${(D.totals.out/D.totals.in*100).toFixed(1)}">${kes(D.totals.out)}</div></div></div></div>
+     <p>That is ${kes(net)} ahead after a whole year: about ${Math.round(net/D.totals.in*100)} shillings kept from every 100 that arrived.</p>`},
+ { kicker:'Level 1', title:'The payday drain', mood:'wow',
+   say:'Payday lands on the 26th. Then the money starts walking.',
+   q:'How many days until half of payday is gone?',
+   type:'slider', min:1, max:30, step:1, start:15, unit:v=>v==1?'day after payday':'days after payday', answer:D.halfLifeDays,
+   judge:g=>Math.abs(g-D.halfLifeDays)<=1.3?'perfect':Math.abs(g-D.halfLifeDays)<=4?'close':'miss',
+   reveal:g=>`<h3>Half gone in ${D.halfLifeDays} days</h3>${drainChart(g)}
+     <p>Three quarters is gone by day ${D.threeQuarterDays}. The rest has to stretch across the other two weeks.</p>`},
+ { kicker:'Level 2', title:'Owing Fuliza', mood:'hmm',
+   say:'Fuliza lets you spend money you don\'t have yet. Handy. Sticky.',
+   q:`Out of ${D.days} days, how many ended with Amani owing Fuliza?`,
+   type:'slider', min:0, max:D.days, step:1, start:0, unit:()=>'days owing', answer:fz.daysOwing,
+   judge:g=>Math.abs(g-fz.daysOwing)<=10?'perfect':Math.abs(g-fz.daysOwing)<=30?'close':'miss',
+   reveal:g=>`<div class="big-n c-b">${fz.daysOwing} days</div><p>And almost all of them came early. After February, Fuliza nearly vanishes.</p>
+     ${fulizaMonths()}
+     <div class="tiles"><div class="tile"><b class="c-b">${fz.draws}</b><span>times Amani dipped in</span></div><div class="tile"><b class="c-b">${kes(fz.drawn)}</b><span>borrowed in total</span></div>
+     <div class="tile"><b class="c-b">${kes(fz.medianDraw)}</b><span>a typical dip</span></div><div class="tile"><b class="c-out">${kes(fz.cost)}</b><span>what it cost</span></div></div>`},
+ { kicker:'Level 3', title:'The thin day', mood:'hmm',
+   say:'Every month has one day when the wallet feels lightest.',
+   q:'Which day of the month does Amani\'s balance usually hit its lowest?',
+   type:'cal', answer:D.lowestBalanceDayOfMonth,
+   judge:g=>g===D.lowestBalanceDayOfMonth?'perfect':Math.abs(g-D.lowestBalanceDayOfMonth)<=2?'close':'miss',
+   reveal:g=>`<h3>The ${D.lowestBalanceDayOfMonth}th. One day before payday.</h3>${domCal(g)}
+     <p>On ${D.lowestBalanceDayOfMonth}ths across the year, Amani borrowed ${kes(D.dayOfMonth[D.lowestBalanceDayOfMonth-1].fulizaDrawn)} from Fuliza. Then the 26th brings ${kes(D.dayOfMonth[25].in)} in over the year.</p>`},
+ { kicker:'Level 4', title:'The daily habit', mood:'happy',
+   say:'Cafés, lunches, takeaways. Small amounts, very often.',
+   q:'How many times a week does Amani pay for food or coffee out?',
+   type:'slider', min:0, max:21, step:1, start:3, unit:v=>v==1?'time a week':'times a week', answer:D.habits.cafePerWeek,
+   judge:g=>g===D.habits.cafePerWeek?'perfect':Math.abs(g-D.habits.cafePerWeek)<=2?'close':'miss',
+   reveal:g=>`<div class="big-n c-out">${D.habits.cafePerWeek}×</div><p>A week. That's ${fmt(D.habits.cafeVisits)} visits and ${kes(D.habits.cafeSpend)} across the year.</p>
+     <p>Only rent (${kes(D.spendingByCategory[0].total)}) took more.</p>
+     ${hbars(D.spendingByCategory.slice(0,5),'total',D.spendingByCategory[1],r=>r.category,'var(--out)')}`},
+ { kicker:'Level 5', title:'Favourite spot', mood:'happy',
+   say:'One place sees Amani more than any other.',
+   q:'Where did Amani pay most often?',
+   type:'choice', options:places.map(p=>({id:p.name,t:title(p.name)})), answer:places[0].name,
+   reveal:()=>`<h3>${title(places[0].name)}: ${places[0].payments} visits</h3>
+     ${hbars(places,'payments',places[0],r=>title(r.name),'var(--out)')}
+     <p>${kes(places[0].total)} over the year, at about ${kes(Math.round(places[0].total/places[0].payments))} a visit.</p>`},
+ { kicker:'Level 6', title:'Big day out', mood:'cheer',
+   say:'Some days the phone barely buzzes. Others it never stops.',
+   q:'Which day of the week is Amani\'s busiest for money moves?',
+   type:'week', answer:peakDay,
+   judge:g=>g===peakDay?'perfect':(g===4||g===6)&&Math.abs(g-peakDay)===1?'close':'miss',
+   reveal:g=>`<h3>${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][peakDay]}, easily</h3>${weekBars(g)}
+     <p>${wkCount[peakDay]} transactions and ${kes(wkAmt[peakDay])} on ${DAYS[peakDay]}s, the most of any day. The busiest hour is ${D.habits.peakHour}am.</p>`},
+ { kicker:'Level 7', title:'Who gets the love', mood:'cheer',
+   say:'Amani sent money to 7 people this year.',
+   q:'Who received the most money from Amani?',
+   type:'choice', options:[ppl[1],ppl[0],ppl[2],ppl[6]].map(p=>({id:p.name,t:title(p.name),s:''})), answer:ppl[0].name,
+   reveal:()=>`<h3>${title(ppl[0].name)}: ${kes(ppl[0].total)}</h3>
+     <p>In just ${ppl[0].sends} sends, roughly one a month. ${title(ppl[1].name)} got the most sends (${ppl[1].sends}), but smaller ones.</p>
+     ${hbars(ppl.slice(0,5),'total',ppl[0],r=>`${title(r.name)} · ${r.sends} sends`,'var(--out)')}`},
+ { kicker:'Boss level', boss:true, title:'The fee monster', mood:'wow',
+   say:'Final boss. Every send, every loan and every late day has a price.',
+   q:'How much did Amani pay in fees and borrowing costs this year?',
+   type:'slider', min:0, max:30000, step:100, start:0, unit:()=>'in fees and borrowing costs', money:true, answer:fee,
+   judge:g=>Math.abs(g-fee)<=1500?'perfect':Math.abs(g-fee)<=5000?'close':'miss',
+   reveal:g=>`<div class="big-n c-out">${kes(fee)}</div>
+     <p>And <b class="c-out">${kes(D.totals.avoidable)}</b> of it was avoidable:</p>
+     <ul class="list">${D.avoidable.map(a=>`<li><span>${a.what} <small style="color:var(--muted)">· ${shortDate(a.date)}</small></span><b class="c-out">${kes(a.amount)}</b></li>`).join('')}</ul>
+     <p style="margin-top:12px">Bonus catch: ${title(D.doublePayments[0].place)} was paid twice on ${shortDate(D.doublePayments[0].date)}, ${kes(D.doublePayments[0].amount)} each time.</p>`}
+];
+function title(s){ return s.toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase()).replace(/\bKfc\b/,'KFC').replace(/\bCjs\b/,"CJ's").replace(/\bSt\b/,'St'); }
+function shortDate(iso){ const [y,m,d]=iso.split('-'); return `${+d} ${MON[+m-1]}`; }
+
+/* ---- state ---- */
+const S = { i:-1, xp:0, streak:0, best:0, spot:0, results:[], val:null, phase:'ask' };
+const stage=$('#stage'), foot=$('#foot'), btn=$('#mainBtn');
+
+function setStats(bumpXp, bumpStreak){
+  $('#xp').textContent=S.xp; $('#streak').textContent=S.streak;
+  $('#sXp').textContent=S.xp; $('#sStreak').textContent=S.streak; $('#sSpot').textContent=S.spot;
+  if(bumpXp){ const p=$('#xpPill'); p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); }
+  if(bumpStreak){ const p=$('#streakPill'); p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); }
+  const done = S.results.length;
+  $('#barFill').style.width = (done/L.length*100)+'%';
+  $('#bar').setAttribute('aria-valuenow', done);
+  $('#plist').innerHTML = L.map((l,i)=>`<li class="${i<done?'done':i===S.i&&S.i>=0?'cur':''}"><i>${i<done?'✓':i+1}</i>${l.kicker}: ${l.title}</li>`).join('');
+}
+
+/* ---- intro ---- */
+function intro(){
+  S.i=-1; S.xp=0; S.streak=0; S.best=0; S.spot=0; S.results=[];
+  $('#top').hidden=true; foot.hidden=false; foot.className='foot'; btn.disabled=false; btn.textContent='Start the run'; S.phase='intro';
+  const offs=[0,-50,-80,-50,0,50,80,50,0];
+  stage.innerHTML = `<div class="screen intro">
+    <div class="demo">Invented demo data · fictional person</div>
+    <div class="dithi idle">${dithi('happy')}</div>
+    <h1>Can you guess <em>Amani's</em> year in money?</h1>
+    <p class="lead">Nine quick rounds from a year of mobile money in Nairobi. Guess first, then see what really happened.</p>
+    <div class="path" aria-hidden="true">${L.map((l,i)=>`<div class="node ${i===0?'cur':''} ${l.boss?'boss':''}" style="transform:translateX(${offs[i]}px)">${l.boss?'<svg viewBox="0 0 24 24"><path d="M4 19h16l-1.5-10-4.5 4-2-7-2 7-4.5-4z" fill="#FF9600"/></svg>':i===0?'<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="#fff"/></svg>':'<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="#C3C8CF"/></svg>'}</div>`).join('')}</div>
+    <p class="credit">Pesadithi · made by Mark Kaigwa · <a href="https://mark.co.ke" target="_blank" rel="noopener">mark.co.ke</a></p>
+  </div>`;
+  btn.focus({preventScroll:true});
+  setStats();
+}
+
+/* ---- question ---- */
+function next(){
+  S.i++; S.val=null; S.phase='ask';
+  if(S.i>=L.length) return end();
+  const l=L[S.i];
+  foot.className='foot'; btn.textContent='Check'; btn.disabled=true;
+  let input='';
+  if(l.type==='big') input=`<div class="opts two" role="group" aria-label="Answers">${l.options.map((o,k)=>`<button class="opt big" data-v="${o.id}" aria-pressed="false"><span class="em" aria-hidden="true">${o.em}</span>${o.t}</button>`).join('')}</div>`;
+  if(l.type==='choice') input=`<div class="opts" role="group" aria-label="Answers">${l.options.map((o,k)=>`<button class="opt" data-v="${o.id}" aria-pressed="false"><span class="k" aria-hidden="true">${k+1}</span><span>${o.t}</span></button>`).join('')}</div>`;
+  if(l.type==='slider') input=`<div class="guess">
+      <div class="readout idle" id="ro">${l.money?'KES ':''}${fmt(l.start)}</div><div class="unit" id="unit">${l.unit(l.start)}</div>
+      <div class="srow"><button class="step" data-d="-1" aria-label="Less">−</button>
+      <input type="range" id="rng" min="${l.min}" max="${l.max}" step="${l.step}" value="${l.start}" aria-label="Your guess" aria-valuetext="${fmt(l.start)} ${l.unit(l.start)}">
+      <button class="step" data-d="1" aria-label="More">+</button></div>
+      <div class="ends"><span>${l.money?'KES ':''}${fmt(l.min)}</span><span>${l.money?'KES ':''}${fmt(l.max)}</span></div></div>`;
+  if(l.type==='week') input=`<div class="chips" role="group" aria-label="Weekdays">${DAYS.map((d,i)=>`<button class="chip" data-v="${i}" aria-pressed="false"><span aria-hidden="true">${d.slice(0,2)}</span><span class="sr">${d}</span></button>`).join('')}</div>`;
+  if(l.type==='cal') input=`<div class="cal" role="group" aria-label="Days of the month">${D.dayOfMonth.map(d=>`<button class="cell" data-v="${d.day}" aria-pressed="false" aria-label="Day ${d.day}">${d.day}</button>`).join('')}</div>`;
+  stage.innerHTML=`<div class="screen ${l.boss?'boss-q':''}">
+    <div class="kicker ${l.boss?'boss':''}"><span class="lvl">${l.kicker}</span>${l.title}</div>
+    <div class="talk"><div class="dithi idle" id="dz">${dithi(l.mood)}</div><div class="bubble">${l.say}</div></div>
+    <h2 class="q">${l.q}</h2>${input}<div id="rv"></div></div>`;
+  stage.scrollTop=0;
+  wire(l);
+  setStats();
+}
+function wire(l){
+  stage.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{
+    if(S.phase!=='ask') return;
+    stage.querySelectorAll('[data-v]').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    S.val = isNaN(+b.dataset.v) || l.type==='choice' || l.type==='big' ? b.dataset.v : +b.dataset.v;
+    btn.disabled=false;
+  });
+  const r=$('#rng'); if(!r) return;
+  const upd=(touch=true)=>{ const v=+r.value; $('#ro').textContent=(l.money?'KES ':'')+fmt(v); $('#unit').textContent=l.unit(v);
+    r.style.setProperty('--p', ((v-l.min)/(l.max-l.min)*100)+'%'); r.setAttribute('aria-valuetext', fmt(v)+' '+l.unit(v));
+    if(touch){ S.val=v; btn.disabled=false; $('#ro').classList.remove('idle'); } };
+  r.oninput=()=>upd(); upd(false);
+  stage.querySelectorAll('.step').forEach(s=>s.onclick=()=>{ if(S.phase!=='ask')return; r.value=+r.value + (+s.dataset.d)*l.step*(l.money?5:1); upd(); });
+}
+
+function check(){
+  const l=L[S.i]; const g=S.val;
+  let tier = l.judge ? l.judge(g) : (g===l.answer?'perfect':'miss');
+  S.phase='shown';
+  const gain = {perfect:20, close:10, miss:5}[tier];
+  S.xp+=gain; if(tier!=='miss'){ S.streak++; S.best=Math.max(S.best,S.streak);} else S.streak=0;
+  if(tier==='perfect') S.spot++;
+  S.results.push({tier, g});
+  // lock inputs
+  stage.querySelectorAll('.opts,.cal,.chips').forEach(x=>x.classList.add('locked'));
+  stage.querySelectorAll('[data-v]').forEach(b=>{ b.disabled = true;
+    if(l.type==='choice'||l.type==='big'){ if(b.dataset.v===l.answer) b.classList.add('right'); else if(b.dataset.v===g) b.classList.add('wrong'); }
+    if(l.type==='week'||l.type==='cal'){ if(+b.dataset.v===l.answer) b.classList.add('right'), b.style.cssText+='border-color:var(--blue);background:var(--blue-l);'; }
+  });
+  stage.querySelectorAll('input,.step').forEach(x=>x.disabled=true);
+  if(l.type==='cal'||l.type==='week') stage.querySelector('.cal,.chips').hidden=true;
+  const rv=$('#rv'); rv.innerHTML=`<div class="reveal">${l.type==='slider'?meter(l,g):''}${l.reveal(g)}</div>`;
+  rv.querySelectorAll('.big-n').forEach(el=>countNum(el));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>rv.querySelectorAll('.pin[data-l]').forEach(e=>e.style.left=e.dataset.l+'%')));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>rv.querySelectorAll('[data-w]').forEach(e=>e.style.width=e.dataset.w+'%')));
+  // feedback
+  const msg = {
+    perfect:['Spot on.', ['Sawa sawa. You read Amani like a book.','Exactly right. Dithi is impressed.','Nailed it.']],
+    close:['So close.', ['Near enough to count for your streak.','Almost. Your streak lives on.']],
+    miss:['Plot twist.', ['Most people guess that too. Look at this.','Not this time. The real answer is below.']]
+  }[tier];
+  $('#fbTitle').textContent=msg[0]; const said = l.type==='slider' ? `You said ${l.money?'KES ':''}${fmt(g)}. It was ${l.money?'KES ':''}${fmt(l.answer)}.` : msg[1][S.i%msg[1].length];
+  $('#fbText').textContent=' '+said+`  +${gain} XP`;
+  $('#fbBadge').textContent = tier==='perfect'?'🎯':tier==='close'?'👌':'👀';
+  foot.className='foot '+tier; btn.disabled=false; btn.textContent = S.i===L.length-1?'See my card':'Continue';
+  const dz=$('#dz'); dz.className='dithi '+(tier==='miss'?'shake':'hop'); dz.innerHTML=dithi(tier==='miss'?'wow':'cheer');
+  setStats(true, tier!=='miss');
+  flyXp(gain);
+  if(tier==='perfect') confetti(70);
+  if(S.streak>0 && S.streak%3===0) toast(`🔥 ${S.streak} in a row`);
+  setTimeout(()=>{ const rvEl=rv.firstElementChild; if(rvEl) stage.scrollTo({top: rvEl.offsetTop - 80, behavior: RM?'auto':'smooth'}); }, 250);
+  btn.focus({preventScroll:true});
+}
+function meter(l,g){
+  const pc=v=>((v-l.min)/(l.max-l.min)*100).toFixed(2);
+  const a=Math.min(pc(g),pc(l.answer)), b=Math.max(pc(g),pc(l.answer));
+  const lab=v=>(l.money?'KES ':'')+fmt(v);
+  return `<div class="meter" role="img" aria-label="Your guess ${lab(g)}, the real answer ${lab(l.answer)}"><div class="tr"></div><div class="gap" style="left:${a}%;width:${b-a}%"></div>
+    <div class="pin you" data-l="${pc(g)}" style="left:${pc(g)}%;--x:${pc(g)}"><span>You · ${lab(g)}</span><i></i></div>
+    <div class="pin real" data-l="${pc(l.answer)}" style="left:${pc(g)}%;--x:${pc(l.answer)}"><i></i><span>Real · ${lab(l.answer)}</span></div></div>`;
+}
+function countNum(el){
+  const m=el.textContent.match(/[\d,.]+/); if(!m||RM) return;
+  const target=parseFloat(m[0].replace(/,/g,'')), dec=(m[0].split('.')[1]||'').length, pre=el.textContent.slice(0,m.index), post=el.textContent.slice(m.index+m[0].length);
+  const t0=performance.now(); const f=t=>{const p=Math.min(1,(t-t0)/1100), v=target*(1-Math.pow(1-p,3));
+    el.textContent=pre+v.toLocaleString('en-GB',{minimumFractionDigits:p<1?0:dec,maximumFractionDigits:p<1?0:dec})+post; if(p<1)requestAnimationFrame(f);};
+  requestAnimationFrame(f);
+}
+function flyXp(n){
+  const b=btn.getBoundingClientRect(); const e=document.createElement('div'); e.className='xpfly'; e.textContent='+'+n+' XP';
+  e.style.left=(b.left+b.width/2-30)+'px'; e.style.top=(b.top-30)+'px'; document.body.appendChild(e); setTimeout(()=>e.remove(),1200);
+}
+btn.onclick=()=>{ if(S.phase==='intro'){ $('#top').hidden=false; next(); return; } if(S.phase==='ask'){ if(!btn.disabled) check(); } else next(); };
+$('#quit').onclick=intro;
+document.addEventListener('keydown',e=>{
+  if(S.i<0||S.i>=L.length) return;
+  if(e.key==='Enter' && document.activeElement.tagName!=='BUTTON' && !btn.disabled){ e.preventDefault(); btn.click(); }
+  const n=+e.key; const l=L[S.i];
+  if(S.phase==='ask' && n>=1 && (l.type==='choice'||l.type==='big')){ const b=stage.querySelectorAll('[data-v]')[n-1]; if(b) b.click(); }
+});
+
+/* ---- end ---- */
+function end(){
+  S.i=L.length; setStats();
+  foot.hidden=true;
+  const pct = Math.round(S.results.filter(r=>r.tier!=='miss').length/L.length*100);
+  const rank = S.spot>=6?'Money whisperer':S.spot>=3?'Sharp reader':'Fresh eyes';
+  stage.innerHTML=`<div class="screen end">
+    <div class="dithi hop" style="width:110px;height:110px;margin:4px auto 0">${dithi('cheer')}</div>
+    <div class="trophy">Run complete</div>
+    <p style="margin:2px 0;color:var(--muted)">You've read a whole year of Amani's money.</p>
+    <div class="stats3">
+      <div class="st a"><div class="h">Total XP</div><div class="v" id="xpCount">0</div></div>
+      <div class="st b"><div class="h">Spot on</div><div class="v">${S.spot}/${L.length}</div></div>
+      <div class="st c"><div class="h">Best streak</div><div class="v">🔥 ${S.best}</div></div>
+    </div>
+    <div class="card" id="share" role="img" aria-label="Share card summarising Amani's year">
+      <div class="sp"></div>
+      <div class="brand"><span>Pesadithi</span><span>Nov 2025 to Nov 2026</span></div>
+      <div class="stk" aria-hidden="true">${dithi('cheer')}</div>
+      <h3>Amani's year<br>in mobile money</h3>
+      <div class="grid">
+        <div class="g"><b><small>KES</small>${fmt(D.totals.in)}</b><span>came in</span></div>
+        <div class="g"><b><small>KES</small>${fmt(D.totals.out)}</b><span>went out</span></div>
+        <div class="g"><b>${D.halfLifeDays} days</b><span>for half of payday to go</span></div>
+        <div class="g"><b>${fz.daysOwing} days</b><span>ended owing Fuliza</span></div>
+        <div class="g"><b>${places[0].payments} visits</b><span>to ${title(places[0].name)}</span></div>
+        <div class="g"><b><small>KES</small>${fmt(D.totals.avoidable)}</b><span>in avoidable fees</span></div>
+      </div>
+      <div class="foot2"><span>I got ${S.spot}/${L.length} spot on.<br>Can you beat it?</span><span class="score">${rank}</span></div>
+    </div>
+    <div class="actions">
+      <button class="btn sun" id="shareBtn">Share the challenge</button>
+      <button class="btn ghost" id="again">Play again</button>
+    </div>
+    <div class="demo" style="margin-top:16px">Invented demo data for a fictional person</div>
+    <p class="credit">Pesadithi · made by Mark Kaigwa · <a href="https://mark.co.ke" target="_blank" rel="noopener">mark.co.ke</a></p>
+  </div>`;
+  stage.scrollTop=0;
+  confetti(160);
+  countUp($('#xpCount'), S.xp);
+  $('#again').onclick=intro;
+  $('#shareBtn').onclick=async()=>{
+    const text=`I scored ${S.spot}/${L.length} guessing Amani's year in mobile money on Pesadithi. Half of payday gone in ${D.halfLifeDays} days, ${fz.daysOwing} days owing Fuliza. Can you beat me? (Invented demo data.) mark.co.ke`;
+    try{ if(navigator.share){ await navigator.share({title:'Pesadithi', text}); return; } }catch(e){ if(e && e.name==='AbortError') return; }
+    try{ await navigator.clipboard.writeText(text); toast('Challenge copied. Paste it anywhere.'); }catch(e){ toast('Sharing is not available here.'); }
+  };
+  $('#shareBtn').focus({preventScroll:true});
+}
+function countUp(el,n){ if(RM){el.textContent=n;return;} const t0=performance.now(); const f=t=>{const p=Math.min(1,(t-t0)/900); el.textContent=Math.round(n*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(f);}; requestAnimationFrame(f); }
+let tt; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2200); }
+
+/* ---- confetti ---- */
+const cv=$('#confetti'), cx=cv.getContext('2d'); let parts=[], raf=null;
+function confetti(n){
+  if(RM) return;
+  cv.width=innerWidth*devicePixelRatio; cv.height=innerHeight*devicePixelRatio; cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  const cols=['#1CB0F6','#FFC800','#8E4DF0','#FF9600','#58CC02','#FF4B4B'];
+  for(let i=0;i<n;i++) parts.push({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.55,vx:(Math.random()-.5)*14,vy:-Math.random()*16-6,r:Math.random()*6+4,c:cols[i%6],a:Math.random()*6,va:(Math.random()-.5)*.4,life:0});
+  if(!raf) raf=requestAnimationFrame(tick);
+}
+function tick(){
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  parts.forEach(p=>{p.vy+=.45;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;p.life++;
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.a);cx.fillStyle=p.c;cx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);cx.restore();});
+  parts=parts.filter(p=>p.y<innerHeight+40&&p.life<240);
+  raf=parts.length?requestAnimationFrame(tick):(cx.clearRect(0,0,innerWidth,innerHeight),null);
+}
+
+intro();
+})();
+</script>
+</body>
+</html>

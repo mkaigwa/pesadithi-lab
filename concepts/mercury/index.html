@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pesadithi · Amani's year in mobile money</title>
+<meta name="description" content="A personal money statement: a year of mobile money, read one number at a time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5F8; --card:#FFFFFF; --ink:#0D1117; --ink2:#2B3240; --muted:#667085; --faint:#98A2B3;
+  --line:#E6E9EF; --line2:#EEF0F4;
+  --in:#0F8A5F; --in-soft:#E2F5EC; --in-mid:#7BD3AE;
+  --out:#D9363E; --out-soft:#FCE8E8; --out-mid:#F2A3A6;
+  --net:#0D1117;
+  --credit:#5B4BF0; --credit-soft:#ECEAFE; --credit-mid:#B3AAFA;
+  --fee:#8A94A6;
+  --radius:18px;
+  --sans:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--credit);outline-offset:3px;border-radius:8px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(243,245,248,.82);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
+.top.scrolled{border-bottom-color:var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em;font-size:16px;text-decoration:none}
+.mark{width:26px;height:26px;border-radius:8px;background:var(--ink);display:grid;place-items:center}
+.mark svg{display:block}
+.demo{font-size:12px;color:var(--muted);border:1px solid var(--line);background:var(--card);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.demo b{color:var(--ink2);font-weight:600}
+.toc{display:none;gap:4px}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px}
+.toc a:hover{color:var(--ink);background:var(--card)}
+.toc a.on{color:var(--ink);background:var(--card);box-shadow:0 0 0 1px var(--line)}
+
+/* hero */
+.hero{padding:28px 0 8px}
+.eyebrow{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--in)}
+.hello{font-size:15px;color:var(--ink2);margin:22px 0 4px;font-weight:500}
+.bignum{font-weight:600;letter-spacing:-.045em;line-height:.95;font-size:clamp(64px,19vw,148px);margin:0;display:flex;align-items:flex-start;gap:.06em}
+.bignum .cur{font-size:.26em;letter-spacing:0;font-weight:500;color:var(--muted);margin-top:.32em}
+.bignum .sign{color:var(--in);font-weight:400;font-size:.62em;margin-top:.16em;margin-right:.02em}
+.lede{font-size:clamp(18px,4.6vw,24px);line-height:1.35;letter-spacing:-.012em;color:var(--ink2);max-width:640px;margin:16px 0 0}
+.lede strong{color:var(--ink);font-weight:600}
+.lede .g{color:var(--in)} .lede .r{color:var(--out)}
+
+.flowbar{margin:26px 0 0;background:var(--card);border-radius:var(--radius);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(16,24,40,.04);padding:18px}
+.fb-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fb-k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sw{width:8px;height:8px;border-radius:2px;display:inline-block}
+.fb-v{font-size:clamp(17px,4.6vw,26px);font-weight:600;letter-spacing:-.02em;margin-top:2px;white-space:nowrap}
+.fb-v small{font-size:.55em;color:var(--muted);font-weight:500;letter-spacing:0;margin-right:3px}
+.track{margin-top:16px;height:12px;border-radius:6px;background:var(--line2);display:flex;overflow:hidden;gap:2px}
+.track i{display:block;height:100%}
+.track .o{background:var(--out)} .track .k{background:var(--in)}
+.fb-note{font-size:12.5px;color:var(--muted);margin-top:10px;display:flex;justify-content:space-between;gap:10px}
+
+/* sections */
+section.line{padding:44px 0 0;scroll-margin-top:64px}
+.lhead{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.lno{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.04em}
+.ltitle{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em;text-transform:uppercase}
+.lrule{flex:1;height:1px;background:var(--line)}
+.stat{font-weight:600;letter-spacing:-.04em;line-height:1;font-size:clamp(48px,13vw,96px);margin:4px 0 0;display:flex;align-items:flex-start;gap:.08em}
+.stat .cur{font-size:.3em;font-weight:500;color:var(--muted);letter-spacing:0;margin-top:.3em}
+.stat .unit{font-size:.36em;font-weight:500;color:var(--muted);letter-spacing:-.01em;align-self:flex-end;margin-bottom:.12em;margin-left:.12em}
+.say{font-size:clamp(17px,4.2vw,21px);line-height:1.4;color:var(--ink2);margin:12px 0 0;max-width:620px;letter-spacing:-.008em}
+.say strong{color:var(--ink);font-weight:600}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(16,24,40,.04);margin-top:20px}
+.pad{padding:18px}
+.two{display:grid;gap:0}
+
+/* segmented control */
+.seg{display:inline-flex;background:var(--line2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 11px;white-space:nowrap;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(16,24,40,.08),0 0 0 1px var(--line)}
+.ctl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.linkbtn{border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;padding:6px 4px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.linkbtn:hover{color:var(--ink)}
+
+/* readout */
+.readout{display:grid;grid-template-columns:1fr auto;align-items:end;gap:8px;padding:16px 18px 6px}
+.ro-when{font-size:13px;color:var(--muted);min-height:20px}
+.ro-main{font-size:clamp(30px,8.5vw,44px);font-weight:600;letter-spacing:-.035em;line-height:1.05;margin-top:2px;white-space:nowrap}
+.ro-main small{font-size:.42em;color:var(--muted);font-weight:500;letter-spacing:0;margin-right:4px}
+.ro-sub{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:6px;min-height:20px}
+.ro-sub b{color:var(--ink);font-weight:600}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted);flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:640px){.readout{grid-template-columns:1fr}.legend{justify-content:flex-start}}
+.legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.chart{position:relative;padding:0 6px 6px;touch-action:pan-y}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart:focus-visible{outline-offset:-2px;border-radius:12px}
+.hint{font-size:12px;color:var(--faint);padding:0 18px 14px}
+.axis text{font-size:11px;fill:var(--faint);font-family:var(--sans)}
+.gl{stroke:var(--line2);stroke-width:1}
+.zero{stroke:#CDD2DB;stroke-width:1}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11.5px;font-weight:500;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;letter-spacing:.01em}
+td{padding:11px 12px;border-bottom:1px solid var(--line2);vertical-align:middle}
+th.r,td.r{text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:#FAFBFC}
+tfoot td{border-top:1px solid var(--line);border-bottom:0;font-weight:600;background:#FAFBFC}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pos{color:var(--in)} .neg{color:var(--out)} .cr{color:var(--credit)}
+.dim{color:var(--muted)}
+.tag{display:inline-block;font-size:11px;color:var(--muted);background:var(--line2);border-radius:5px;padding:1px 6px;margin-left:6px;font-weight:500}
+.tag.warn{color:#9A2B30;background:var(--out-soft)}
+.cell-bar{height:6px;border-radius:3px;background:var(--line2);position:relative;min-width:60px}
+.cell-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ink2)}
+
+/* credit ledger (mobile) */
+.ledger{list-style:none;margin:0;padding:0;display:none}
+.ledger li{padding:13px 18px;border-top:1px solid var(--line2)}
+.ledger .r1{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ledger .nm{font-weight:500;font-size:15px}
+.ledger .nm .dim{font-weight:400;font-size:13px}
+.ledger .tc{font-weight:600;font-size:17px;letter-spacing:-.01em}
+.ledger .r2{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:12.5px;color:var(--muted);margin-top:3px}
+.ledger .r2 b{color:var(--ink2);font-weight:500}
+.ledger li.tot{background:#FAFBFC}
+.ledger li.tot .nm{font-weight:600}
+@media (max-width:640px){.credit-tbl{display:none}.ledger{display:block}}
+@media (max-width:640px){.hide-m{display:none}}
+/* half-life */
+.hl-legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);padding:0 18px 16px;flex-wrap:wrap}
+
+/* credit */
+.compose{display:flex;height:40px;border-radius:10px;overflow:hidden;gap:2px;margin-top:4px}
+.compose button{border:0;padding:0;cursor:pointer;position:relative;transition:filter .15s,opacity .15s;min-width:6px}
+.compose button:hover,.compose button:focus-visible{filter:brightness(1.06)}
+.compose.dimmed button:not(.sel){opacity:.35}
+.ckey{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:16px}
+.ckey button{all:unset;cursor:pointer;display:block;border-radius:10px;padding:6px 8px;margin:-6px -8px}
+.ckey button:hover,.ckey button.sel{background:var(--line2)}
+.ckey button:focus-visible{outline:2px solid var(--credit);outline-offset:1px}
+.ckey .k{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ckey .v{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.ckey .p{font-size:12px;color:var(--faint);font-weight:500;margin-left:4px;letter-spacing:0}
+.callout{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:16px 18px;border-top:1px solid var(--line)}
+.per100{display:flex;gap:10px;align-items:flex-end}
+.p100{flex:1}
+.p100 .bar{height:10px;border-radius:5px;background:var(--line2);overflow:hidden;margin-top:8px}
+.p100 .bar i{display:block;height:100%;border-radius:5px;background:var(--credit);width:0;transition:width 1s var(--ease)}
+.p100 .v{font-size:28px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.p100 .k{font-size:12.5px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.fact{padding:14px 18px;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.fact:nth-child(2n){border-right:0}
+.fact .v{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.fact .k{font-size:12.5px;color:var(--muted);line-height:1.35}
+
+.avoid{list-style:none;margin:0;padding:0}
+.avoid li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line2);font-size:14px}
+.avoid .d{font-size:12px;color:var(--muted);font-family:var(--mono);white-space:nowrap;min-width:84px}
+.avoid .a{font-weight:600}
+.subhead{font-size:13px;font-weight:600;padding:16px 18px 10px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.subhead span{font-weight:500;color:var(--muted);font-size:12.5px}
+
+/* people */
+.ppl{list-style:none;margin:0;padding:0}
+.ppl li{display:grid;grid-template-columns:34px minmax(0,1fr) 80px;gap:12px;align-items:center;padding:11px 18px;border-top:1px solid var(--line2)}
+.ppl li:first-child{border-top:0}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--ink2);background:var(--line2)}
+.ppl .n{font-size:14.5px;font-weight:500;text-transform:capitalize}
+.ppl .s{font-size:12.5px;color:var(--muted)}
+.ppl .t{font-weight:600;text-align:right}
+.ppl .bar{height:4px;border-radius:2px;background:var(--line2);margin-top:6px;overflow:hidden}
+.ppl .bar i{display:block;height:100%;background:var(--out);opacity:.75}
+
+/* heat */
+.heat{display:grid;grid-template-columns:24px repeat(24,minmax(0,1fr));gap:2px;padding:4px 18px 8px}
+.heat .hl{font-size:10.5px;color:var(--faint);display:flex;align-items:center}
+.heat .c{aspect-ratio:1;min-width:0;width:100%;border-radius:2px;background:var(--line2);border:0;padding:0;cursor:pointer}
+.heat .c:focus-visible{outline:2px solid var(--credit);outline-offset:1px}
+.heat .hx{font-size:10px;color:var(--faint);text-align:left;white-space:nowrap;overflow:visible;min-width:0}
+.heat-read{padding:6px 18px 16px;font-size:13px;color:var(--muted);min-height:22px}
+.heat-read b{color:var(--ink)}
+
+/* sms */
+.sms{list-style:none;margin:0;padding:6px 0}
+.sms li{font-family:var(--mono);font-size:12px;line-height:1.55;color:var(--ink2);padding:10px 18px;border-top:1px solid var(--line2)}
+.sms li:first-child{border-top:0}
+.sms mark{background:none;font-weight:500}
+.sms .mi{color:var(--in)} .sms .mo{color:var(--out)}
+
+/* share */
+.share{margin-top:56px}
+.share .scard{margin-top:22px}
+.scard{border-radius:24px;padding:26px 22px;background:
+  radial-gradient(120% 90% at 100% 0%,#E9E6FF 0%,rgba(233,230,255,0) 55%),
+  radial-gradient(100% 80% at 0% 100%,#DDF5EA 0%,rgba(221,245,234,0) 60%),#FFFFFF;
+  box-shadow:0 0 0 1px var(--line),0 20px 40px -20px rgba(16,24,40,.18)}
+.sc-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted)}
+.sc-big{font-size:clamp(44px,12vw,72px);font-weight:600;letter-spacing:-.045em;line-height:1;margin:22px 0 4px}
+.sc-big .sign{color:var(--in);font-weight:400}
+.sc-line{font-size:15px;color:var(--ink2)}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.sc-grid .k{font-size:12px;color:var(--muted)}
+.sc-grid .v{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.btn{border:0;cursor:pointer;border-radius:12px;padding:12px 18px;font-weight:600;font-size:14.5px;background:var(--ink);color:#fff;transition:transform .12s,background .15s}
+.btn:hover{background:#1E2633}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.btn.ghost:hover{background:#FAFBFC}
+.status{font-size:13px;color:var(--in);min-height:20px}
+
+footer{padding:48px 0 40px;font-size:12.5px;color:var(--muted)}
+footer .wrap{display:flex;flex-direction:column;gap:6px}
+footer a{text-decoration:none;border-bottom:1px solid var(--line)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(10px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+
+@media (min-width:860px){
+  .wrap{padding:0 32px}
+  .toc{display:flex}
+  .hero{padding:56px 0 8px}
+  .hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:end}
+  .fb-v{font-size:22px}
+  .flowbar{margin:0;padding:22px}
+  section.line{padding:72px 0 0}
+  .split{display:grid;grid-template-columns:.8fr 1.2fr;gap:40px;align-items:start}
+  .split .card{margin-top:0}
+  .split.rev{grid-template-columns:1.2fr .8fr}
+  .split.rev>:first-child{order:2}
+  .share .scard{margin-top:0}
+  .hide-d{display:none}
+  .pad{padding:22px}
+  .readout{padding:20px 22px 8px}
+  .hint{padding:0 22px 16px}
+  .facts{grid-template-columns:repeat(4,1fr)}
+  .fact{border-bottom:0}
+  .fact:nth-child(2n){border-right:1px solid var(--line2)}
+  .fact:last-child{border-right:0}
+  .scard{padding:34px 34px}
+  .share-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  .sticky{position:sticky;top:84px}
+}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#hero" aria-label="Pesadithi, back to top">
+      <span class="mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="7" width="3" height="6" rx="1" fill="#7BD3AE"/><rect x="5.5" y="3" width="3" height="10" rx="1" fill="#fff"/><rect x="10" y="1" width="3" height="12" rx="1" fill="#B3AAFA"/></svg></span>
+      Pesadithi
+    </a>
+    <nav class="toc" aria-label="Sections">
+      <a href="#flow">Cash flow</a><a href="#halflife">Payday</a><a href="#credit">Credit</a><a href="#fees">Fees</a><a href="#where">Spending</a><a href="#people">People</a><a href="#rhythm">Rhythm</a>
+    </nav>
+    <span class="demo"><b>Demo</b> · invented data, fictional person</span>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero" id="hero" aria-labelledby="h-net">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow"><span class="dot" aria-hidden="true"></span><span id="period"></span><span id="txcount"></span></div>
+        <p class="hello">Amani, here is your year in mobile money. What stayed:</p>
+        <h1 class="bignum num" id="h-net"><span class="cur">KES</span><span class="sign">+</span><span data-count="net">0</span></h1>
+        <p class="lede" id="lede"></p>
+      </div>
+      <div class="flowbar" role="group" aria-label="Money in versus money out for the year">
+        <div class="fb-row">
+          <div><div class="fb-k"><span class="sw" style="background:var(--in)"></span>In</div><div class="fb-v num"><small>KES</small><span id="fb-in"></span></div></div>
+          <div><div class="fb-k"><span class="sw" style="background:var(--out)"></span>Out</div><div class="fb-v num"><small>KES</small><span id="fb-out"></span></div></div>
+          <div><div class="fb-k"><span class="sw" style="background:var(--ink)"></span>Net</div><div class="fb-v num pos"><small>KES</small><span id="fb-net"></span></div></div>
+        </div>
+        <div class="track" aria-hidden="true"><i class="o" id="tr-o" style="width:0"></i><i class="k" id="tr-k" style="width:0"></i></div>
+        <div class="fb-note"><span id="fb-note1"></span><span id="fb-note2"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 cash flow -->
+  <section class="line" id="flow" aria-labelledby="t-flow">
+    <div class="lhead"><span class="lno">01</span><span class="ltitle" id="t-flow">Cash flow</span><span class="lrule"></span></div>
+    <div class="rv">
+      <p class="say" id="flow-say"></p>
+    </div>
+    <div class="card rv" id="flowcard">
+      <div class="pad" style="padding-bottom:0">
+        <div class="ctl">
+          <div class="seg" role="group" aria-label="Cash flow view">
+            <button type="button" data-view="days" aria-pressed="true">Every day</button>
+            <button type="button" data-view="months" aria-pressed="false">Months</button>
+            <button type="button" data-view="dom" aria-pressed="false">Day of month</button>
+          </div>
+          <button type="button" class="linkbtn" id="tblToggle" aria-expanded="false" aria-controls="flowtable">Show as table</button>
+        </div>
+      </div>
+      <div class="readout" aria-live="polite">
+        <div>
+          <div class="ro-when" id="ro-when"></div>
+          <div class="ro-main num" id="ro-main"></div>
+          <div class="ro-sub num" id="ro-sub"></div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="chart" id="chart" tabindex="0" role="img" aria-roledescription="interactive chart"></div>
+      <div class="hint" id="hint">Drag or hover across the chart. With the keyboard, focus it and use the arrow keys.</div>
+      <div class="tscroll" id="flowtable" hidden></div>
+    </div>
+  </section>
+
+  <!-- 02 half-life -->
+  <section class="line" id="halflife" aria-labelledby="t-hl">
+    <div class="lhead"><span class="lno">02</span><span class="ltitle" id="t-hl">Payday half-life</span><span class="lrule"></span></div>
+    <div class="split">
+      <div class="rv sticky">
+        <div class="stat num"><span data-count="half" data-dec="1">0</span><span class="unit">days</span></div>
+        <p class="say" id="hl-say"></p>
+      </div>
+      <div class="card rv">
+        <div class="readout" aria-live="polite">
+          <div><div class="ro-when" id="hl-when">Day after payday</div><div class="ro-main num" id="hl-main"></div><div class="ro-sub" id="hl-sub"></div></div>
+        </div>
+        <div class="chart" id="hlchart" tabindex="0" role="img" aria-roledescription="interactive chart"></div>
+        <div class="hl-legend"><span><span class="sw" style="background:var(--ink)"></span> Share of payday left</span><span><span class="sw" style="background:var(--credit)"></span> Half and three-quarter marks</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 credit -->
+  <section class="line" id="credit" aria-labelledby="t-credit">
+    <div class="lhead"><span class="lno">03</span><span class="ltitle" id="t-credit">What credit really cost</span><span class="lrule"></span></div>
+    <div class="rv">
+      <div class="stat num"><span class="cur">KES</span><span data-count="creditCost">0</span></div>
+      <p class="say" id="credit-say"></p>
+    </div>
+    <div class="card rv">
+      <div class="callout" style="border-top:0;grid-template-columns:1fr">
+        <div class="per100">
+          <div class="p100"><div class="k">Fuliza, per KES 100 borrowed</div><div class="v num" id="p100-f"></div><div class="bar"><i id="p100-fb"></i></div></div>
+          <div class="p100"><div class="k">M-Shwari, per KES 100 borrowed</div><div class="v num" id="p100-m"></div><div class="bar"><i id="p100-mb"></i></div></div>
+        </div>
+      </div>
+      <ul class="ledger" id="ledger" aria-label="Every borrowing and what it cost"></ul>
+      <div class="tscroll credit-tbl">
+        <table id="credittable">
+          <caption class="sr">Every borrowing and what it cost, in Kenya shillings</caption>
+          <thead><tr><th>Borrowing</th><th class="r">Borrowed</th><th class="r">Held</th><th class="r">Fee</th><th class="r">Penalty</th><th class="r">Total cost</th><th class="r">Per 100</th></tr></thead>
+          <tbody></tbody><tfoot></tfoot>
+        </table>
+      </div>
+      <div class="facts" id="fuliza-facts"></div>
+    </div>
+  </section>
+
+  <!-- 04 fees -->
+  <section class="line" id="fees" aria-labelledby="t-fees">
+    <div class="lhead"><span class="lno">04</span><span class="ltitle" id="t-fees">Every charge, itemised</span><span class="lrule"></span></div>
+    <div class="split rev">
+      <div class="rv">
+        <div class="stat num"><span class="cur">KES</span><span data-count="fees">0</span></div>
+        <p class="say" id="fees-say"></p>
+        <div class="card">
+          <div class="subhead">Avoidable <span id="avoid-total"></span></div>
+          <ul class="avoid" id="avoid"></ul>
+          <div class="subhead" style="border-top:1px solid var(--line)">Possible double payment <span>check with the merchant</span></div>
+          <ul class="avoid" id="doubles"></ul>
+        </div>
+      </div>
+    
+      <div class="card rv">
+        <div class="pad">
+          <div class="compose" id="compose" role="group" aria-label="Fees by type. Select a segment to see its months."></div>
+          <div class="ckey" id="ckey"></div>
+        </div>
+        <div class="readout" style="padding-top:4px;border-top:1px solid var(--line)" aria-live="polite">
+          <div><div class="ro-when" id="fm-when">Charges by month</div><div class="ro-main num" id="fm-main" style="font-size:28px"></div></div>
+        </div>
+        <div class="chart" id="feechart" tabindex="0" role="img" aria-roledescription="interactive chart"></div>
+        <div class="hint">Select a fee type above to isolate it.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 where -->
+  <section class="line" id="where" aria-labelledby="t-where">
+    <div class="lhead"><span class="lno">05</span><span class="ltitle" id="t-where">Where it went</span><span class="lrule"></span></div>
+    <div class="rv">
+      <div class="stat num"><span class="cur">KES</span><span data-count="cafe">0</span></div>
+      <p class="say" id="where-say"></p>
+    </div>
+    <div class="card rv">
+      <div class="pad" style="padding-bottom:6px">
+        <div class="ctl">
+          <div class="seg" role="group" aria-label="Spending breakdown">
+            <button type="button" data-sp="cat" aria-pressed="true">Categories</button>
+            <button type="button" data-sp="place" aria-pressed="false">Places</button>
+          </div>
+          <span class="dim" style="font-size:12.5px" id="sp-note"></span>
+        </div>
+      </div>
+      <div class="tscroll"><table id="sptable"><caption class="sr">Spending breakdown in Kenya shillings</caption><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+    </div>
+  </section>
+
+  <!-- 06 people -->
+  <section class="line" id="people" aria-labelledby="t-people">
+    <div class="lhead"><span class="lno">06</span><span class="ltitle" id="t-people">People</span><span class="lrule"></span></div>
+    <div class="split">
+      <div class="rv sticky">
+        <div class="stat num"><span class="cur">KES</span><span data-count="people">0</span></div>
+        <p class="say" id="people-say"></p>
+      </div>
+      <div class="card rv"><ul class="ppl" id="ppl"></ul></div>
+    </div>
+  </section>
+
+  <!-- 07 rhythm -->
+  <section class="line" id="rhythm" aria-labelledby="t-rhythm">
+    <div class="lhead"><span class="lno">07</span><span class="ltitle" id="t-rhythm">Rhythm of the week</span><span class="lrule"></span></div>
+    <div class="split rev">
+      <div class="rv">
+        <div class="stat num" style="font-size:clamp(48px,13vw,88px);display:block;line-height:1" id="peak"></div>
+        <p class="say" id="rhythm-say"></p>
+      </div>
+    
+      <div class="card rv">
+        <div class="pad" style="padding-bottom:4px"><div class="subhead" style="padding:0 0 8px">Spending by hour of the week <span>darker means more</span></div></div>
+        <div class="heat" id="heat" role="grid" aria-label="Spending by weekday and hour"></div>
+        <div class="heat-read" id="heat-read" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 source -->
+  <section class="line" id="source" aria-labelledby="t-src">
+    <div class="lhead"><span class="lno">08</span><span class="ltitle" id="t-src">Read from your messages</span><span class="lrule"></span></div>
+    <div class="split">
+      <div class="rv">
+        <div class="stat num"><span data-count="tx">0</span><span class="unit">messages</span></div>
+        <p class="say">Every figure above was read from confirmation texts like these. Nothing was typed in by hand.</p>
+      </div>
+      <div class="card rv"><ul class="sms" id="sms"></ul></div>
+    </div>
+  </section>
+
+  <!-- share -->
+  <section class="share" id="share" aria-labelledby="t-share">
+    <div class="share-grid">
+      <div class="rv">
+        <div class="lhead" style="margin-bottom:6px"><span class="lno">09</span><span class="ltitle" id="t-share">Your line, to share</span><span class="lrule"></span></div>
+        <p class="say">Totals only. No names, no places, no message text.</p>
+        <div class="actions">
+          <button type="button" class="btn" id="copyBtn">Copy summary</button>
+          <button type="button" class="btn ghost" id="shareBtn" hidden>Share</button>
+          <span class="status" id="status" role="status"></span>
+        </div>
+      </div>
+      <div class="scard rv" id="scard" aria-label="Shareable summary card">
+        <div class="sc-top"><span><b style="color:var(--ink)">Pesadithi</b> · my year in mobile money</span><span>Demo</span></div>
+        <div class="sc-big num"><span class="sign">+</span><span id="sc-net"></span></div>
+        <div class="sc-line" id="sc-line"></div>
+        <div class="sc-grid num" id="sc-grid"></div>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Pesadithi · made by Mark Kaigwa · <a href="https://mark.co.ke">mark.co.ke</a></span>
+    <span>Demo statement. All figures are invented data for Amani, a fictional person in Nairobi. Amounts in Kenya shillings (KES).</span>
+  </div>
+</footer>
+
+<script>
+const D = {"_note":"Invented demo data for Amani, a fictional person in Nairobi. KES. 12 months.","person":"Amani","currency":"KES","start":"2025-11-17","end":"2026-11-14","days":363,"transactions":716,"totals":{"in":1908200,"out":1837790,"movedToOwnAccounts":36000,"fees":12624,"avoidable":1890},"fuliza":{"daysOwing":40,"draws":30,"drawn":44425,"cost":697,"medianDraw":631.5,"drawsAfter7pm":6},"halfLifeDays":7.7,"threeQuarterDays":16.5,"lowestBalanceDayOfMonth":25,"bigInflowDays":[26,9,21],"habits":{"peakWeekday":5,"peakHour":10,"lateNightShare":0.04878481954056799,"weekendShare":0.446861176940709,"cafeVisits":363,"cafeSpend":381390,"cafePerWeek":7,"peopleSends":102,"peopleFees":2322,"redraw":0},"months":[{"month":"2025-11","in":148250,"out":22440,"daysOwingFuliza":9,"partial":true},{"month":"2025-12","in":165100,"out":162820,"daysOwingFuliza":3,"partial":false},{"month":"2026-01","in":152750,"out":168460,"daysOwingFuliza":15,"partial":false},{"month":"2026-02","in":152750,"out":124150,"daysOwingFuliza":12,"partial":false},{"month":"2026-03","in":172950,"out":155070,"daysOwingFuliza":0,"partial":false},{"month":"2026-04","in":154450,"out":157550,"daysOwingFuliza":0,"partial":false},{"month":"2026-05","in":160600,"out":162760,"daysOwingFuliza":0,"partial":false},{"month":"2026-06","in":152750,"out":155880,"daysOwingFuliza":0,"partial":false},{"month":"2026-07","in":154450,"out":159260,"daysOwingFuliza":1,"partial":false},{"month":"2026-08","in":172950,"out":164550,"daysOwingFuliza":0,"partial":false},{"month":"2026-09","in":162250,"out":149940,"daysOwingFuliza":0,"partial":false},{"month":"2026-10","in":154450,"out":152600,"daysOwingFuliza":0,"partial":false},{"month":"2026-11","in":4500,"out":102310,"daysOwingFuliza":0,"partial":true}],"daily":[{"date":"2025-11-17","in":0,"out":450,"balance":0,"fulizaOwed":4862},{"date":"2025-11-18","in":0,"out":2550,"balance":0,"fulizaOwed":7457},{"date":"2025-11-19","in":0,"out":0,"balance":0,"fulizaOwed":7457},{"date":"2025-11-20","in":0,"out":0,"balance":0,"fulizaOwed":7457},{"date":"2025-11-21","in":0,"out":420,"balance":0,"fulizaOwed":7882},{"date":"2025-11-22","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-23","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-24","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-25","in":0,"out":0,"balance":0,"fulizaOwed":7882},{"date":"2025-11-26","in":148250,"out":1070,"balance":140368,"fulizaOwed":0},{"date":"2025-11-27","in":0,"out":550,"balance":138748,"fulizaOwed":0},{"date":"2025-11-28","in":0,"out":4650,"balance":134098,"fulizaOwed":0},{"date":"2025-11-29","in":0,"out":12550,"balance":121548,"fulizaOwed":0},{"date":"2025-11-30","in":0,"out":200,"balance":121348,"fulizaOwed":0},{"date":"2025-12-01","in":0,"out":1650,"balance":120698,"fulizaOwed":0},{"date":"2025-12-02","in":0,"out":39830,"balance":79747,"fulizaOwed":0},{"date":"2025-12-03","in":0,"out":15350,"balance":64647,"fulizaOwed":0},{"date":"2025-12-04","in":0,"out":2730,"balance":61652,"fulizaOwed":0},{"date":"2025-12-05","in":0,"out":5600,"balance":58527,"fulizaOwed":0},{"date":"2025-12-06","in":0,"out":13900,"balance":41993,"fulizaOwed":0},{"date":"2025-12-07","in":0,"out":2900,"balance":39093,"fulizaOwed":0},{"date":"2025-12-08","in":0,"out":3160,"balance":36973,"fulizaOwed":0},{"date":"2025-12-09","in":4500,"out":1250,"balance":40413,"fulizaOwed":0},{"date":"2025-12-10","in":0,"out":1260,"balance":37903,"fulizaOwed":0},{"date":"2025-12-11","in":0,"out":550,"balance":37353,"fulizaOwed":0},{"date":"2025-12-12","in":0,"out":4180,"balance":33173,"fulizaOwed":0},{"date":"2025-12-13","in":0,"out":14300,"balance":19073,"fulizaOwed":0},{"date":"2025-12-14","in":0,"out":4000,"balance":17350,"fulizaOwed":0},{"date":"2025-12-15","in":0,"out":650,"balance":14200,"fulizaOwed":0},{"date":"2025-12-16","in":0,"out":610,"balance":13590,"fulizaOwed":0},{"date":"2025-12-17","in":0,"out":610,"balance":12980,"fulizaOwed":0},{"date":"2025-12-18","in":0,"out":3930,"balance":9023,"fulizaOwed":0},{"date":"2025-12-19","in":0,"out":5100,"balance":3923,"fulizaOwed":0},{"date":"2025-12-20","in":0,"out":10500,"balance":0,"fulizaOwed":6642},{"date":"2025-12-21","in":12350,"out":2500,"balance":5708,"fulizaOwed":0},{"date":"2025-12-22","in":0,"out":1350,"balance":2858,"fulizaOwed":0},{"date":"2025-12-23","in":0,"out":1330,"balance":515,"fulizaOwed":0},{"date":"2025-12-24","in":0,"out":4000,"balance":0,"fulizaOwed":3573},{"date":"2025-12-25","in":0,"out":610,"balance":0,"fulizaOwed":4189},{"date":"2025-12-26","in":148250,"out":0,"balance":144061,"fulizaOwed":0},{"date":"2025-12-27","in":0,"out":14900,"balance":129161,"fulizaOwed":0},{"date":"2025-12-28","in":0,"out":3500,"balance":125648,"fulizaOwed":0},{"date":"2025-12-29","in":0,"out":350,"balance":125298,"fulizaOwed":0},{"date":"2025-12-30","in":0,"out":1350,"balance":124048,"fulizaOwed":0},{"date":"2025-12-31","in":0,"out":870,"balance":123078,"fulizaOwed":0},{"date":"2026-01-01","in":0,"out":1780,"balance":121291,"fulizaOwed":0},{"date":"2026-01-02","in":0,"out":41080,"balance":80103,"fulizaOwed":0},{"date":"2026-01-03","in":0,"out":25750,"balance":55253,"fulizaOwed":0},{"date":"2026-01-04","in":0,"out":4700,"balance":49520,"fulizaOwed":0},{"date":"2026-01-05","in":0,"out":3450,"balance":46495,"fulizaOwed":0},{"date":"2026-01-06","in":0,"out":6270,"balance":41061,"fulizaOwed":0},{"date":"2026-01-07","in":0,"out":1550,"balance":38178,"fulizaOwed":0},{"date":"2026-01-08","in":0,"out":34850,"balance":36058,"fulizaOwed":0},{"date":"2026-01-09","in":4500,"out":6330,"balance":2370,"fulizaOwed":2568},{"date":"2026-01-10","in":0,"out":6500,"balance":0,"fulizaOwed":5194},{"date":"2026-01-11","in":0,"out":250,"balance":0,"fulizaOwed":5447},{"date":"2026-01-12","in":0,"out":1730,"balance":0,"fulizaOwed":6588},{"date":"2026-01-13","in":0,"out":350,"balance":0,"fulizaOwed":7561},{"date":"2026-01-14","in":0,"out":900,"balance":4259,"fulizaOwed":0},{"date":"2026-01-15","in":0,"out":1510,"balance":1849,"fulizaOwed":0},{"date":"2026-01-16","in":0,"out":2220,"balance":0,"fulizaOwed":374},{"date":"2026-01-17","in":0,"out":7300,"balance":0,"fulizaOwed":7747},{"date":"2026-01-18","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-19","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-20","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-21","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-22","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-23","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-24","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-25","in":0,"out":0,"balance":0,"fulizaOwed":7747},{"date":"2026-01-26","in":148250,"out":0,"balance":140503,"fulizaOwed":0},{"date":"2026-01-27","in":0,"out":780,"balance":127123,"fulizaOwed":0},{"date":"2026-01-28","in":0,"out":1650,"balance":125159,"fulizaOwed":0},{"date":"2026-01-29","in":0,"out":1480,"balance":124679,"fulizaOwed":0},{"date":"2026-01-30","in":0,"out":5930,"balance":118336,"fulizaOwed":0},{"date":"2026-01-31","in":0,"out":12100,"balance":105623,"fulizaOwed":0},{"date":"2026-02-01","in":0,"out":4000,"balance":101623,"fulizaOwed":0},{"date":"2026-02-02","in":0,"out":40080,"balance":61885,"fulizaOwed":0},{"date":"2026-02-03","in":0,"out":15900,"balance":45428,"fulizaOwed":0},{"date":"2026-02-04","in":0,"out":3200,"balance":42201,"fulizaOwed":0},{"date":"2026-02-05","in":0,"out":3610,"balance":39176,"fulizaOwed":0},{"date":"2026-02-06","in":0,"out":5810,"balance":33582,"fulizaOwed":0},{"date":"2026-02-07","in":0,"out":8500,"balance":24522,"fulizaOwed":0},{"date":"2026-02-08","in":0,"out":8900,"balance":19295,"fulizaOwed":0},{"date":"2026-02-09","in":4500,"out":0,"balance":19795,"fulizaOwed":0},{"date":"2026-02-10","in":0,"out":2050,"balance":19245,"fulizaOwed":0},{"date":"2026-02-11","in":0,"out":1500,"balance":16822,"fulizaOwed":0},{"date":"2026-02-12","in":0,"out":4390,"balance":11767,"fulizaOwed":0},{"date":"2026-02-13","in":0,"out":7850,"balance":4217,"fulizaOwed":0},{"date":"2026-02-14","in":0,"out":9400,"balance":0,"fulizaOwed":5568},{"date":"2026-02-15","in":0,"out":0,"balance":0,"fulizaOwed":5568},{"date":"2026-02-16","in":0,"out":480,"balance":0,"fulizaOwed":6053},{"date":"2026-02-17","in":0,"out":1330,"balance":0,"fulizaOwed":7397},{"date":"2026-02-18","in":0,"out":350,"balance":0,"fulizaOwed":7750},{"date":"2026-02-19","in":0,"out":0,"balance":0,"fulizaOwed":7750},{"date":"2026-02-20","in":0,"out":0,"balance":0,"fulizaOwed":7750},{"date":"2026-02-21","in":0,"out":200,"balance":0,"fulizaOwed":7952},{"date":"2026-02-22","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-23","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-24","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-25","in":0,"out":0,"balance":0,"fulizaOwed":7952},{"date":"2026-02-26","in":148250,"out":0,"balance":140298,"fulizaOwed":0},{"date":"2026-02-27","in":0,"out":0,"balance":140298,"fulizaOwed":0},{"date":"2026-02-28","in":0,"out":6600,"balance":133698,"fulizaOwed":0},{"date":"2026-03-01","in":0,"out":2500,"balance":131198,"fulizaOwed":0},{"date":"2026-03-02","in":0,"out":38850,"balance":92590,"fulizaOwed":0},{"date":"2026-03-03","in":0,"out":15780,"balance":76360,"fulizaOwed":0},{"date":"2026-03-04","in":0,"out":3600,"balance":73340,"fulizaOwed":0},{"date":"2026-03-05","in":0,"out":3000,"balance":69702,"fulizaOwed":0},{"date":"2026-03-06","in":0,"out":6280,"balance":64718,"fulizaOwed":0},{"date":"2026-03-07","in":0,"out":12100,"balance":51288,"fulizaOwed":0},{"date":"2026-03-08","in":0,"out":6700,"balance":47048,"fulizaOwed":0},{"date":"2026-03-09","in":12350,"out":1920,"balance":56898,"fulizaOwed":0},{"date":"2026-03-10","in":0,"out":1050,"balance":54165,"fulizaOwed":0},{"date":"2026-03-11","in":0,"out":610,"balance":53305,"fulizaOwed":0},{"date":"2026-03-12","in":0,"out":3000,"balance":50253,"fulizaOwed":0},{"date":"2026-03-13","in":0,"out":2930,"balance":47323,"fulizaOwed":0},{"date":"2026-03-14","in":0,"out":9000,"balance":38323,"fulizaOwed":0},{"date":"2026-03-15","in":0,"out":2500,"balance":35823,"fulizaOwed":0},{"date":"2026-03-16","in":0,"out":1640,"balance":34433,"fulizaOwed":0},{"date":"2026-03-17","in":0,"out":0,"balance":34433,"fulizaOwed":0},{"date":"2026-03-18","in":0,"out":1500,"balance":32668,"fulizaOwed":0},{"date":"2026-03-19","in":0,"out":1630,"balance":31031,"fulizaOwed":0},{"date":"2026-03-20","in":0,"out":3860,"balance":27171,"fulizaOwed":0},{"date":"2026-03-21","in":12350,"out":7600,"balance":36721,"fulizaOwed":0},{"date":"2026-03-22","in":0,"out":2500,"balance":29421,"fulizaOwed":0},{"date":"2026-03-23","in":0,"out":1080,"balance":28328,"fulizaOwed":0},{"date":"2026-03-24","in":0,"out":250,"balance":28078,"fulizaOwed":0},{"date":"2026-03-25","in":0,"out":480,"balance":27598,"fulizaOwed":0},{"date":"2026-03-26","in":148250,"out":1080,"balance":174755,"fulizaOwed":0},{"date":"2026-03-27","in":0,"out":3730,"balance":171025,"fulizaOwed":0},{"date":"2026-03-28","in":0,"out":13400,"balance":157625,"fulizaOwed":0},{"date":"2026-03-29","in":0,"out":5500,"balance":152125,"fulizaOwed":0},{"date":"2026-03-30","in":0,"out":450,"balance":151675,"fulizaOwed":0},{"date":"2026-03-31","in":0,"out":550,"balance":151125,"fulizaOwed":0},{"date":"2026-04-01","in":0,"out":550,"balance":150575,"fulizaOwed":0},{"date":"2026-04-02","in":0,"out":39980,"balance":110474,"fulizaOwed":0},{"date":"2026-04-03","in":0,"out":18580,"balance":91794,"fulizaOwed":0},{"date":"2026-04-04","in":0,"out":10700,"balance":81074,"fulizaOwed":0},{"date":"2026-04-05","in":0,"out":9300,"balance":75249,"fulizaOwed":0},{"date":"2026-04-06","in":0,"out":5600,"balance":66752,"fulizaOwed":0},{"date":"2026-04-07","in":0,"out":1650,"balance":64445,"fulizaOwed":0},{"date":"2026-04-08","in":0,"out":3650,"balance":62325,"fulizaOwed":0},{"date":"2026-04-09","in":6200,"out":1510,"balance":66962,"fulizaOwed":0},{"date":"2026-04-10","in":0,"out":5750,"balance":61402,"fulizaOwed":0},{"date":"2026-04-11","in":0,"out":12800,"balance":47879,"fulizaOwed":0},{"date":"2026-04-12","in":0,"out":2000,"balance":44837,"fulizaOwed":0},{"date":"2026-04-13","in":0,"out":1400,"balance":44037,"fulizaOwed":0},{"date":"2026-04-14","in":0,"out":1350,"balance":42061,"fulizaOwed":0},{"date":"2026-04-15","in":0,"out":780,"balance":41281,"fulizaOwed":0},{"date":"2026-04-16","in":0,"out":1130,"balance":55071,"fulizaOwed":0},{"date":"2026-04-17","in":0,"out":4200,"balance":49741,"fulizaOwed":0},{"date":"2026-04-18","in":0,"out":6900,"balance":42813,"fulizaOwed":0},{"date":"2026-04-19","in":0,"out":4000,"balance":38813,"fulizaOwed":0},{"date":"2026-04-20","in":0,"out":610,"balance":38203,"fulizaOwed":0},{"date":"2026-04-21","in":0,"out":450,"balance":37753,"fulizaOwed":0},{"date":"2026-04-22","in":0,"out":1080,"balance":36660,"fulizaOwed":0},{"date":"2026-04-23","in":0,"out":100,"balance":36560,"fulizaOwed":0},{"date":"2026-04-24","in":0,"out":3700,"balance":33310,"fulizaOwed":0},{"date":"2026-04-25","in":0,"out":8200,"balance":24653,"fulizaOwed":0},{"date":"2026-04-26","in":148250,"out":8400,"balance":167990,"fulizaOwed":0},{"date":"2026-04-27","in":0,"out":610,"balance":163880,"fulizaOwed":0},{"date":"2026-04-28","in":0,"out":0,"balance":163880,"fulizaOwed":0},{"date":"2026-04-29","in":0,"out":1770,"balance":162103,"fulizaOwed":0},{"date":"2026-04-30","in":0,"out":800,"balance":161303,"fulizaOwed":0},{"date":"2026-05-01","in":0,"out":3020,"balance":158283,"fulizaOwed":0},{"date":"2026-05-02","in":0,"out":51900,"balance":106275,"fulizaOwed":0},{"date":"2026-05-03","in":0,"out":16500,"balance":89675,"fulizaOwed":0},{"date":"2026-05-04","in":0,"out":2500,"balance":87155,"fulizaOwed":0},{"date":"2026-05-05","in":0,"out":3420,"balance":84130,"fulizaOwed":0},{"date":"2026-05-06","in":0,"out":6210,"balance":78726,"fulizaOwed":0},{"date":"2026-05-07","in":0,"out":2820,"balance":74623,"fulizaOwed":0},{"date":"2026-05-08","in":0,"out":6000,"balance":68603,"fulizaOwed":0},{"date":"2026-05-09","in":12350,"out":7100,"balance":73853,"fulizaOwed":0},{"date":"2026-05-10","in":0,"out":2500,"balance":71353,"fulizaOwed":0},{"date":"2026-05-11","in":0,"out":550,"balance":70803,"fulizaOwed":0},{"date":"2026-05-12","in":0,"out":420,"balance":70383,"fulizaOwed":0},{"date":"2026-05-13","in":0,"out":480,"balance":69903,"fulizaOwed":0},{"date":"2026-05-14","in":0,"out":1200,"balance":68703,"fulizaOwed":0},{"date":"2026-05-15","in":0,"out":4200,"balance":64503,"fulizaOwed":0},{"date":"2026-05-16","in":0,"out":12500,"balance":52003,"fulizaOwed":0},{"date":"2026-05-17","in":0,"out":300,"balance":51696,"fulizaOwed":0},{"date":"2026-05-18","in":0,"out":3730,"balance":48546,"fulizaOwed":0},{"date":"2026-05-19","in":0,"out":1250,"balance":30373,"fulizaOwed":0},{"date":"2026-05-20","in":0,"out":930,"balance":29443,"fulizaOwed":0},{"date":"2026-05-21","in":0,"out":1250,"balance":28186,"fulizaOwed":0},{"date":"2026-05-22","in":0,"out":0,"balance":28186,"fulizaOwed":0},{"date":"2026-05-23","in":0,"out":9700,"balance":18486,"fulizaOwed":0},{"date":"2026-05-24","in":0,"out":7000,"balance":15434,"fulizaOwed":0},{"date":"2026-05-25","in":0,"out":480,"balance":10954,"fulizaOwed":0},{"date":"2026-05-26","in":148250,"out":800,"balance":159204,"fulizaOwed":0},{"date":"2026-05-27","in":0,"out":1610,"balance":156894,"fulizaOwed":0},{"date":"2026-05-28","in":0,"out":780,"balance":156314,"fulizaOwed":0},{"date":"2026-05-29","in":0,"out":610,"balance":155397,"fulizaOwed":0},{"date":"2026-05-30","in":0,"out":10500,"balance":144897,"fulizaOwed":0},{"date":"2026-05-31","in":0,"out":2500,"balance":142397,"fulizaOwed":0},{"date":"2026-06-01","in":0,"out":550,"balance":141847,"fulizaOwed":0},{"date":"2026-06-02","in":0,"out":41200,"balance":100516,"fulizaOwed":0},{"date":"2026-06-03","in":0,"out":17050,"balance":83343,"fulizaOwed":0},{"date":"2026-06-04","in":0,"out":3100,"balance":80823,"fulizaOwed":0},{"date":"2026-06-05","in":0,"out":7460,"balance":72725,"fulizaOwed":0},{"date":"2026-06-06","in":0,"out":15700,"balance":58591,"fulizaOwed":0},{"date":"2026-06-07","in":0,"out":0,"balance":58591,"fulizaOwed":0},{"date":"2026-06-08","in":0,"out":2100,"balance":54848,"fulizaOwed":0},{"date":"2026-06-09","in":0,"out":420,"balance":54428,"fulizaOwed":0},{"date":"2026-06-10","in":0,"out":850,"balance":53771,"fulizaOwed":0},{"date":"2026-06-11","in":0,"out":1230,"balance":52334,"fulizaOwed":0},{"date":"2026-06-12","in":0,"out":4650,"balance":47684,"fulizaOwed":0},{"date":"2026-06-13","in":0,"out":11200,"balance":36484,"fulizaOwed":0},{"date":"2026-06-14","in":0,"out":5000,"balance":35471,"fulizaOwed":0},{"date":"2026-06-15","in":0,"out":1350,"balance":30114,"fulizaOwed":0},{"date":"2026-06-16","in":0,"out":780,"balance":29334,"fulizaOwed":0},{"date":"2026-06-17","in":0,"out":1500,"balance":27811,"fulizaOwed":0},{"date":"2026-06-18","in":0,"out":1950,"balance":26296,"fulizaOwed":0},{"date":"2026-06-19","in":0,"out":0,"balance":26296,"fulizaOwed":0},{"date":"2026-06-20","in":0,"out":9050,"balance":17639,"fulizaOwed":0},{"date":"2026-06-21","in":4500,"out":3500,"balance":21276,"fulizaOwed":0},{"date":"2026-06-22","in":0,"out":480,"balance":17296,"fulizaOwed":0},{"date":"2026-06-23","in":0,"out":1450,"balance":15846,"fulizaOwed":0},{"date":"2026-06-24","in":0,"out":2420,"balance":13397,"fulizaOwed":0},{"date":"2026-06-25","in":0,"out":1070,"balance":12327,"fulizaOwed":0},{"date":"2026-06-26","in":148250,"out":2860,"balance":157717,"fulizaOwed":0},{"date":"2026-06-27","in":0,"out":12100,"balance":145617,"fulizaOwed":0},{"date":"2026-06-28","in":0,"out":4100,"balance":145004,"fulizaOwed":0},{"date":"2026-06-29","in":0,"out":1260,"balance":140244,"fulizaOwed":0},{"date":"2026-06-30","in":0,"out":1500,"balance":138721,"fulizaOwed":0},{"date":"2026-07-01","in":0,"out":650,"balance":138071,"fulizaOwed":0},{"date":"2026-07-02","in":0,"out":39500,"balance":98463,"fulizaOwed":0},{"date":"2026-07-03","in":0,"out":18670,"balance":79693,"fulizaOwed":0},{"date":"2026-07-04","in":0,"out":13700,"balance":66173,"fulizaOwed":0},{"date":"2026-07-05","in":0,"out":5500,"balance":62948,"fulizaOwed":0},{"date":"2026-07-06","in":0,"out":5730,"balance":55464,"fulizaOwed":0},{"date":"2026-07-07","in":0,"out":1330,"balance":53354,"fulizaOwed":0},{"date":"2026-07-08","in":0,"out":2750,"balance":51234,"fulizaOwed":0},{"date":"2026-07-09","in":6200,"out":650,"balance":56784,"fulizaOwed":0},{"date":"2026-07-10","in":0,"out":4650,"balance":51484,"fulizaOwed":0},{"date":"2026-07-11","in":0,"out":10200,"balance":41734,"fulizaOwed":0},{"date":"2026-07-12","in":0,"out":0,"balance":41734,"fulizaOwed":0},{"date":"2026-07-13","in":0,"out":650,"balance":56052,"fulizaOwed":0},{"date":"2026-07-14","in":0,"out":1200,"balance":54202,"fulizaOwed":0},{"date":"2026-07-15","in":0,"out":550,"balance":53652,"fulizaOwed":0},{"date":"2026-07-16","in":0,"out":1030,"balance":52872,"fulizaOwed":0},{"date":"2026-07-17","in":0,"out":870,"balance":51752,"fulizaOwed":0},{"date":"2026-07-18","in":0,"out":10900,"balance":40819,"fulizaOwed":0},{"date":"2026-07-19","in":0,"out":2500,"balance":22194,"fulizaOwed":0},{"date":"2026-07-20","in":0,"out":1300,"balance":20887,"fulizaOwed":0},{"date":"2026-07-21","in":0,"out":610,"balance":20277,"fulizaOwed":0},{"date":"2026-07-22","in":0,"out":780,"balance":19497,"fulizaOwed":0},{"date":"2026-07-23","in":0,"out":2430,"balance":18567,"fulizaOwed":0},{"date":"2026-07-24","in":0,"out":9060,"balance":12234,"fulizaOwed":0},{"date":"2026-07-25","in":0,"out":15150,"balance":8334,"fulizaOwed":7051},{"date":"2026-07-26","in":148250,"out":0,"balance":140947,"fulizaOwed":0},{"date":"2026-07-27","in":0,"out":480,"balance":140467,"fulizaOwed":0},{"date":"2026-07-28","in":0,"out":450,"balance":140017,"fulizaOwed":0},{"date":"2026-07-29","in":0,"out":1550,"balance":138454,"fulizaOwed":0},{"date":"2026-07-30","in":0,"out":420,"balance":138034,"fulizaOwed":0},{"date":"2026-07-31","in":0,"out":6000,"balance":132634,"fulizaOwed":0},{"date":"2026-08-01","in":0,"out":7900,"balance":124121,"fulizaOwed":0},{"date":"2026-08-02","in":0,"out":42000,"balance":84500,"fulizaOwed":0},{"date":"2026-08-03","in":0,"out":15300,"balance":66900,"fulizaOwed":0},{"date":"2026-08-04","in":0,"out":1950,"balance":64628,"fulizaOwed":0},{"date":"2026-08-05","in":0,"out":3420,"balance":61603,"fulizaOwed":0},{"date":"2026-08-06","in":0,"out":7580,"balance":53546,"fulizaOwed":0},{"date":"2026-08-07","in":0,"out":0,"balance":53546,"fulizaOwed":0},{"date":"2026-08-08","in":0,"out":10300,"balance":51426,"fulizaOwed":0},{"date":"2026-08-09","in":12350,"out":2500,"balance":55576,"fulizaOwed":0},{"date":"2026-08-10","in":0,"out":650,"balance":52426,"fulizaOwed":0},{"date":"2026-08-11","in":0,"out":1060,"balance":51366,"fulizaOwed":0},{"date":"2026-08-12","in":0,"out":3900,"balance":47414,"fulizaOwed":0},{"date":"2026-08-13","in":0,"out":1130,"balance":46284,"fulizaOwed":0},{"date":"2026-08-14","in":0,"out":0,"balance":46284,"fulizaOwed":0},{"date":"2026-08-15","in":0,"out":11300,"balance":34984,"fulizaOwed":0},{"date":"2026-08-16","in":0,"out":6400,"balance":28584,"fulizaOwed":0},{"date":"2026-08-17","in":0,"out":970,"balance":27714,"fulizaOwed":0},{"date":"2026-08-18","in":0,"out":2610,"balance":24984,"fulizaOwed":0},{"date":"2026-08-19","in":0,"out":0,"balance":24984,"fulizaOwed":0},{"date":"2026-08-20","in":0,"out":780,"balance":24204,"fulizaOwed":0},{"date":"2026-08-21","in":12350,"out":4110,"balance":32444,"fulizaOwed":0},{"date":"2026-08-22","in":0,"out":13300,"balance":20644,"fulizaOwed":0},{"date":"2026-08-23","in":0,"out":2500,"balance":16621,"fulizaOwed":0},{"date":"2026-08-24","in":0,"out":3000,"balance":13592,"fulizaOwed":0},{"date":"2026-08-25","in":0,"out":930,"balance":12655,"fulizaOwed":0},{"date":"2026-08-26","in":148250,"out":610,"balance":160905,"fulizaOwed":0},{"date":"2026-08-27","in":0,"out":900,"balance":159395,"fulizaOwed":0},{"date":"2026-08-28","in":0,"out":5750,"balance":154645,"fulizaOwed":0},{"date":"2026-08-29","in":0,"out":9700,"balance":144632,"fulizaOwed":0},{"date":"2026-08-30","in":0,"out":4000,"balance":139902,"fulizaOwed":0},{"date":"2026-08-31","in":0,"out":0,"balance":139902,"fulizaOwed":0},{"date":"2026-09-01","in":0,"out":870,"balance":139032,"fulizaOwed":0},{"date":"2026-09-02","in":0,"out":39890,"balance":99034,"fulizaOwed":0},{"date":"2026-09-03","in":0,"out":16520,"balance":82864,"fulizaOwed":0},{"date":"2026-09-04","in":0,"out":6620,"balance":75767,"fulizaOwed":0},{"date":"2026-09-05","in":0,"out":8600,"balance":72742,"fulizaOwed":0},{"date":"2026-09-06","in":0,"out":9950,"balance":61145,"fulizaOwed":0},{"date":"2026-09-07","in":0,"out":1330,"balance":55815,"fulizaOwed":0},{"date":"2026-09-08","in":0,"out":2100,"balance":53695,"fulizaOwed":0},{"date":"2026-09-09","in":6200,"out":1020,"balance":58862,"fulizaOwed":0},{"date":"2026-09-10","in":0,"out":0,"balance":58862,"fulizaOwed":0},{"date":"2026-09-11","in":0,"out":3020,"balance":55842,"fulizaOwed":0},{"date":"2026-09-12","in":0,"out":8500,"balance":47642,"fulizaOwed":0},{"date":"2026-09-13","in":0,"out":450,"balance":46878,"fulizaOwed":0},{"date":"2026-09-14","in":0,"out":420,"balance":46458,"fulizaOwed":0},{"date":"2026-09-15","in":0,"out":1060,"balance":61158,"fulizaOwed":0},{"date":"2026-09-16","in":0,"out":550,"balance":60608,"fulizaOwed":0},{"date":"2026-09-17","in":0,"out":1380,"balance":59478,"fulizaOwed":0},{"date":"2026-09-18","in":0,"out":5400,"balance":53808,"fulizaOwed":0},{"date":"2026-09-19","in":0,"out":11300,"balance":42808,"fulizaOwed":0},{"date":"2026-09-20","in":0,"out":4000,"balance":38501,"fulizaOwed":0},{"date":"2026-09-21","in":7800,"out":900,"balance":46301,"fulizaOwed":0},{"date":"2026-09-22","in":0,"out":480,"balance":44921,"fulizaOwed":0},{"date":"2026-09-23","in":0,"out":620,"balance":44301,"fulizaOwed":0},{"date":"2026-09-24","in":0,"out":1780,"balance":42508,"fulizaOwed":0},{"date":"2026-09-25","in":0,"out":7750,"balance":34758,"fulizaOwed":0},{"date":"2026-09-26","in":148250,"out":8700,"balance":174308,"fulizaOwed":0},{"date":"2026-09-27","in":0,"out":4600,"balance":152495,"fulizaOwed":0},{"date":"2026-09-28","in":0,"out":1130,"balance":151365,"fulizaOwed":0},{"date":"2026-09-29","in":0,"out":650,"balance":150715,"fulizaOwed":0},{"date":"2026-09-30","in":0,"out":350,"balance":150365,"fulizaOwed":0},{"date":"2026-10-01","in":0,"out":1070,"balance":149295,"fulizaOwed":0},{"date":"2026-10-02","in":0,"out":39880,"balance":109307,"fulizaOwed":0},{"date":"2026-10-03","in":0,"out":27900,"balance":81307,"fulizaOwed":0},{"date":"2026-10-04","in":0,"out":5500,"balance":75787,"fulizaOwed":0},{"date":"2026-10-05","in":0,"out":3550,"balance":72762,"fulizaOwed":0},{"date":"2026-10-06","in":0,"out":5730,"balance":67228,"fulizaOwed":0},{"date":"2026-10-07","in":0,"out":450,"balance":65998,"fulizaOwed":0},{"date":"2026-10-08","in":0,"out":3100,"balance":63878,"fulizaOwed":0},{"date":"2026-10-09","in":0,"out":650,"balance":62215,"fulizaOwed":0},{"date":"2026-10-10","in":0,"out":11000,"balance":51215,"fulizaOwed":0},{"date":"2026-10-11","in":0,"out":4250,"balance":46965,"fulizaOwed":0},{"date":"2026-10-12","in":0,"out":550,"balance":46415,"fulizaOwed":0},{"date":"2026-10-13","in":0,"out":850,"balance":45865,"fulizaOwed":0},{"date":"2026-10-14","in":0,"out":450,"balance":45108,"fulizaOwed":0},{"date":"2026-10-15","in":0,"out":650,"balance":44458,"fulizaOwed":0},{"date":"2026-10-16","in":0,"out":600,"balance":43845,"fulizaOwed":0},{"date":"2026-10-17","in":0,"out":8900,"balance":36445,"fulizaOwed":0},{"date":"2026-10-18","in":0,"out":2500,"balance":32402,"fulizaOwed":0},{"date":"2026-10-19","in":0,"out":450,"balance":31945,"fulizaOwed":0},{"date":"2026-10-20","in":0,"out":900,"balance":31045,"fulizaOwed":0},{"date":"2026-10-21","in":6200,"out":480,"balance":37245,"fulizaOwed":0},{"date":"2026-10-22","in":0,"out":650,"balance":36115,"fulizaOwed":0},{"date":"2026-10-23","in":0,"out":610,"balance":35505,"fulizaOwed":0},{"date":"2026-10-24","in":0,"out":11000,"balance":26505,"fulizaOwed":0},{"date":"2026-10-25","in":0,"out":3500,"balance":20976,"fulizaOwed":0},{"date":"2026-10-26","in":148250,"out":350,"balance":169226,"fulizaOwed":0},{"date":"2026-10-27","in":0,"out":0,"balance":169226,"fulizaOwed":0},{"date":"2026-10-28","in":0,"out":1380,"balance":167483,"fulizaOwed":0},{"date":"2026-10-29","in":0,"out":480,"balance":167003,"fulizaOwed":0},{"date":"2026-10-30","in":0,"out":3320,"balance":163983,"fulizaOwed":0},{"date":"2026-10-31","in":0,"out":11900,"balance":151876,"fulizaOwed":0},{"date":"2026-11-01","in":0,"out":1500,"balance":150376,"fulizaOwed":0},{"date":"2026-11-02","in":0,"out":39150,"balance":111018,"fulizaOwed":0},{"date":"2026-11-03","in":0,"out":15610,"balance":95918,"fulizaOwed":0},{"date":"2026-11-04","in":0,"out":3050,"balance":92488,"fulizaOwed":0},{"date":"2026-11-05","in":0,"out":4860,"balance":89213,"fulizaOwed":0},{"date":"2026-11-06","in":0,"out":9550,"balance":77756,"fulizaOwed":0},{"date":"2026-11-07","in":0,"out":9200,"balance":68556,"fulizaOwed":0},{"date":"2026-11-08","in":0,"out":2100,"balance":66436,"fulizaOwed":0},{"date":"2026-11-09","in":4500,"out":550,"balance":70936,"fulizaOwed":0},{"date":"2026-11-10","in":0,"out":1060,"balance":69326,"fulizaOwed":0},{"date":"2026-11-11","in":0,"out":450,"balance":68869,"fulizaOwed":0},{"date":"2026-11-12","in":0,"out":730,"balance":68139,"fulizaOwed":0},{"date":"2026-11-13","in":0,"out":2250,"balance":65889,"fulizaOwed":0},{"date":"2026-11-14","in":0,"out":12250,"balance":54089,"fulizaOwed":0}],"dayOfMonth":[{"day":1,"in":0,"out":26040,"fulizaDrawn":0},{"day":2,"in":0,"out":493340,"fulizaDrawn":0},{"day":3,"in":0,"out":218910,"fulizaDrawn":0},{"day":4,"in":0,"out":61350,"fulizaDrawn":0},{"day":5,"in":0,"out":61770,"fulizaDrawn":0},{"day":6,"in":0,"out":98310,"fulizaDrawn":0},{"day":7,"in":0,"out":41830,"fulizaDrawn":0},{"day":8,"in":0,"out":85710,"fulizaDrawn":0},{"day":9,"in":73650,"out":23900,"fulizaDrawn":1013},{"day":10,"in":0,"out":37320,"fulizaDrawn":4130},{"day":11,"in":0,"out":36470,"fulizaDrawn":250},{"day":12,"in":0,"out":34050,"fulizaDrawn":1743},{"day":13,"in":0,"out":43840,"fulizaDrawn":350},{"day":14,"in":0,"out":45170,"fulizaDrawn":5513},{"day":15,"in":0,"out":24550,"fulizaDrawn":0},{"day":16,"in":0,"out":27940,"fulizaDrawn":851},{"day":17,"in":0,"out":27810,"fulizaDrawn":9080},{"day":18,"in":0,"out":42320,"fulizaDrawn":2920},{"day":19,"in":0,"out":26230,"fulizaDrawn":0},{"day":20,"in":0,"out":31930,"fulizaDrawn":6577},{"day":21,"in":55550,"out":22020,"fulizaDrawn":620},{"day":22,"in":0,"out":20620,"fulizaDrawn":0},{"day":23,"in":0,"out":19820,"fulizaDrawn":0},{"day":24,"in":0,"out":42210,"fulizaDrawn":3537},{"day":25,"in":0,"out":38170,"fulizaDrawn":7841},{"day":26,"in":1779000,"out":23870,"fulizaDrawn":0},{"day":27,"in":0,"out":40260,"fulizaDrawn":0},{"day":28,"in":0,"out":43390,"fulizaDrawn":0},{"day":29,"in":0,"out":35900,"fulizaDrawn":0},{"day":30,"in":0,"out":28820,"fulizaDrawn":0},{"day":31,"in":0,"out":33920,"fulizaDrawn":0}],"heat":[{"weekday":0,"hour":0,"amount":0,"count":0},{"weekday":0,"hour":1,"amount":0,"count":0},{"weekday":0,"hour":2,"amount":0,"count":0},{"weekday":0,"hour":3,"amount":0,"count":0},{"weekday":0,"hour":4,"amount":0,"count":0},{"weekday":0,"hour":5,"amount":0,"count":0},{"weekday":0,"hour":6,"amount":0,"count":0},{"weekday":0,"hour":7,"amount":9050,"count":9},{"weekday":0,"hour":8,"amount":13990,"count":30},{"weekday":0,"hour":9,"amount":15000,"count":1},{"weekday":0,"hour":10,"amount":115850,"count":5},{"weekday":0,"hour":11,"amount":0,"count":0},{"weekday":0,"hour":12,"amount":0,"count":0},{"weekday":0,"hour":13,"amount":16580,"count":25},{"weekday":0,"hour":14,"amount":0,"count":0},{"weekday":0,"hour":15,"amount":0,"count":0},{"weekday":0,"hour":16,"amount":0,"count":0},{"weekday":0,"hour":17,"amount":2000,"count":1},{"weekday":0,"hour":18,"amount":11700,"count":6},{"weekday":0,"hour":19,"amount":600,"count":1},{"weekday":0,"hour":20,"amount":0,"count":0},{"weekday":0,"hour":21,"amount":4200,"count":2},{"weekday":0,"hour":22,"amount":0,"count":0},{"weekday":0,"hour":23,"amount":0,"count":0},{"weekday":1,"hour":0,"amount":0,"count":0},{"weekday":1,"hour":1,"amount":0,"count":0},{"weekday":1,"hour":2,"amount":0,"count":0},{"weekday":1,"hour":3,"amount":0,"count":0},{"weekday":1,"hour":4,"amount":0,"count":0},{"weekday":1,"hour":5,"amount":0,"count":0},{"weekday":1,"hour":6,"amount":0,"count":0},{"weekday":1,"hour":7,"amount":9100,"count":7},{"weekday":1,"hour":8,"amount":16860,"count":34},{"weekday":1,"hour":9,"amount":45000,"count":3},{"weekday":1,"hour":10,"amount":77600,"count":5},{"weekday":1,"hour":11,"amount":0,"count":0},{"weekday":1,"hour":12,"amount":0,"count":0},{"weekday":1,"hour":13,"amount":18410,"count":27},{"weekday":1,"hour":14,"amount":0,"count":0},{"weekday":1,"hour":15,"amount":0,"count":0},{"weekday":1,"hour":16,"amount":0,"count":0},{"weekday":1,"hour":17,"amount":0,"count":0},{"weekday":1,"hour":18,"amount":9900,"count":2},{"weekday":1,"hour":19,"amount":3400,"count":4},{"weekday":1,"hour":20,"amount":0,"count":0},{"weekday":1,"hour":21,"amount":2100,"count":1},{"weekday":1,"hour":22,"amount":0,"count":0},{"weekday":1,"hour":23,"amount":0,"count":0},{"weekday":2,"hour":0,"amount":0,"count":0},{"weekday":2,"hour":1,"amount":0,"count":0},{"weekday":2,"hour":2,"amount":0,"count":0},{"weekday":2,"hour":3,"amount":0,"count":0},{"weekday":2,"hour":4,"amount":0,"count":0},{"weekday":2,"hour":5,"amount":0,"count":0},{"weekday":2,"hour":6,"amount":0,"count":0},{"weekday":2,"hour":7,"amount":9150,"count":7},{"weekday":2,"hour":8,"amount":16070,"count":34},{"weekday":2,"hour":9,"amount":30000,"count":2},{"weekday":2,"hour":10,"amount":39250,"count":5},{"weekday":2,"hour":11,"amount":0,"count":0},{"weekday":2,"hour":12,"amount":0,"count":0},{"weekday":2,"hour":13,"amount":16360,"count":23},{"weekday":2,"hour":14,"amount":0,"count":0},{"weekday":2,"hour":15,"amount":0,"count":0},{"weekday":2,"hour":16,"amount":0,"count":0},{"weekday":2,"hour":17,"amount":8000,"count":3},{"weekday":2,"hour":18,"amount":8800,"count":6},{"weekday":2,"hour":19,"amount":5450,"count":7},{"weekday":2,"hour":20,"amount":0,"count":0},{"weekday":2,"hour":21,"amount":4200,"count":2},{"weekday":2,"hour":22,"amount":0,"count":0},{"weekday":2,"hour":23,"amount":0,"count":0},{"weekday":3,"hour":0,"amount":0,"count":0},{"weekday":3,"hour":1,"amount":0,"count":0},{"weekday":3,"hour":2,"amount":0,"count":0},{"weekday":3,"hour":3,"amount":0,"count":0},{"weekday":3,"hour":4,"amount":0,"count":0},{"weekday":3,"hour":5,"amount":0,"count":0},{"weekday":3,"hour":6,"amount":0,"count":0},{"weekday":3,"hour":7,"amount":12300,"count":10},{"weekday":3,"hour":8,"amount":16180,"count":34},{"weekday":3,"hour":9,"amount":15000,"count":1},{"weekday":3,"hour":10,"amount":77950,"count":7},{"weekday":3,"hour":11,"amount":32400,"count":1},{"weekday":3,"hour":12,"amount":0,"count":0},{"weekday":3,"hour":13,"amount":20280,"count":29},{"weekday":3,"hour":14,"amount":0,"count":0},{"weekday":3,"hour":15,"amount":0,"count":0},{"weekday":3,"hour":16,"amount":0,"count":0},{"weekday":3,"hour":17,"amount":6000,"count":2},{"weekday":3,"hour":18,"amount":9150,"count":7},{"weekday":3,"hour":19,"amount":4800,"count":6},{"weekday":3,"hour":20,"amount":0,"count":0},{"weekday":3,"hour":21,"amount":4200,"count":2},{"weekday":3,"hour":22,"amount":0,"count":0},{"weekday":3,"hour":23,"amount":0,"count":0},{"weekday":4,"hour":0,"amount":0,"count":0},{"weekday":4,"hour":1,"amount":0,"count":0},{"weekday":4,"hour":2,"amount":0,"count":0},{"weekday":4,"hour":3,"amount":0,"count":0},{"weekday":4,"hour":4,"amount":0,"count":0},{"weekday":4,"hour":5,"amount":0,"count":0},{"weekday":4,"hour":6,"amount":0,"count":0},{"weekday":4,"hour":7,"amount":8550,"count":7},{"weekday":4,"hour":8,"amount":13510,"count":28},{"weekday":4,"hour":9,"amount":30000,"count":2},{"weekday":4,"hour":10,"amount":77900,"count":6},{"weekday":4,"hour":11,"amount":0,"count":0},{"weekday":4,"hour":12,"amount":0,"count":0},{"weekday":4,"hour":13,"amount":18750,"count":27},{"weekday":4,"hour":14,"amount":0,"count":0},{"weekday":4,"hour":15,"amount":0,"count":0},{"weekday":4,"hour":16,"amount":0,"count":0},{"weekday":4,"hour":17,"amount":3000,"count":1},{"weekday":4,"hour":18,"amount":16750,"count":6},{"weekday":4,"hour":19,"amount":900,"count":2},{"weekday":4,"hour":20,"amount":103400,"count":33},{"weekday":4,"hour":21,"amount":2100,"count":1},{"weekday":4,"hour":22,"amount":0,"count":0},{"weekday":4,"hour":23,"amount":14900,"count":5},{"weekday":5,"hour":0,"amount":8200,"count":3},{"weekday":5,"hour":1,"amount":25100,"count":7},{"weekday":5,"hour":2,"amount":0,"count":0},{"weekday":5,"hour":3,"amount":0,"count":0},{"weekday":5,"hour":4,"amount":0,"count":0},{"weekday":5,"hour":5,"amount":0,"count":0},{"weekday":5,"hour":6,"amount":0,"count":0},{"weekday":5,"hour":7,"amount":14650,"count":11},{"weekday":5,"hour":8,"amount":0,"count":0},{"weekday":5,"hour":9,"amount":30000,"count":2},{"weekday":5,"hour":10,"amount":40050,"count":9},{"weekday":5,"hour":11,"amount":323350,"count":47},{"weekday":5,"hour":12,"amount":0,"count":0},{"weekday":5,"hour":13,"amount":0,"count":0},{"weekday":5,"hour":14,"amount":0,"count":0},{"weekday":5,"hour":15,"amount":0,"count":0},{"weekday":5,"hour":16,"amount":0,"count":0},{"weekday":5,"hour":17,"amount":2000,"count":1},{"weekday":5,"hour":18,"amount":10650,"count":4},{"weekday":5,"hour":19,"amount":5550,"count":6},{"weekday":5,"hour":20,"amount":111000,"count":39},{"weekday":5,"hour":21,"amount":2100,"count":1},{"weekday":5,"hour":22,"amount":0,"count":0},{"weekday":5,"hour":23,"amount":19000,"count":7},{"weekday":6,"hour":0,"amount":8200,"count":3},{"weekday":6,"hour":1,"amount":12500,"count":5},{"weekday":6,"hour":2,"amount":0,"count":0},{"weekday":6,"hour":3,"amount":0,"count":0},{"weekday":6,"hour":4,"amount":0,"count":0},{"weekday":6,"hour":5,"amount":0,"count":0},{"weekday":6,"hour":6,"amount":0,"count":0},{"weekday":6,"hour":7,"amount":9600,"count":6},{"weekday":6,"hour":8,"amount":0,"count":0},{"weekday":6,"hour":9,"amount":15000,"count":1},{"weekday":6,"hour":10,"amount":142000,"count":39},{"weekday":6,"hour":11,"amount":0,"count":0},{"weekday":6,"hour":12,"amount":0,"count":0},{"weekday":6,"hour":13,"amount":0,"count":0},{"weekday":6,"hour":14,"amount":0,"count":0},{"weekday":6,"hour":15,"amount":0,"count":0},{"weekday":6,"hour":16,"amount":0,"count":0},{"weekday":6,"hour":17,"amount":5000,"count":2},{"weekday":6,"hour":18,"amount":8700,"count":6},{"weekday":6,"hour":19,"amount":4100,"count":4},{"weekday":6,"hour":20,"amount":0,"count":0},{"weekday":6,"hour":21,"amount":8400,"count":4},{"weekday":6,"hour":22,"amount":0,"count":0},{"weekday":6,"hour":23,"amount":0,"count":0}],"drain":[{"day":0,"remaining":1},{"day":1,"remaining":0.98},{"day":2,"remaining":0.958},{"day":3,"remaining":0.932},{"day":4,"remaining":0.895},{"day":5,"remaining":0.865},{"day":6,"remaining":0.752},{"day":7,"remaining":0.554},{"day":8,"remaining":0.466},{"day":9,"remaining":0.435},{"day":10,"remaining":0.414},{"day":11,"remaining":0.382},{"day":12,"remaining":0.345},{"day":13,"remaining":0.304},{"day":14,"remaining":0.281},{"day":15,"remaining":0.26},{"day":16,"remaining":0.244},{"day":17,"remaining":0.222},{"day":18,"remaining":0.201},{"day":19,"remaining":0.179},{"day":20,"remaining":0.16},{"day":21,"remaining":0.146},{"day":22,"remaining":0.13},{"day":23,"remaining":0.111},{"day":24,"remaining":0.093},{"day":25,"remaining":0.083},{"day":26,"remaining":0.076},{"day":27,"remaining":0.061},{"day":28,"remaining":0.05},{"day":29,"remaining":0.039},{"day":30,"remaining":0.029}],"spendingByCategory":[{"category":"Rent & housing","total":462000,"count":12},{"category":"Eating out & coffee","total":381390,"count":363},{"category":"Groceries & household","total":323350,"count":47},{"category":"People","total":236650,"count":88},{"category":"Bills & utilities","total":103900,"count":34},{"category":"Transport & fuel","total":102500,"count":33},{"category":"Going out","total":87900,"count":30},{"category":"Education","total":32400,"count":1},{"category":"Subscriptions & entertainment","total":27300,"count":13},{"category":"Cash","total":26000,"count":10},{"category":"Car & parking","total":12300,"count":14},{"category":"Airtime & data","total":6100,"count":31}],"topPlaces":[{"name":"ZARA COURT APARTMENTS","category":"Rent & housing","payments":12,"total":462000,"note":"Rent or housing."},{"name":"NAIVAS WESTLANDS","category":"Groceries & household","payments":12,"total":88450,"note":"Supermarket or household shopping."},{"name":"CHANDARANA FOOD PLUS YAYA","category":"Groceries & household","payments":13,"total":87300,"note":"Supermarket or household shopping."},{"name":"QUICKMART KILIMANI","category":"Groceries & household","payments":13,"total":86250,"note":"Supermarket or household shopping."},{"name":"PIZZA INN WESTLANDS","category":"Eating out & coffee","payments":46,"total":67560,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"JAVA HOUSE KIMATHI ST","category":"Eating out & coffee","payments":54,"total":65830,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"CARREFOUR JUNCTION","category":"Groceries & household","payments":9,"total":61350,"note":"Supermarket or household shopping."},{"name":"CJS RESTAURANT KOINANGE","category":"Eating out & coffee","payments":37,"total":61090,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"KFC JUNCTION","category":"Eating out & coffee","payments":47,"total":59870,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"SAFARICOM HOME FIBRE","category":"Bills & utilities","payments":12,"total":59400,"note":"Phone or home internet."},{"name":"KPLC PREPAID","category":"Bills & utilities","payments":22,"total":44500,"note":"Electricity or water."},{"name":"K1 KLUBHOUSE","category":"Going out","payments":15,"total":43200,"note":"Bar, club or lounge."},{"name":"TOTALENERGIES WAIYAKI WAY","category":"Transport & fuel","payments":13,"total":40500,"note":"Fuel station."},{"name":"KAREN BLIXEN COFFEE GARDEN","category":"Eating out & coffee","payments":30,"total":37080,"note":"Caf\u00e9, restaurant or takeaway."},{"name":"RUBIS KILELESHWA","category":"Transport & fuel","payments":11,"total":34500,"note":"Fuel station."}],"people":{"count":7,"total":248950,"top":[{"name":"MAMA WANJIKU","sends":12,"total":180000},{"name":"KEVIN OTIENO","sends":20,"total":14300},{"name":"FAITH MWENDE","sends":15,"total":12950},{"name":"JOSEPH MAINA MECHANIC","sends":14,"total":12300},{"name":"BRIAN KIPCHUMBA","sends":12,"total":10000},{"name":"ESTHER NJERI","sends":12,"total":9850},{"name":"MERCY ADHIAMBO","sends":17,"total":9550}]},"loans":[{"taken":"2026-01-14","lender":"M-Shwari","borrowed":12000,"days":13,"cost":1080,"latePenalty":0,"refundMissed":180},{"taken":"2026-04-16","lender":"M-Shwari","borrowed":14000,"days":33,"cost":2520,"latePenalty":1260,"refundMissed":210},{"taken":"2026-07-13","lender":"M-Shwari","borrowed":15000,"days":6,"cost":1350,"latePenalty":0,"refundMissed":0},{"taken":"2026-09-15","lender":"M-Shwari","borrowed":16000,"days":12,"cost":1440,"latePenalty":0,"refundMissed":240}],"feesByMonth":[{"month":"2025-11","transaction":20,"credit":34.4,"loans":0,"penalties":0},{"month":"2025-12","transaction":443,"credit":107.24,"loans":0,"penalties":0},{"month":"2026-01","transaction":514,"credit":151.57,"loans":1080,"penalties":0},{"month":"2026-02","transaction":446,"credit":78.72999999999999,"loans":0,"penalties":0},{"month":"2026-03","transaction":453,"credit":0,"loans":0,"penalties":0},{"month":"2026-04","transaction":512,"credit":0,"loans":1260,"penalties":1260},{"month":"2026-05","transaction":436,"credit":0,"loans":0,"penalties":0},{"month":"2026-06","transaction":546,"credit":0,"loans":0,"penalties":0},{"month":"2026-07","transaction":468,"credit":72.31,"loans":1350,"penalties":0},{"month":"2026-08","transaction":519,"credit":0,"loans":0,"penalties":0},{"month":"2026-09","transaction":407,"credit":0,"loans":1440,"penalties":0},{"month":"2026-10","transaction":439,"credit":0,"loans":0,"penalties":0},{"month":"2026-11","transaction":334,"credit":0,"loans":0,"penalties":0}],"avoidable":[{"date":"2026-01-14","what":"Early-repayment cashback missed","amount":180},{"date":"2026-04-16","what":"Loan rollover penalty","amount":1260},{"date":"2026-04-16","what":"Early-repayment cashback missed","amount":210},{"date":"2026-09-15","what":"Early-repayment cashback missed","amount":240}],"doublePayments":[{"date":"2026-03-08","place":"MULTICHOICE KENYA LIMITED","amount":2100}],"sampleTexts":["UK7H0VHLK4 Confirmed. Ksh9,200.00 paid to QUICKMART KILIMANI. on 7/11/26 at 11:54 AM.New M-PESA balance is Ksh68,555.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK8UJXCQH5 Confirmed. Ksh2,100.00 sent to MULTICHOICE KENYA LIMITED for account 7012334 on 8/11/26 at 9:05 PM New M-PESA balance is Ksh66,435.62. Transaction cost, Ksh20.00.Amount you can transact within the day is 499,000.00.","UK9ZSE6TN9 Confirmed. Ksh550.00 paid to DORMANS COFFEE YAYA. on 9/11/26 at 8:18 AM.New M-PESA balance is Ksh70,385.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK9J9I5033 Confirmed.You have received Ksh4,500.00 from PATRICK OCHIENG 0798223104 on 9/11/26 at 7:12 PM New M-PESA balance is Ksh70,935.62. Separate personal and business funds through Pochi la Biashara on *334#.","UK0CPOQVBW Confirmed. Ksh610.00 paid to JAVA HOUSE KIMATHI ST. on 10/11/26 at 8:33 AM.New M-PESA balance is Ksh69,775.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK0ZVFLWXN Confirmed. Ksh450.00 paid to PIZZA INN WESTLANDS. on 10/11/26 at 1:22 PM.New M-PESA balance is Ksh69,325.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK1R0OQZZ6 Confirmed. Ksh450.00 sent to KEVIN OTIENO 0712334907 on 11/11/26 at 7:42 AM. New M-PESA balance is Ksh68,868.62. Transaction cost, Ksh7.00.  Amount you can transact within the day is 499,000.00.","UK214XTIEG Confirmed. Ksh480.00 paid to ARTCAFFE WESTGATE. on 12/11/26 at 8:10 AM.New M-PESA balance is Ksh68,388.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK2U6T2JZM confirmed.You bought Ksh250.00 of airtime on 12/11/26 at 10:57 AM.New M-PESA balance is Ksh68,138.62. Transaction cost, Ksh0.00.","UK3H2SUADI Confirmed. Ksh450.00 paid to CJS RESTAURANT KOINANGE. on 13/11/26 at 1:34 PM.New M-PESA balance is Ksh67,688.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK3IODJ60K Confirmed. Ksh1,800.00 paid to KAREN BLIXEN COFFEE GARDEN. on 13/11/26 at 8:52 PM.New M-PESA balance is Ksh65,888.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK4XRXEFFJ Confirmed. Ksh9,200.00 paid to CHANDARANA FOOD PLUS YAYA. on 14/11/26 at 11:07 AM.New M-PESA balance is Ksh56,688.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00.","UK4SMLNWHJ Confirmed. Ksh450.00 sent to KEVIN OTIENO 0712334907 on 14/11/26 at 7:27 PM. New M-PESA balance is Ksh53,631.62. Transaction cost, Ksh7.00.  Amount you can transact within the day is 499,000.00.","UK4GHM21LQ Confirmed. Ksh2,600.00 paid to KFC JUNCTION. on 14/11/26 at 8:27 PM.New M-PESA balance is Ksh54,088.62. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,000.00."]};
+</script>
+<script>
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS='http://www.w3.org/2000/svg';
+const fmt=(n,dp=0)=>Number(n).toLocaleString('en-GB',{minimumFractionDigits:dp,maximumFractionDigits:dp});
+const kes=n=>'KES '+fmt(n);
+const sgn=n=>(n>0?'+':n<0?'−':'')+fmt(Math.abs(n));
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DSH=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return {y,m,d};};
+const dateL=s=>{const p=pd(s);return p.d+' '+MON[p.m-1]+' '+p.y;};
+const dateW=s=>{const p=pd(s);const wd=(new Date(Date.UTC(p.y,p.m-1,p.d)).getUTCDay()+6)%7;return DSH[wd]+' '+p.d+' '+MON[p.m-1]+' '+p.y;};
+const monL=s=>{const p=pd(s+'-01');return MONL[p.m-1]+' '+p.y;};
+const monS=s=>{const p=pd(s+'-01');return MON[p.m-1];};
+const ord=n=>n+(n%10==1&&n!=11?'st':n%10==2&&n!=12?'nd':n%10==3&&n!=13?'rd':'th');
+function el(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function h(tag,attrs={},html){const e=document.createElement(tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;return e;}
+
+/* ---------- derived figures (all arithmetic on the data) ---------- */
+const T=D.totals, F=D.fuliza;
+const net=T.in-T.out;
+const keptPer100=net/T.in*100;
+const loanBorrowed=D.loans.reduce((a,l)=>a+l.borrowed,0);
+const loanCost=D.loans.reduce((a,l)=>a+l.cost,0);
+const loanPenalty=D.loans.reduce((a,l)=>a+l.latePenalty,0);
+const loanFee=loanCost-loanPenalty;
+const creditCost=F.cost+loanCost;
+const creditBorrowed=F.drawn+loanBorrowed;
+const txFees=D.feesByMonth.reduce((a,m)=>a+m.transaction,0);
+const avoidTotal=D.avoidable.reduce((a,x)=>a+x.amount,0);
+const spendTotal=D.spendingByCategory.reduce((a,c)=>a+c.total,0);
+
+/* ---------- counters ---------- */
+const COUNT={net:net,half:D.halfLifeDays,creditCost:creditCost,fees:T.fees,cafe:D.habits.cafeSpend,people:D.people.total,tx:D.transactions};
+function runCount(node){
+  const key=node.dataset.count, to=COUNT[key], dp=+(node.dataset.dec||0);
+  if(RM){node.textContent=fmt(to,dp);return;}
+  const dur=1100, t0=performance.now();
+  (function step(t){const p=Math.min(1,(t-t0)/dur);const e=1-Math.pow(1-p,4);node.textContent=fmt(to*e,dp);if(p<1)requestAnimationFrame(step);else node.textContent=fmt(to,dp);})(t0);
+}
+$$('[data-count]').forEach(n=>{n.textContent=fmt(COUNT[n.dataset.count],+(n.dataset.dec||0));});
+
+/* ---------- hero ---------- */
+$('#period').textContent=dateL(D.start)+' to '+dateL(D.end)+' · '+D.days+' days';
+$('#txcount').textContent=fmt(D.transactions)+' transactions';
+$('#lede').innerHTML=`<strong class="g">KES ${fmt(T.in)}</strong> came in. <strong class="r">KES ${fmt(T.out)}</strong> went out. For every KES 100 that arrived, <strong>KES ${fmt(keptPer100,2)}</strong> stayed.`;
+$('#fb-in').textContent=fmt(T.in);$('#fb-out').textContent=fmt(T.out);$('#fb-net').textContent=sgn(net);
+$('#fb-note1').textContent='Out is '+fmt(T.out/T.in*100,1)+'% of in';
+$('#fb-note2').textContent='Incl. KES '+fmt(T.movedToOwnAccounts)+' to own accounts';
+requestAnimationFrame(()=>setTimeout(()=>{ $('#tr-o').style.transition=$('#tr-k').style.transition=RM?'none':'width 1.2s var(--ease)';
+  $('#tr-o').style.width=(T.out/T.in*100)+'%'; $('#tr-k').style.width=(net/T.in*100)+'%';},250));
+
+/* ---------- 01 cash flow chart ---------- */
+const chartBox=$('#chart');
+let view='days', sel=null, geo=null;
+const full=D.months.filter(m=>!m.partial);
+const worst=full.reduce((a,m)=>(m.in-m.out)<(a.in-a.out)?m:a);
+const best=full.reduce((a,m)=>(m.in-m.out)>(a.in-a.out)?m:a);
+const negMonths=full.filter(m=>m.in<m.out).length;
+const earlyOwing=D.months.filter(m=>m.month<'2026-03').reduce((a,m)=>a+m.daysOwingFuliza,0);
+$('#flow-say').innerHTML=`Your balance ran dry and Fuliza covered you on <strong>${F.daysOwing} days</strong>, ${earlyOwing} of them before March 2026. After that: <strong>${F.daysOwing-earlyOwing}</strong>. Each payday the line jumps, then drains. ${negMonths} of ${full.length} full months spent more than they brought in.`;
+
+function legend(items){$('#legend').innerHTML=items.map(([c,l,shape])=>`<span><span class="sw" style="background:${c};${shape==='line'?'height:2px;width:12px;border-radius:1px':''}"></span>${l}</span>`).join('');}
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p;}
+function kfmt(v){const a=Math.abs(v);return a>=1e6?(v/1e6).toFixed(a%1e6?1:0)+'m':a>=1e3?Math.round(v/1e3)+'k':String(v);}
+
+function drawFlow(){
+  const W=chartBox.clientWidth-12; const mobile=W<520;
+  const H=mobile?250:300, padL=mobile?34:44, padR=8, padT=12, padB=26;
+  chartBox.innerHTML='';
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,height:H,'aria-hidden':'true'},chartBox);
+  const iw=W-padL-padR, ih=H-padT-padB;
+  const g=el('g',{transform:`translate(${padL},${padT})`},svg);
+  const ax=el('g',{class:'axis'},g);
+  let pts=[];
+  if(view==='months'){
+    const ms=D.months; const n=ms.length;
+    const mx=niceMax(Math.max(...ms.map(m=>Math.max(m.in,m.out))));
+    const y=v=>ih/2 - v/mx*(ih/2);
+    [-mx,-mx/2,0,mx/2,mx].forEach(v=>{el('line',{x1:0,x2:iw,y1:y(v),y2:y(v),class:v===0?'zero':'gl'},ax);const t=el('text',{x:-8,y:y(v)+4,'text-anchor':'end'},ax);t.textContent=v===0?'0':(v<0?'−':'')+kfmt(Math.abs(v));});
+    const bw=iw/n, b=Math.min(bw*.56,34);
+    const bars=el('g',{},g); const lineP=[];
+    ms.forEach((m,i)=>{
+      const cx=bw*i+bw/2;
+      const op=m.partial?.38:1;
+      el('rect',{x:cx-b/2,y:y(m.in),width:b,height:Math.max(0,y(0)-y(m.in)-1),rx:3,fill:'var(--in)',opacity:op,class:'bar','data-i':i},bars);
+      el('rect',{x:cx-b/2,y:y(0)+1,width:b,height:Math.max(0,y(-m.out)-y(0)-1),rx:3,fill:'var(--out)',opacity:op,class:'bar','data-i':i},bars);
+      const t=el('text',{x:cx,y:ih+18,'text-anchor':'middle'},ax); t.textContent=(mobile&&i%2)?'':monS(m.month)+(pd(m.month+'-01').m===1?" '"+String(pd(m.month+'-01').y).slice(2):'');
+      lineP.push([cx,y(m.in-m.out)]); pts.push(cx);
+    });
+    // net line
+    el('path',{d:'M'+lineP.map(p=>p.join(',')).join('L'),fill:'none',stroke:'var(--net)','stroke-width':1.75,'stroke-linejoin':'round'},g);
+    lineP.forEach(p=>el('circle',{cx:p[0],cy:p[1],r:3,fill:'#fff',stroke:'var(--net)','stroke-width':1.5},g));
+    legend([['var(--in)','In'],['var(--out)','Out'],['var(--net)','Net','line']]);
+    chartBox.setAttribute('aria-label',`Monthly money in and out, ${monL(ms[0].month)} to ${monL(ms[n-1].month)}. Total in KES ${fmt(T.in)}, out KES ${fmt(T.out)}. First and last months are partial. Use left and right arrow keys to read each month.`);
+    $('#hint').textContent='Faded bars are part-months. Hover, drag, or use the arrow keys.';
+  } else if(view==='days'){
+    const ds=D.daily, n=ds.length;
+    const mxB=niceMax(Math.max(...ds.map(d=>d.balance))), mxF=Math.max(...ds.map(d=>d.fulizaOwed));
+    const zeroY=ih*0.78; // balance above, Fuliza below
+    const yB=v=>zeroY - v/mxB*zeroY;
+    const fScale=(ih-zeroY-2)/niceMax(mxF);
+    const yF=v=>zeroY + v*fScale;
+    [0,mxB/2,mxB].forEach(v=>{el('line',{x1:0,x2:iw,y1:yB(v),y2:yB(v),class:v===0?'zero':'gl'},ax);const t=el('text',{x:-8,y:yB(v)+4,'text-anchor':'end'},ax);t.textContent=kfmt(v);});
+    const ft=el('text',{x:-8,y:yF(niceMax(mxF))+2,'text-anchor':'end'},ax);ft.textContent='−'+kfmt(niceMax(mxF));
+    const x=i=>i/(n-1)*iw;
+    let dA='M0,'+zeroY; ds.forEach((d,i)=>dA+='L'+x(i)+','+yB(d.balance)); dA+='L'+iw+','+zeroY+'Z';
+    const defs=el('defs',{},svg);
+    const gr=el('linearGradient',{id:'gb',x1:0,y1:0,x2:0,y2:1},defs);
+    el('stop',{offset:'0%','stop-color':'#0F8A5F','stop-opacity':.22},gr);el('stop',{offset:'100%','stop-color':'#0F8A5F','stop-opacity':.02},gr);
+    el('path',{d:dA,fill:'url(#gb)'},g);
+    let dL='';ds.forEach((d,i)=>dL+=(i?'L':'M')+x(i)+','+yB(d.balance));
+    el('path',{d:dL,fill:'none',stroke:'var(--in)','stroke-width':1.5,'stroke-linejoin':'round'},g);
+    let dF='M0,'+zeroY; ds.forEach((d,i)=>dF+='L'+x(i)+','+yF(d.fulizaOwed)); dF+='L'+iw+','+zeroY+'Z';
+    el('path',{d:dF,fill:'var(--credit)',opacity:.85},g);
+    // month ticks
+    ds.forEach((d,i)=>{const p=pd(d.date);if(p.d===1){el('line',{x1:x(i),x2:x(i),y1:ih,y2:ih+4,stroke:'#CDD2DB'},ax);const mi=p.m-1;if(!mobile||mi%2===0){const t=el('text',{x:x(i),y:ih+18,'text-anchor':'middle'},ax);t.textContent=MON[mi];}}});
+    ds.forEach((d,i)=>pts.push(x(i)));
+    legend([['var(--in)','Balance'],['var(--credit)','Fuliza owed']]);
+    chartBox.setAttribute('aria-label',`Daily balance from ${dateL(D.start)} to ${dateL(D.end)}, with Fuliza owed shown below the line. Fuliza was owed on ${F.daysOwing} days. Use arrow keys to move day by day; hold Shift to jump a week.`);
+    $('#hint').textContent='Green is what you held. Violet, below the line, is what you owed on Fuliza. Arrow keys move a day; Shift jumps a week.';
+  } else {
+    const ds=D.dayOfMonth, n=ds.length;
+    const mxO=niceMax(Math.max(...ds.map(d=>d.out)));
+    const mxF=Math.max(...ds.map(d=>d.fulizaDrawn));
+    const topH=ih*0.62; const y=v=>topH - v/mxO*(topH-22);
+    const fY0=topH+10; const fH=ih-fY0; const yf=v=>fY0+ v/niceMax(mxF)*fH;
+    [0,mxO/2,mxO].forEach(v=>{el('line',{x1:0,x2:iw,y1:y(v),y2:y(v),class:v===0?'zero':'gl'},ax);const t=el('text',{x:-8,y:y(v)+4,'text-anchor':'end'},ax);t.textContent=kfmt(v);});
+    el('line',{x1:0,x2:iw,y1:fY0,y2:fY0,class:'zero'},ax);
+    const bw=iw/n,b=Math.max(3,Math.min(bw*.62,18));
+    ds.forEach((d,i)=>{
+      const cx=bw*i+bw/2;
+      el('rect',{x:cx-b/2,y:y(d.out),width:b,height:Math.max(0,y(0)-y(d.out)),rx:2,fill:'var(--out)'},g);
+      if(d.fulizaDrawn>0) el('rect',{x:cx-b/2,y:fY0+1,width:b,height:Math.max(1.5,yf(d.fulizaDrawn)-fY0),rx:2,fill:'var(--credit)'},g);
+      if(d.in>0){
+        el('line',{x1:cx,x2:cx,y1:4,y2:y(d.out)-3,stroke:'var(--in)','stroke-width':1.5,'stroke-dasharray':'2 3'},g);
+        el('circle',{cx:cx,cy:4,r:4.5,fill:'var(--in)'},g);
+        const t=el('text',{x:cx+(i>n-6?-8:8),y:8,'text-anchor':i>n-6?'end':'start',style:'font-size:11px;font-weight:600;fill:var(--in)'},g);t.textContent='+'+kfmt(d.in);
+      }
+      if(!mobile||[1,5,10,15,20,25,31].includes(d.day)||d.in>0){const t=el('text',{x:cx,y:ih+18,'text-anchor':'middle'},ax);t.textContent=d.day;}
+      pts.push(cx);
+    });
+    const lt=el('text',{x:iw,y:fY0+fH+0-2,'text-anchor':'end',style:'font-size:10.5px;fill:var(--credit)'},ax);lt.textContent='Fuliza drawn';
+    legend([['var(--in)','In'],['var(--out)','Out'],['var(--credit)','Fuliza drawn']]);
+    chartBox.setAttribute('aria-label',`Money by day of the month, all months combined. Money arrives on the ${D.bigInflowDays.map(ord).join(', ')}. Fuliza draws cluster before the ${ord(26)}. Use arrow keys to read each day.`);
+    $('#hint').textContent='All twelve months stacked onto one calendar month. Green dots mark the days money arrived.';
+  }
+  // cursor
+  const cur=el('g',{class:'cursor',style:'pointer-events:none'},g);
+  const cl=el('line',{y1:-4,y2:ih,stroke:'var(--ink)','stroke-width':1,'stroke-dasharray':'3 3',opacity:0},cur);
+  const hi=el('rect',{y:-4,height:ih+4,fill:'rgba(13,17,23,.045)',rx:6,opacity:0},cur);
+  geo={pts,padL,iw,ih,cl,hi,svg,step:pts.length>1?pts[1]-pts[0]:iw};
+  if(sel==null||sel>=pts.length) sel=defaultSel();
+  paint(sel);
+}
+function defaultSel(){
+  if(view==='months')return D.months.length-2;
+  if(view==='days'){let b=0;D.daily.forEach((d,i)=>{if(d.fulizaOwed>D.daily[b].fulizaOwed)b=i;});return b;}
+  return D.dayOfMonth.findIndex(d=>d.day===25);
+}
+function paint(i){
+  sel=Math.max(0,Math.min(geo.pts.length-1,i));
+  const x=geo.pts[sel];
+  if(view==='days'){geo.cl.setAttribute('x1',x);geo.cl.setAttribute('x2',x);geo.cl.setAttribute('opacity',.5);geo.hi.setAttribute('opacity',0);}
+  else{const w=geo.step*.9;geo.hi.setAttribute('x',x-w/2);geo.hi.setAttribute('width',w);geo.hi.setAttribute('opacity',1);geo.cl.setAttribute('opacity',0);}
+  // dim others
+  $$('.bar',geo.svg).forEach(b=>b.setAttribute('opacity',(+b.dataset.i===sel?1:(D.months[+b.dataset.i].partial?.3:.55))));
+  const W=$('#ro-when'),M=$('#ro-main'),S=$('#ro-sub');
+  if(view==='months'){
+    const m=D.months[sel], nt=m.in-m.out;
+    W.textContent=monL(m.month)+(m.partial?' · part-month':'');
+    M.innerHTML=`<small>Net KES</small><span class="${nt>=0?'pos':'neg'}">${sgn(nt)}</span>`;
+    S.innerHTML=`<span>In <b class="pos">${fmt(m.in)}</b></span><span>Out <b class="neg">${fmt(m.out)}</b></span><span>Fuliza owed on <b class="cr">${m.daysOwingFuliza}</b> day${m.daysOwingFuliza===1?'':'s'}</span>`;
+  } else if(view==='days'){
+    const d=D.daily[sel];
+    W.textContent=dateW(d.date);
+    if(d.fulizaOwed>0) M.innerHTML=`<small>Owed KES</small><span class="cr">−${fmt(d.fulizaOwed)}</span>`;
+    else M.innerHTML=`<small>Balance KES</small><span>${fmt(d.balance)}</span>`;
+    S.innerHTML=`<span>In <b class="pos">${fmt(d.in)}</b></span><span>Out <b class="neg">${fmt(d.out)}</b></span>${d.fulizaOwed>0?`<span>Balance <b>${fmt(d.balance)}</b></span>`:''}`;
+  } else {
+    const d=D.dayOfMonth[sel];
+    W.textContent='The '+ord(d.day)+' of the month, all months';
+    M.innerHTML=d.in>0?`<small>In KES</small><span class="pos">+${fmt(d.in)}</span>`:`<small>Out KES</small><span class="neg">${fmt(d.out)}</span>`;
+    S.innerHTML=(d.in>0?`<span>Out <b class="neg">${fmt(d.out)}</b></span>`:'')+`<span>Fuliza drawn <b class="cr">${fmt(d.fulizaDrawn)}</b></span>${d.day===D.lowestBalanceDayOfMonth?'<span class="tag warn" style="margin:0">Lowest balance day</span>':''}`;
+  }
+}
+function idxFromX(clientX){
+  const r=geo.svg.getBoundingClientRect(); const sx=(clientX-r.left)*(geo.svg.viewBox.baseVal.width/r.width)-geo.padL;
+  let best=0,bd=1e9; geo.pts.forEach((p,i)=>{const dd=Math.abs(p-sx);if(dd<bd){bd=dd;best=i;}}); return best;
+}
+chartBox.addEventListener('pointermove',e=>paint(idxFromX(e.clientX)));
+chartBox.addEventListener('pointerdown',e=>paint(idxFromX(e.clientX)));
+chartBox.addEventListener('keydown',e=>{
+  const big=e.shiftKey?(view==='days'?7:3):1;
+  if(e.key==='ArrowRight'){paint(sel+big);e.preventDefault();}
+  else if(e.key==='ArrowLeft'){paint(sel-big);e.preventDefault();}
+  else if(e.key==='Home'){paint(0);e.preventDefault();}
+  else if(e.key==='End'){paint(geo.pts.length-1);e.preventDefault();}
+});
+$$('[data-view]').forEach(b=>b.addEventListener('click',()=>{
+  view=b.dataset.view; sel=null;
+  $$('[data-view]').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+  drawFlow(); buildTable();
+}));
+function buildTable(){
+  const box=$('#flowtable'); let rows='',head='',foot='';
+  if(view==='months'){
+    head='<tr><th>Month</th><th class="r">In</th><th class="r">Out</th><th class="r">Net</th><th class="r">Fuliza days</th></tr>';
+    rows=D.months.map(m=>`<tr><td>${monL(m.month)}${m.partial?'<span class="tag">part</span>':''}</td><td class="r pos">${fmt(m.in)}</td><td class="r neg">${fmt(m.out)}</td><td class="r ${m.in-m.out>=0?'pos':'neg'}">${sgn(m.in-m.out)}</td><td class="r cr">${m.daysOwingFuliza||'<span class="dim">0</span>'}</td></tr>`).join('');
+    foot=`<tr><td>Year</td><td class="r pos">${fmt(T.in)}</td><td class="r neg">${fmt(T.out)}</td><td class="r pos">${sgn(net)}</td><td class="r cr">${F.daysOwing}</td></tr>`;
+  } else if(view==='days'){
+    head='<tr><th>Month</th><th class="r">Lowest balance</th><th class="r">Highest balance</th><th class="r">Peak Fuliza owed</th></tr>';
+    const by={};D.daily.forEach(d=>{const k=d.date.slice(0,7);(by[k]=by[k]||[]).push(d);});
+    rows=Object.keys(by).map(k=>{const a=by[k];return `<tr><td>${monL(k)}</td><td class="r">${fmt(Math.min(...a.map(d=>d.balance)))}</td><td class="r">${fmt(Math.max(...a.map(d=>d.balance)))}</td><td class="r cr">${fmt(Math.max(...a.map(d=>d.fulizaOwed)))}</td></tr>`;}).join('');
+  } else {
+    head='<tr><th>Day</th><th class="r">In</th><th class="r">Out</th><th class="r">Fuliza drawn</th></tr>';
+    rows=D.dayOfMonth.map(d=>`<tr><td>${ord(d.day)}</td><td class="r ${d.in?'pos':'dim'}">${fmt(d.in)}</td><td class="r neg">${fmt(d.out)}</td><td class="r ${d.fulizaDrawn?'cr':'dim'}">${fmt(d.fulizaDrawn)}</td></tr>`).join('');
+  }
+  box.innerHTML=`<table><caption class="sr">Cash flow table in Kenya shillings</caption><thead>${head}</thead><tbody>${rows}</tbody>${foot?`<tfoot>${foot}</tfoot>`:''}</table>`;
+}
+$('#tblToggle').addEventListener('click',e=>{const b=e.currentTarget;const open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',open);$('#flowtable').hidden=!open;b.textContent=open?'Hide table':'Show as table';});
+
+/* ---------- 02 half-life ---------- */
+$('#hl-say').innerHTML=`After money landed, <strong>half of it was gone in ${fmt(D.halfLifeDays,1)} days</strong> and three quarters by day ${fmt(D.threeQuarterDays,1)}. The balance usually hit its low on the <strong>${ord(D.lowestBalanceDayOfMonth)}</strong>, the day before pay arrived on the ${ord(26)}.`;
+const hlBox=$('#hlchart'); let hlSel=14, hlGeo=null;
+function interpDay(frac){const d=D.drain;for(let i=1;i<d.length;i++){if(d[i].remaining<=frac){const a=d[i-1],b=d[i];return a.day+(a.remaining-frac)/(a.remaining-b.remaining);}}return d[d.length-1].day;}
+function drawHL(){
+  const W=hlBox.clientWidth-12, mobile=W<520, H=mobile?220:260, padL=38,padR=10,padT=14,padB=26;
+  hlBox.innerHTML='';
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,height:H,'aria-hidden':'true'},hlBox);
+  const iw=W-padL-padR, ih=H-padT-padB; const g=el('g',{transform:`translate(${padL},${padT})`},svg);
+  const ax=el('g',{class:'axis'},g); const dr=D.drain; const n=dr.length-1;
+  const x=d=>d/n*iw, y=v=>ih-v*ih;
+  [0,.25,.5,.75,1].forEach(v=>{el('line',{x1:0,x2:iw,y1:y(v),y2:y(v),class:v===0?'zero':'gl'},ax);const t=el('text',{x:-8,y:y(v)+4,'text-anchor':'end'},ax);t.textContent=Math.round(v*100)+'%';});
+  [0,5,10,15,20,25,30].forEach(d=>{const t=el('text',{x:x(d),y:ih+18,'text-anchor':'middle'},ax);t.textContent=d===0?'Payday':'+'+d;});
+  const defs=el('defs',{},svg);const gr=el('linearGradient',{id:'gh',x1:0,y1:0,x2:0,y2:1},defs);
+  el('stop',{offset:'0%','stop-color':'#0D1117','stop-opacity':.10},gr);el('stop',{offset:'100%','stop-color':'#0D1117','stop-opacity':0},gr);
+  let dA='M0,'+ih; dr.forEach(p=>dA+='L'+x(p.day)+','+y(p.remaining)); dA+='L'+iw+','+ih+'Z';
+  el('path',{d:dA,fill:'url(#gh)'},g);
+  let dL='';dr.forEach((p,i)=>dL+=(i?'L':'M')+x(p.day)+','+y(p.remaining));
+  const path=el('path',{d:dL,fill:'none',stroke:'var(--ink)','stroke-width':2,'stroke-linejoin':'round'},g);
+  [[D.halfLifeDays,.5,'50% gone · day '+fmt(D.halfLifeDays,1)],[D.threeQuarterDays,.25,'75% gone · day '+fmt(D.threeQuarterDays,1)]].forEach(([d,v,l],k)=>{
+    el('line',{x1:x(d),x2:x(d),y1:y(v),y2:ih,stroke:'var(--credit)','stroke-width':1,'stroke-dasharray':'3 3'},g);
+    el('line',{x1:0,x2:x(d),y1:y(v),y2:y(v),stroke:'var(--credit)','stroke-width':1,'stroke-dasharray':'3 3'},g);
+    el('circle',{cx:x(d),cy:y(v),r:5,fill:'var(--credit)',stroke:'#fff','stroke-width':2},g);
+    const t=el('text',{x:x(d)+9,y:y(v)-9,style:'font-size:12px;font-weight:600;fill:var(--credit)'},g);t.textContent=l;
+  });
+  const cur=el('g',{},g); const cl=el('line',{y1:0,y2:ih,stroke:'var(--ink)','stroke-dasharray':'3 3',opacity:.45},cur); const cc=el('circle',{r:4.5,fill:'#fff',stroke:'var(--ink)','stroke-width':2},cur);
+  hlGeo={svg,x,y,padL,n,cl,cc,iw};
+  if(!RM){const L=path.getTotalLength();path.style.strokeDasharray=L;path.style.strokeDashoffset=L;path.getBoundingClientRect();path.style.transition='stroke-dashoffset 1.4s var(--ease)';hlBox.dataset.anim='1';hlGeo.path=path;}
+  paintHL(hlSel);
+  hlBox.setAttribute('aria-label',`Share of each payday still left by days after payday. Half is gone by day ${fmt(D.halfLifeDays,1)}, three quarters by day ${fmt(D.threeQuarterDays,1)}. Use arrow keys to read each day.`);
+}
+function paintHL(i){
+  hlSel=Math.max(0,Math.min(hlGeo.n,i)); const p=D.drain[hlSel];
+  hlGeo.cl.setAttribute('x1',hlGeo.x(p.day));hlGeo.cl.setAttribute('x2',hlGeo.x(p.day));
+  hlGeo.cc.setAttribute('cx',hlGeo.x(p.day));hlGeo.cc.setAttribute('cy',hlGeo.y(p.remaining));
+  $('#hl-when').textContent=p.day===0?'Payday':p.day+' day'+(p.day===1?'':'s')+' after payday';
+  $('#hl-main').innerHTML=`${fmt(p.remaining*100,1)}<small style="font-size:.5em;margin-left:2px">% left</small>`;
+  $('#hl-sub').innerHTML=`<span>${fmt((1-p.remaining)*100,1)}% already spent</span>`;
+}
+hlBox.addEventListener('pointermove',e=>{const r=hlGeo.svg.getBoundingClientRect();const sx=(e.clientX-r.left)*(hlGeo.svg.viewBox.baseVal.width/r.width)-hlGeo.padL;paintHL(Math.round(sx/hlGeo.iw*hlGeo.n));});
+hlBox.addEventListener('pointerdown',e=>{const r=hlGeo.svg.getBoundingClientRect();const sx=(e.clientX-r.left)*(hlGeo.svg.viewBox.baseVal.width/r.width)-hlGeo.padL;paintHL(Math.round(sx/hlGeo.iw*hlGeo.n));});
+hlBox.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){paintHL(hlSel+1);e.preventDefault();}else if(e.key==='ArrowLeft'){paintHL(hlSel-1);e.preventDefault();}});
+
+/* ---------- 03 credit ---------- */
+const fPer=F.cost/F.drawn*100, mPer=loanCost/loanBorrowed*100;
+$('#credit-say').innerHTML=`On <strong>KES ${fmt(creditBorrowed)}</strong> borrowed across ${F.draws} Fuliza draws and ${D.loans.length} M-Shwari loans. That is <strong>${fmt(creditCost/T.fees*100,0)}%</strong> of every charge you paid this year. Per shilling, the loans cost about <strong>${fmt(mPer/fPer,1)} times</strong> what Fuliza did.`;
+$('#p100-f').innerHTML=`KES ${fmt(fPer,2)}`; $('#p100-m').innerHTML=`KES ${fmt(mPer,2)}`;
+const pmax=Math.max(fPer,mPer);
+const lenders=(()=>{const tb=$('#credittable tbody');
+  let r=`<tr><td><span class="sw" style="background:var(--credit-mid);margin-right:8px"></span>Fuliza <span class="dim">· ${F.draws} draws</span></td><td class="r">${fmt(F.drawn)}</td><td class="r dim">${F.daysOwing} days</td><td class="r">${fmt(F.cost)}</td><td class="r dim">0</td><td class="r cr"><b>${fmt(F.cost)}</b></td><td class="r">${fmt(fPer,2)}</td></tr>`;
+  D.loans.forEach(l=>{const per=l.cost/l.borrowed*100;const fee=l.cost-l.latePenalty;
+    r+=`<tr><td><span class="sw" style="background:var(--credit);margin-right:8px"></span>M-Shwari <span class="dim">· ${dateL(l.taken)}</span>${l.latePenalty?'<span class="tag warn">late</span>':''}</td><td class="r">${fmt(l.borrowed)}</td><td class="r dim">${l.days} days</td><td class="r">${fmt(fee)}</td><td class="r ${l.latePenalty?'neg':'dim'}">${fmt(l.latePenalty)}</td><td class="r cr"><b>${fmt(l.cost)}</b></td><td class="r">${fmt(per,2)}</td></tr>`;});
+  tb.innerHTML=r;
+  let L=`<li><div class="r1"><span class="nm"><span class="sw" style="background:var(--credit-mid);margin-right:8px"></span>Fuliza <span class="dim">· ${F.draws} draws</span></span><span class="tc num cr">${fmt(F.cost)}</span></div><div class="r2 num"><span>Borrowed <b>${fmt(F.drawn)}</b></span><span>Owing <b>${F.daysOwing} days</b></span><span>Per 100 <b>${fmt(fPer,2)}</b></span></div></li>`;
+  D.loans.forEach(l=>{const fee=l.cost-l.latePenalty;L+=`<li><div class="r1"><span class="nm"><span class="sw" style="background:var(--credit);margin-right:8px"></span>M-Shwari <span class="dim">· ${dateL(l.taken)}</span>${l.latePenalty?'<span class="tag warn">late</span>':''}</span><span class="tc num cr">${fmt(l.cost)}</span></div><div class="r2 num"><span>Borrowed <b>${fmt(l.borrowed)}</b></span><span>Held <b>${l.days} days</b></span><span>Fee <b>${fmt(fee)}</b></span>${l.latePenalty?`<span>Penalty <b class="neg">${fmt(l.latePenalty)}</b></span>`:''}<span>Per 100 <b>${fmt(l.cost/l.borrowed*100,2)}</b></span></div></li>`;});
+  L+=`<li class="tot"><div class="r1"><span class="nm">All credit</span><span class="tc num cr">${fmt(creditCost)}</span></div><div class="r2 num"><span>Borrowed <b>${fmt(creditBorrowed)}</b></span><span>Penalties <b class="neg">${fmt(loanPenalty)}</b></span><span>Per 100 <b>${fmt(creditCost/creditBorrowed*100,2)}</b></span></div></li>`;
+  $('#ledger').innerHTML=L;
+  $('#credittable tfoot').innerHTML=`<tr><td>All credit</td><td class="r">${fmt(creditBorrowed)}</td><td class="r"></td><td class="r">${fmt(F.cost+loanFee)}</td><td class="r neg">${fmt(loanPenalty)}</td><td class="r cr">${fmt(creditCost)}</td><td class="r">${fmt(creditCost/creditBorrowed*100,2)}</td></tr>`;
+})();
+$('#fuliza-facts').innerHTML=[
+  [F.daysOwing,'days owing Fuliza'],
+  ['KES '+fmt(F.medianDraw,1),'typical (median) Fuliza draw'],
+  [F.drawsAfter7pm+' of '+F.draws,'Fuliza draws after 7 pm'],
+  ['KES '+fmt(D.loans.reduce((a,l)=>a+l.refundMissed,0)),'early-repayment cashback missed'],
+].map(([v,k])=>`<div class="fact"><div class="v num">${v}</div><div class="k">${k}</div></div>`).join('');
+
+/* ---------- 04 fees ---------- */
+const FEE=[
+  {k:'transaction',label:'Transaction costs',v:txFees,c:'#98A2B3'},
+  {k:'credit',label:'Fuliza charges',v:F.cost,c:'var(--credit-mid)'},
+  {k:'loans',label:'Loan fees',v:loanFee,c:'var(--credit)'},
+  {k:'penalties',label:'Penalties',v:loanPenalty,c:'var(--out)'},
+];
+$('#fees-say').innerHTML=`Everything you paid just to move and borrow money. <strong>KES ${fmt(avoidTotal)}</strong> of it could have been avoided by repaying on time or early.`;
+$('#avoid-total').innerHTML=`<b class="neg num" style="font-size:14px">KES ${fmt(avoidTotal)}</b>`;
+$('#avoid').innerHTML=D.avoidable.map(a=>`<li><span class="d">${dateL(a.date)}</span><span>${a.what}</span><span class="a num neg">${fmt(a.amount)}</span></li>`).join('');
+$('#doubles').innerHTML=D.doublePayments.map(a=>`<li><span class="d">${dateL(a.date)}</span><span><span style="text-transform:capitalize">${a.place.toLowerCase()}</span>, paid twice</span><span class="a num neg">${fmt(a.amount)}</span></li>`).join('');
+let feeSel=null;
+function drawCompose(){
+  const c=$('#compose'),k=$('#ckey');
+  c.innerHTML=FEE.map((f,i)=>`<button type="button" class="${feeSel===i?'sel':''}" style="flex:${f.v} 1 0;background:${f.c}" aria-pressed="${feeSel===i}" aria-label="${f.label}: KES ${fmt(f.v)}" data-f="${i}"></button>`).join('');
+  c.classList.toggle('dimmed',feeSel!=null);
+  k.innerHTML=FEE.map((f,i)=>`<button type="button" class="${feeSel===i?'sel':''}" aria-pressed="${feeSel===i}" data-f="${i}"><div class="k"><span class="sw" style="background:${f.c}"></span>${f.label}</div><div class="v num">${fmt(f.v)}<span class="p">${fmt(f.v/T.fees*100,1)}%</span></div></button>`).join('');
+  $$('[data-f]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.f;feeSel=feeSel===i?null:i;drawCompose();drawFees();}));
+}
+const feeBox=$('#feechart'); let fmSel=null, fmGeo=null;
+const feeTot=m=>m.transaction+m.credit+m.loans+m.penalties;
+fmSel=D.feesByMonth.reduce((b,m,i,a)=>feeTot(m)>feeTot(a[b])?i:b,0);
+function drawFees(){
+  const W=feeBox.clientWidth-12, mobile=W<520, H=mobile?170:190, padL=34,padR=6,padT=10,padB=24;
+  feeBox.innerHTML=''; const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,height:H,'aria-hidden':'true'},feeBox);
+  const iw=W-padL-padR, ih=H-padT-padB; const g=el('g',{transform:`translate(${padL},${padT})`},svg); const ax=el('g',{class:'axis'},g);
+  const ms=D.feesByMonth, n=ms.length;
+  const keys=feeSel==null?FEE.map(f=>f.k):[FEE[feeSel].k];
+  const tot=m=>keys.reduce((a,k)=>a+m[k],0);
+  const mx=niceMax(Math.max(...ms.map(tot))||1); const y=v=>ih-v/mx*ih;
+  [0,mx/2,mx].forEach(v=>{el('line',{x1:0,x2:iw,y1:y(v),y2:y(v),class:v===0?'zero':'gl'},ax);const t=el('text',{x:-8,y:y(v)+4,'text-anchor':'end'},ax);t.textContent=kfmt(v);});
+  const bw=iw/n,b=Math.min(bw*.56,30); const pts=[];
+  ms.forEach((m,i)=>{const cx=bw*i+bw/2; let acc=0;
+    keys.forEach(k=>{const f=FEE.find(x=>x.k===k);const v=m[k];if(v>0){el('rect',{x:cx-b/2,y:y(acc+v),width:b,height:Math.max(1,y(acc)-y(acc+v)-(acc>0?1:0)),fill:f.c,rx:2,class:'fb','data-i':i},g);}acc+=v;});
+    if(!mobile||i%2===0){const t=el('text',{x:cx,y:ih+17,'text-anchor':'middle'},ax);t.textContent=monS(m.month);} pts.push(cx);});
+  const hi=el('rect',{y:-4,height:ih+4,fill:'rgba(13,17,23,.045)',rx:6,opacity:0},g);
+  fmGeo={svg,pts,padL,hi,bw,keys,tot};
+  feeBox.setAttribute('aria-label',`Charges by month${feeSel!=null?', '+FEE[feeSel].label+' only':''}. Use arrow keys to read each month.`);
+  paintFee(fmSel);
+}
+function paintFee(i){
+  const ms=D.feesByMonth;
+  if(i==null){fmGeo.hi.setAttribute('opacity',0);$('#fm-when').textContent=feeSel==null?'All charges, by month':FEE[feeSel].label+', by month';
+    const s=feeSel==null?T.fees:FEE[feeSel].v;$('#fm-main').innerHTML=`<small>KES</small>${fmt(s)}<small style="margin-left:6px">for the year</small>`;return;}
+  fmSel=Math.max(0,Math.min(ms.length-1,i)); const m=ms[fmSel];
+  fmGeo.hi.setAttribute('x',fmGeo.pts[fmSel]-fmGeo.bw*.45);fmGeo.hi.setAttribute('width',fmGeo.bw*.9);fmGeo.hi.setAttribute('opacity',1);
+  $('#fm-when').textContent=monL(m.month)+(D.months[fmSel]&&D.months[fmSel].partial?' · part-month':'');
+  const parts=FEE.filter(f=>fmGeo.keys.includes(f.k)&&m[f.k]>0).map(f=>`${f.label.split(' ')[0]} ${fmt(m[f.k])}`).join(' · ');
+  $('#fm-main').innerHTML=`<small>KES</small>${fmt(fmGeo.tot(m))}<small style="margin-left:8px;font-size:13px">${parts}</small>`;
+}
+feeBox.addEventListener('pointermove',e=>{const r=fmGeo.svg.getBoundingClientRect();const sx=(e.clientX-r.left)*(fmGeo.svg.viewBox.baseVal.width/r.width)-fmGeo.padL;paintFee(Math.max(0,Math.min(fmGeo.pts.length-1,Math.floor(sx/fmGeo.bw))));});
+feeBox.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){paintFee(fmSel==null?0:fmSel+1);e.preventDefault();}else if(e.key==='ArrowLeft'){paintFee(fmSel==null?D.feesByMonth.length-1:fmSel-1);e.preventDefault();}else if(e.key==='Escape'){paintFee(fmSel=null);}});
+
+/* ---------- 05 where ---------- */
+const cafeRank=D.spendingByCategory.findIndex(c=>c.category==='Eating out & coffee')+1;
+$('#where-say').innerHTML=`On eating out and coffee: <strong>${fmt(D.habits.cafeVisits)} visits</strong>, about ${D.habits.cafePerWeek} a week. Only rent took more. That is <strong>${fmt(D.habits.cafeSpend/spendTotal*100,1)}%</strong> of all spending.`;
+let spView='cat';
+function drawSpend(){
+  const t=$('#sptable');
+  if(spView==='cat'){
+    const mx=D.spendingByCategory[0].total;
+    t.tHead.innerHTML='<tr><th>Category</th><th class="hide-m" style="width:34%"></th><th class="r hide-m">Payments</th><th class="r">Share</th><th class="r">KES</th></tr>';
+    t.tBodies[0].innerHTML=D.spendingByCategory.map(c=>`<tr><td>${c.category}</td><td class="hide-m"><div class="cell-bar"><i style="width:${c.total/mx*100}%;${c.category==='Eating out & coffee'?'background:var(--out)':''}"></i></div></td><td class="r dim hide-m">${fmt(c.count)}</td><td class="r dim">${fmt(c.total/spendTotal*100,1)}%</td><td class="r"><b>${fmt(c.total)}</b></td></tr>`).join('');
+    t.tFoot.innerHTML=`<tr><td>All spending</td><td class="hide-m"></td><td class="r hide-m">${fmt(D.spendingByCategory.reduce((a,c)=>a+c.count,0))}</td><td class="r">100%</td><td class="r">${fmt(spendTotal)}</td></tr>`;
+    $('#sp-note').textContent='Excludes KES '+fmt(T.movedToOwnAccounts)+' moved to own accounts';
+  } else {
+    const mx=D.topPlaces[0].total;
+    t.tHead.innerHTML='<tr><th>Place</th><th class="hide-m" style="width:30%"></th><th class="r">Visits</th><th class="r hide-m">Average</th><th class="r">KES</th></tr>';
+    t.tBodies[0].innerHTML=D.topPlaces.map(p=>`<tr><td><span style="text-transform:capitalize">${p.name.toLowerCase()}</span><div class="dim" style="font-size:12px">${p.category}</div></td><td class="hide-m"><div class="cell-bar"><i style="width:${p.total/mx*100}%;${p.category==='Eating out & coffee'?'background:var(--out)':''}"></i></div></td><td class="r dim">${fmt(p.payments)}</td><td class="r dim hide-m">${fmt(p.total/p.payments)}</td><td class="r"><b>${fmt(p.total)}</b></td></tr>`).join('');
+    t.tFoot.innerHTML='';
+    $('#sp-note').textContent='Top '+D.topPlaces.length+' places by amount';
+  }
+}
+$$('[data-sp]').forEach(b=>b.addEventListener('click',()=>{spView=b.dataset.sp;$$('[data-sp]').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));drawSpend();}));
+
+/* ---------- 06 people ---------- */
+const P=D.people, topP=P.top[0];
+$('#people-say').innerHTML=`Sent to <strong>${P.count} people</strong> in ${fmt(D.habits.peopleSends)} transfers. <span style="text-transform:capitalize">${topP.name.toLowerCase()}</span> received <strong>KES ${fmt(topP.total)}</strong>, ${fmt(topP.total/P.total*100,0)}% of it. Sending to people cost KES ${fmt(D.habits.peopleFees)} in fees.`;
+const pmx=topP.total;
+$('#ppl').innerHTML=P.top.map(p=>{const ini=p.name.split(' ').slice(0,2).map(w=>w[0]).join('');return `<li><span class="av" aria-hidden="true">${ini}</span><div><div class="n">${p.name.toLowerCase()}</div><div class="s">${p.sends} sends · avg KES ${fmt(p.total/p.sends)}</div><div class="bar"><i style="width:${p.total/pmx*100}%"></i></div></div><div class="t num">${fmt(p.total)}</div></li>`;}).join('');
+
+/* ---------- 07 rhythm ---------- */
+const hm=$('#heat'); const hx=Math.max(...D.heat.map(c=>c.amount));
+let hh='<span></span>'; for(let hr=0;hr<24;hr++) hh+=`<span class="hx">${hr%6===0?hr:''}</span>`;
+for(let wd=0;wd<7;wd++){hh+=`<span class="hl">${DSH[wd].slice(0,2)}</span>`;for(let hr=0;hr<24;hr++){const c=D.heat[wd*24+hr];const a=c.amount/hx;
+  const bg=c.amount?`rgba(217,54,62,${(0.08+0.92*Math.pow(a,.55)).toFixed(3)})`:'var(--line2)';
+  hh+=`<button type="button" class="c" style="background:${bg}" data-w="${wd}" data-h="${hr}" aria-label="${DAYS[wd]} ${hr}:00, KES ${fmt(c.amount)} across ${c.count} payments"></button>`;}}
+hm.innerHTML=hh;
+function heatRead(wd,hr){const c=D.heat[wd*24+hr];$('#heat-read').innerHTML=`<b>${DAYS[wd]}, ${String(hr).padStart(2,'0')}:00</b> · KES <b>${fmt(c.amount)}</b> across ${c.count} payment${c.count===1?'':'s'}`;}
+$$('.c',hm).forEach(b=>{const f=()=>heatRead(+b.dataset.w,+b.dataset.h);b.addEventListener('mouseenter',f);b.addEventListener('focus',f);b.addEventListener('click',f);
+  b.addEventListener('keydown',e=>{let w=+b.dataset.w,hr=+b.dataset.h;if(e.key==='ArrowRight')hr++;else if(e.key==='ArrowLeft')hr--;else if(e.key==='ArrowDown')w++;else if(e.key==='ArrowUp')w--;else return;e.preventDefault();w=(w+7)%7;hr=(hr+24)%24;$(`.c[data-w="${w}"][data-h="${hr}"]`,hm).focus();});});
+heatRead(D.habits.peakWeekday,D.habits.peakHour);
+const satAmt=D.heat.filter(c=>c.weekday===D.habits.peakWeekday).reduce((a,c)=>a+c.amount,0);
+$('#peak').innerHTML=`<span style="display:block">${DAYS[D.habits.peakWeekday]}s</span><span style="display:block;color:var(--out)">${D.habits.peakHour}:00</span>`;
+$('#rhythm-say').innerHTML=`Your busiest hour of the week. <strong>${fmt(D.habits.weekendShare*100,1)}%</strong> of spending happened at weekends, ${fmt(satAmt/spendTotal*100,1)}% on ${DAYS[D.habits.peakWeekday]}s alone. Only ${fmt(D.habits.lateNightShare*100,1)}% happened late at night.`;
+
+/* ---------- 08 sms ---------- */
+$('#sms').innerHTML=D.sampleTexts.slice(0,6).map(s=>{
+  let t=s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  t=t.replace(/(received )(Ksh[\d,\.]+)/,'$1<mark class="mi">$2</mark>').replace(/^(\w+ [Cc]onfirmed\.\s*(?:You bought )?)(Ksh[\d,\.]+)/,'$1<mark class="mo">$2</mark>');
+  return `<li>${t}</li>`;}).join('');
+
+/* ---------- share ---------- */
+$('#sc-net').textContent=fmt(net);
+$('#sc-line').textContent='kept from KES '+fmt(T.in)+' in, over '+D.days+' days';
+$('#sc-grid').innerHTML=[['Half of payday gone in',fmt(D.halfLifeDays,1)+' days'],['Credit cost','KES '+fmt(creditCost)],['All charges','KES '+fmt(T.fees)],['Avoidable','KES '+fmt(avoidTotal)]].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+const summary=`My year in mobile money (Pesadithi demo)\nKept KES ${fmt(net)} of KES ${fmt(T.in)} that came in.\nHalf of each payday gone in ${fmt(D.halfLifeDays,1)} days.\nCredit cost KES ${fmt(creditCost)}. All charges KES ${fmt(T.fees)}.\nPesadithi · made by Mark Kaigwa · mark.co.ke`;
+$('#copyBtn').addEventListener('click',async()=>{const s=$('#status');try{await navigator.clipboard.writeText(summary);s.textContent='Copied. Paste it anywhere.';}catch(e){s.textContent='Copying is blocked here. Select the card text instead.';}setTimeout(()=>s.textContent='',3200);});
+if(navigator.share){const sb=$('#shareBtn');sb.hidden=false;sb.addEventListener('click',()=>navigator.share({title:'Pesadithi',text:summary}).catch(()=>{}));}
+
+/* ---------- reveal, nav, resize ---------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');$$('[data-count]',e.target).forEach(n=>{if(!n.dataset.done){n.dataset.done=1;runCount(n);}});
+  if(e.target.querySelector('#hlchart')&&hlGeo&&hlGeo.path){hlGeo.path.style.strokeDashoffset=0;}
+  if(e.target.querySelector('#p100-fb')){$('#p100-fb').style.width=(fPer/pmax*100)+'%';$('#p100-mb').style.width=(mPer/pmax*100)+'%';}
+  io.unobserve(e.target);}}),{threshold:.15});
+$$('.rv').forEach(n=>io.observe(n));
+// hero counter immediately
+$$('#hero [data-count]').forEach(n=>{n.dataset.done=1;runCount(n);});
+const top=$('#top'); addEventListener('scroll',()=>top.classList.toggle('scrolled',scrollY>8),{passive:true});
+const secs=['flow','halflife','credit','fees','where','people','rhythm'].map(id=>document.getElementById(id));
+const nio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){$$('.toc a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));}}),{rootMargin:'-45% 0px -50% 0px'});
+secs.forEach(s=>nio.observe(s));
+
+drawFlow(); buildTable(); drawHL(); drawCompose(); drawFees(); drawSpend();
+let rz; addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{drawFlow();drawHL();drawFees();if(hlGeo.path)hlGeo.path.style.strokeDashoffset=0;},120);});
+})();
+</script>
+</body>
+</html>

@@ -707,38 +707,59 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     if (e.key === 'h' || e.key === 'H') { $('#sm').classList.toggle('rec'); if (!$('#sm').classList.contains('rec')) SM.rec = false; }
   });
 
-  /* ---------------- Hero: money texts read and labelled ---------------- */
+  /* ---------------- Hero: an Android phone whose M-PESA texts are read and labelled ---------------- */
   function heroAnim() {
     const feed = $('#heroFeed'); if (!feed) return;
-    const G = { in: '#17803f', out: '#d23b2e', credit: '#2457d6', fee: '#5b6670', who: '#c27a06' };
+    const box = $('#devbox'), dev = $('#dev');
+    const fit = () => { dev.style.setProperty('--s', (box.clientWidth / 432).toFixed(4)); };
+    fit(); window.addEventListener('resize', fit);
+    const G = { in: '#17803f', out: '#d23b2e', credit: '#2457d6', who: '#b26a00' };
+    // [day label, time, text with [[amount]] and {{payee}} marks, tag, colour key, in, out, fuliza, fee]
     const M = [
-      ['TKQ4H2 Confirmed. You have received Ksh48,500.00 from ACME DESIGN LTD on 26/9/26 at 9:14 AM. New M-PESA balance is Ksh49,180.00.', 'Money in', 'in', 48500, 0, 0, 0],
-      ['TKQ8J1 Confirmed. Fuliza M-PESA amount is Ksh180.00 repaid. Available Fuliza limit is Ksh5,000.00.', 'Fuliza repaid', 'credit', 0, 0, 0, 0],
-      ['TKR2B7 Confirmed. Ksh2,350.00 paid to NAIVAS WESTLANDS on 26/9/26 at 6:41 PM. New M-PESA balance is Ksh46,650.00. Transaction cost, Ksh0.00.', 'Groceries', 'out', 0, 2350, 0, 0],
-      ['TKS9C3 Confirmed. Ksh1,500.00 sent to WANJIRU K. 0712xxx486 on 27/9/26 at 7:02 AM. Transaction cost, Ksh23.00.', 'Who? What for?', 'who', 0, 1500, 0, 23],
-      ['TKT1D8 Confirmed. Ksh850.00 paid to JAVA HOUSE on 27/9/26 at 1:20 PM. Transaction cost, Ksh0.00.', 'Coffee', 'out', 0, 850, 0, 0],
-      ['TKV6E2 Confirmed. Fuliza M-PESA amount is Ksh640.00. Access Fee charged Ksh6.40. Total Fuliza M-PESA outstanding amount is Ksh646.40 due on 27/10/26.', 'Fuliza borrowed', 'credit', 0, 0, 640, 6],
-      ['TKW3F5 Confirmed. Ksh640.00 paid to KPLC PREPAID on 3/10/26 at 9:48 PM. Transaction cost, Ksh0.00.', 'Electricity', 'out', 0, 640, 0, 0],
-      ['TKX7G9 Confirmed. Ksh3,000.00 withdrawn from 0718 AGENT on 4/10/26. Transaction cost, Ksh53.00.', 'Cash out', 'out', 0, 3000, 0, 53]
+      ['Fri, 26 Sep', '9:14 am', 'TIQ4H2KL7S Confirmed.You have received [[Ksh48,500.00]] from {{ACME DESIGN LTD}} on 26/9/26 at 9:14 AM New M-PESA balance is Ksh49,180.00.', 'Money in', 'in', 48500, 0, 0, 0],
+      ['', '9:14 am', 'TIQ4H2KL7T Confirmed. Fuliza M-PESA amount is [[Ksh180.00]] repaid. Available Fuliza M-PESA limit is Ksh5,000.00.', 'Fuliza repaid', 'credit', 0, 0, 0, 0],
+      ['', '6:41 pm', 'TIR2B7MX0P Confirmed. [[Ksh2,350.00]] paid to {{NAIVAS WESTLANDS}}. on 26/9/26 at 6:41 PM.New M-PESA balance is Ksh46,650.00. Transaction cost, Ksh0.00.', 'Groceries', 'out', 0, 2350, 0, 0],
+      ['Sat, 27 Sep', '7:02 am', 'TIS9C3QW1E Confirmed. [[Ksh1,500.00]] sent to {{WANJIRU KAMAU}} 0712xxx486 on 27/9/26 at 7:02 AM. New M-PESA balance is Ksh45,127.00. Transaction cost, Ksh23.00.', 'A person: who?', 'who', 0, 1500, 0, 23],
+      ['', '1:20 pm', 'TIT1D8RV5K Confirmed. [[Ksh850.00]] paid to {{JAVA HOUSE KIMATHI ST}}. on 27/9/26 at 1:20 PM.New M-PESA balance is Ksh44,277.00. Transaction cost, Ksh0.00.', 'Coffee', 'out', 0, 850, 0, 0],
+      ['Fri, 3 Oct', '9:47 pm', 'TJV6E2NB3D Confirmed. Fuliza M-PESA amount is [[Ksh640.00]]. Access Fee charged Ksh6.40. Total Fuliza M-PESA outstanding amount is Ksh646.40 due on 2/11/26.', 'Fuliza borrowed', 'credit', 0, 0, 640, 6],
+      ['', '9:48 pm', 'TJW3F5YC8L Confirmed. [[Ksh640.00]] paid to {{KPLC PREPAID}} for account 37185520496 on 3/10/26 at 9:48 PM New M-PESA balance is Ksh0.00. Transaction cost, Ksh0.00.', 'Electricity', 'out', 0, 640, 0, 0],
+      ['Sat, 4 Oct', '10:05 am', 'TJX7G9HA2M Confirmed. on 4/10/26 at 10:05 AM [[Ksh3,000.00]] withdrawn from {{0718 MUTHAIGA AGENT}}. New M-PESA balance is Ksh1,354.00. Transaction cost, Ksh53.00.', 'Cash out', 'out', 0, 3000, 0, 53]
     ];
-    feed.innerHTML = M.map((m, i) => `<div class="msg" style="--c:${G[m[2]]}" data-i="${i}">${esc(m[0])}<span class="tg">${esc(m[1])}</span></div>`).join('');
-    const T = [['in', 'came in', G.in, 3], ['out', 'went out', G.out, 4], ['credit', 'from Fuliza', G.credit, 5], ['fee', 'in charges', G.fee, 6]];
+    const mark = (t) => esc(t).replace(/\[\[(.+?)\]\]/g, '<span class="amt">$1</span>').replace(/\{\{(.+?)\}\}/g, '<span class="pay">$1</span>');
+    let html = '';
+    M.forEach((m, i) => {
+      const next = M[i + 1]; const groupStart = i === 0 || m[0]; const groupEnd = !next || next[0];
+      if (m[0]) html += `<div class="day">${esc(m[0])} · ${esc(m[1])}</div>`;
+      html += `<div class="row has-tag ${groupStart ? 'first' : 'mid'}${groupEnd ? ' last' : ''}" style="--c:${G[m[4]]}" data-i="${i}"><span class="ava">M</span><div class="bub">${mark(m[2])}<span class="tag">${esc(m[3])}</span></div></div>`;
+    });
+    feed.innerHTML = html;
+    const T = [['in', 'came in', G.in, 5], ['out', 'went out', G.out, 6], ['credit', 'borrowed from Fuliza', G.credit, 7], ['fee', 'in charges', '#5b6670', 8]];
     $('#heroTally').innerHTML = T.map(([k, l, c]) => `<div style="--c:${c}"><b id="ht-${k}">KES 0</b><small>${l}</small></div>`).join('');
-    const els = $$('#heroFeed .msg'); const scan = $('#heroScan'); const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tot = T.map(([, , , idx]) => d3.sum(M, (m) => m[idx]));
-    const dur = reduce ? 0 : 3600; let t0 = null;
-    const frame = (now) => {
-      if (t0 == null) t0 = now; const p = dur ? Math.min(1, (now - t0) / dur) : 1; const e = 1 - Math.pow(1 - p, 3);
-      els.forEach((el, i) => { if (p >= (i + .5) / els.length) el.classList.add('on'); });
-      const cur = els[Math.min(els.length - 1, Math.floor(p * els.length))];
-      if (dur && p < 1) { scan.style.opacity = 1; scan.style.top = (cur.offsetTop + cur.offsetHeight + 4) + 'px'; } else scan.style.opacity = 0;
-      T.forEach(([k], i) => { $('#ht-' + k).textContent = 'KES ' + n0(tot[i] * e); });
-      if (p < 1) requestAnimationFrame(frame);
+    const rows = $$('#heroFeed .row'); const scan = $('#heroScan'); const convo = feed.parentElement;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const run = { in: 0, out: 0, credit: 0, fee: 0 };
+    const paint = () => T.forEach(([k]) => { $('#ht-' + k).textContent = 'KES ' + n0(run[k]); });
+    const step = (i) => {
+      if (i >= rows.length) { scan.style.opacity = 0; return; }
+      const r = rows[i]; const m = M[i];
+      // keep the row being read in view, as the chat would scroll
+      const bottom = r.offsetTop + r.offsetHeight + 24; const h = convo.clientHeight;
+      feed.style.transform = `translateY(${Math.min(0, h - bottom)}px)`;
+      setTimeout(() => {
+        const y = r.offsetTop + Math.min(0, h - bottom);
+        scan.style.top = (y + r.offsetHeight / 2) + 'px'; scan.style.opacity = 1;
+        setTimeout(() => {
+          r.classList.add('on');
+          run.in += m[5]; run.out += m[6]; run.credit += m[7]; run.fee += m[8]; paint();
+          setTimeout(() => step(i + 1), 520);
+        }, 380);
+      }, 420);
     };
-    setTimeout(() => requestAnimationFrame(frame), reduce ? 0 : 600);
+    if (reduce) { rows.forEach((r, i) => { r.classList.add('on'); run.in += M[i][5]; run.out += M[i][6]; run.credit += M[i][7]; run.fee += M[i][8]; }); paint(); return; }
+    paint(); setTimeout(() => step(0), 700);
   }
   heroAnim();
-  // Type options: A Fraunces, B Bricolage Grotesque, C Young Serif (body stays Hanken Grotesk)
+  // Type options: A Petrona, B Schibsted Grotesk, C Besley (body stays Hanken Grotesk)
   (function () { let t = 'a'; try { t = localStorage.getItem('pesadithi:type') || 'a'; } catch (e) { /* none */ } const set = (v) => { document.documentElement.dataset.type = v; $$('.typepick button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === v))); try { localStorage.setItem('pesadithi:type', v); } catch (e) { /* none */ } if (S.A && !$('#v-story').hidden) setTimeout(drawCharts, 60); }; $$('.typepick button').forEach((b) => b.addEventListener('click', () => set(b.dataset.t))); set(t); })();
 
   /* ---------------- Start ---------------- */
