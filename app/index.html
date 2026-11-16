@@ -66,10 +66,10 @@
     <div class="wrap">
       <div class="rails-head"><h2 id="railsH">Reads the money texts you already get</h2><p class="small muted">No bank login, no API, no app to install. If your wallet sends you a text for every move, Pesadithi can read it.</p></div>
       <ul class="rail-list">
-        <li class="rail full"><b class="wl" data-logo="mpesa">M-PESA</b><span>🇰🇪 Kenya</span><em>Full support: SMS, statement PDF, Fuliza and M-Shwari</em></li>
-        <li class="rail beta"><b class="wl" data-logo="airtel">Airtel Money</b><span>🇰🇪 Kenya · 🇺🇬 Uganda · 🇹🇿 Tanzania · 🇷🇼 Rwanda · 🇿🇲 Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
-        <li class="rail beta"><b class="wl" data-logo="mtn">MTN MoMo</b><span>🇺🇬 Uganda · 🇬🇭 Ghana · 🇷🇼 Rwanda · 🇿🇲 Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
-        <li class="rail soon"><b>And the rest</b><span class="rl-logos"><i class="wl wl-sm" data-logo="mpesa-tz">M-Pesa Tanzania</i><i class="wl wl-sm" data-logo="mpesa-et">M-PESA Ethiopia</i></span><span>M-Pesa 🇹🇿 · M-PESA 🇪🇹 · Equitel 🇰🇪 · Mixx 🇹🇿 · Orange Money 🇸🇳 🇨🇮 · Wave 🇸🇳</span><em>On the list. Ten sample texts get a wallet added</em></li>
+        <li class="rail full"><b class="wl" data-logo="mpesa">M-PESA</b><span class="flags"><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i></span><em>Full support: SMS, statement PDF, Fuliza and M-Shwari</em></li>
+        <li class="rail beta"><b class="wl" data-logo="airtel">Airtel Money</b><span class="flags"><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i><i role="img" aria-label="Uganda" title="Uganda">🇺🇬</i><i role="img" aria-label="Tanzania" title="Tanzania">🇹🇿</i><i role="img" aria-label="Rwanda" title="Rwanda">🇷🇼</i><i role="img" aria-label="Zambia" title="Zambia">🇿🇲</i></span><em>Beta: sends, receipts, withdrawals, fees</em></li>
+        <li class="rail beta"><b class="wl" data-logo="mtn">MTN MoMo</b><span class="flags"><i role="img" aria-label="Uganda" title="Uganda">🇺🇬</i><i role="img" aria-label="Ghana" title="Ghana">🇬🇭</i><i role="img" aria-label="Rwanda" title="Rwanda">🇷🇼</i><i role="img" aria-label="Zambia" title="Zambia">🇿🇲</i></span><em>Beta: sends, receipts, withdrawals, fees</em></li>
+        <li class="rail soon"><b>And the rest</b><span class="rl-logos"><i class="wl wl-sm" data-logo="mpesa-tz">M-Pesa Tanzania</i><i class="wl wl-sm" data-logo="mpesa-et">M-PESA Ethiopia</i><i class="wl wl-sm" data-logo="mixx">Mixx by Yas</i></span><span class="rest">Equitel, Orange Money and Wave</span><span class="flags"><i role="img" aria-label="Tanzania" title="Tanzania">🇹🇿</i><i role="img" aria-label="Ethiopia" title="Ethiopia">🇪🇹</i><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i><i role="img" aria-label="Senegal" title="Senegal">🇸🇳</i><i role="img" aria-label="Côte d'Ivoire" title="Côte d'Ivoire">🇨🇮</i></span><em>On the list. Ten sample texts get a wallet added</em></li>
       </ul>
       <div class="ticker" aria-hidden="true"><span class="tk-prov" id="tkProv">M-PESA</span><span class="tk-msg" id="tkMsg"></span></div>
     </div>
@@ -288,11 +288,25 @@
   <div class="wrap" style="padding-top:44px;padding-bottom:60px">
     <div class="kicker">Ask your AI</div>
     <h1>Take your story to the AI you already use</h1>
-    <p class="muted">This builds a short summary of totals and patterns, with no people's names, phone numbers or message text, plus a prompt. Answer four questions and it sizes everything to your plan.</p>
-    <p><b>Which assistant?</b></p><div class="choices ai-choices" data-q="platform"><button type="button" data-a="ChatGPT"><span class="ai" data-ai="chatgpt"></span>ChatGPT</button><button type="button" data-a="Claude"><span class="ai" data-ai="claude"></span>Claude</button><button type="button" data-a="Gemini"><span class="ai" data-ai="gemini"></span>Gemini</button><button type="button" data-a="DeepSeek"><span class="ai" data-ai="deepseek"></span>DeepSeek</button><button type="button" data-a="Copilot"><span class="ai" data-ai="copilot"></span>Copilot</button><button type="button" data-a="another assistant">Another</button></div>
-    <p><b>Free or paid plan?</b></p><div class="choices" data-q="plan"><button type="button" data-a="free">Free</button><button type="button" data-a="paid">Paid</button></div>
-    <p><b>How much of your usage are you happy to spend on this?</b></p><div class="choices" data-q="budget"><button type="button" data-a="5">A little (about 5%)</button><button type="button" data-a="20">Some (about 20%)</button><button type="button" data-a="50">A lot (about half)</button></div>
-    <p><b>What should it look at?</b></p><div class="choices" data-q="share"><button type="button" data-a="summary">This summary (recommended)</button><button type="button" data-a="pdf">My statement PDF</button><button type="button" data-a="sms">My raw messages</button></div>
+    <p class="muted">This builds a short summary of totals and patterns, with no people's names, phone numbers or message text, plus a prompt written for you. Four quick choices, already set to the safest options; change any of them.</p>
+    <p class="aq"><b>1. Which assistant do you use?</b></p><div class="choices ai-choices" data-q="platform"><button type="button" data-a="ChatGPT"><span class="ai" data-ai="chatgpt"></span>ChatGPT</button><button type="button" data-a="Claude"><span class="ai" data-ai="claude"></span>Claude</button><button type="button" data-a="Gemini"><span class="ai" data-ai="gemini"></span>Gemini</button><button type="button" data-a="DeepSeek"><span class="ai" data-ai="deepseek"></span>DeepSeek</button><button type="button" data-a="Copilot"><span class="ai" data-ai="copilot"></span>Copilot</button><button type="button" data-a="another assistant">Another</button></div>
+    <p class="aq"><b>2. Free or paid plan?</b><span class="small muted">Free plans have tighter daily limits, so the prompt keeps things short.</span></p>
+    <div class="choices opts" data-q="plan">
+      <button type="button" data-a="free"><b>Free</b><small>Short, focused answer that won't eat your daily limit</small></button>
+      <button type="button" data-a="paid"><b>Paid</b><small>Room for a longer read and more months of data</small></button>
+    </div>
+    <p class="aq"><b>3. How deep should it go?</b><span class="small muted">This sets how long the AI's answer is, and how much of your allowance it uses.</span></p>
+    <div class="choices opts" data-q="budget">
+      <button type="button" data-a="5"><b>Quick read</b><small>About 300 words. Your three biggest patterns and three things to try.</small></button>
+      <button type="button" data-a="20"><b>Proper review</b><small>About 600 words. Patterns, costs, and a plan for next month.</small></button>
+      <button type="button" data-a="50"><b>Deep dive</b><small>About 1,000 words. Best on a paid plan.</small></button>
+    </div>
+    <p class="aq"><b>4. What will you share with it?</b><span class="small muted">Whatever you paste goes to that AI company. The less personal, the better.</span></p>
+    <div class="choices opts" data-q="share">
+      <button type="button" data-a="summary"><b>Just the summary <span class="pill rec">Recommended</span></b><small>Totals and patterns only. No names, phone numbers or message text.</small></button>
+      <button type="button" data-a="pdf"><b>The summary and my statement PDF</b><small>More detail, but the AI sees every name and phone number on it.</small></button>
+      <button type="button" data-a="sms"><b>The summary and my money texts</b><small>Most detail, same names caveat, and slow to paste for long periods.</small></button>
+    </div>
     <label class="small check"><input type="checkbox" id="incMerchants" checked> Include the names of shops and businesses (people are never named)</label>
     <div class="advice" id="aiAdvice" role="status" aria-live="polite">Answer the questions above.</div>
     <div class="btn-row"><button class="btn" id="copyPrompt" type="button">Copy prompt and summary</button><span class="small muted" id="aiSize"></span><span class="small" id="copyState" role="status" aria-live="polite"></span></div>
@@ -331,7 +345,7 @@
 <footer><div class="wrap btn-row" style="justify-content:space-between;flex-wrap:wrap">
   <span class="credit-line">Pesadithi Lab, made by <a href="https://mark.co.ke" rel="noopener">Mark Kaigwa</a> · <a href="https://x.com/mkaigwa" rel="noopener">@mkaigwa on X</a> · open source on <a href="https://github.com/mkaigwa/pesadithi-lab" rel="noopener">GitHub</a></span>
   <span class="btn-row"><button class="linkbtn" id="btnStoryMode" type="button" data-needs-data hidden>Story mode (vertical)</button><button class="linkbtn" id="btnClear" type="button" hidden>Clear my data</button></span>
-  <p class="tm small muted">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented. Figures on the shared money cards are invented illustrations. ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, M-Pesa, Airtel Money and MTN MoMo, and their logos, belong to Safaricom, Vodacom, Airtel and MTN. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
+  <p class="tm small muted">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented. Figures on the shared money cards are invented illustrations. ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, M-Pesa, Airtel Money, MTN MoMo and Mixx, and their logos, belong to Safaricom, Vodacom, Airtel, MTN and Yas. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
 </div></footer>
 
 <div class="sm" id="sm" hidden role="dialog" aria-modal="true" aria-label="Story mode">

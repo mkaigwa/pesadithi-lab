@@ -5,7 +5,7 @@
   const P = window.PDParse, AN = window.PDAnalyse, MC = window.PDMerchants;
   // Money in is green, money out is red, credit violet, loans amber (validated for colour-blind separation; in and out also differ by position)
   const C = { in: '#1f8a4c', out: '#d23b2e', credit: '#7a4fd0', loan: '#e08a00', fee: '#5b6670', bad: '#a3170f', good: '#1f8a4c', ink: '#0f2318', grid: '#e6eee9', muted: '#8c9d93' };
-  const S = { calMode: null, raw: null, A: null, demo: false, period: 12, src: null, busy: false, token: 0, lastInput: null, pwFails: 0, game: null, targets: {}, ai: {} };
+  const S = { calMode: null, raw: null, A: null, demo: false, period: 12, src: null, busy: false, token: 0, lastInput: null, pwFails: 0, game: null, targets: {}, ai: { plan: 'free', budget: '5', share: 'summary' } };
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem('pesadithi:' + k)); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem('pesadithi:salt', SALT); localStorage.setItem('pesadithi:' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
@@ -595,7 +595,7 @@
   $('#remember').checked = store.any();
 
   /* ---------------- Ask your AI ---------------- */
-  $$('.choices').forEach((g) => g.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', 'false'); b.addEventListener('click', () => { g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); S.ai[g.dataset.q] = b.dataset.a; renderAI(); }); }));
+  $$('.choices').forEach((g) => g.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', String(S.ai[g.dataset.q] === b.dataset.a)); b.addEventListener('click', () => { g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); S.ai[g.dataset.q] = b.dataset.a; renderAI(); }); }));
   $('#incMerchants').addEventListener('change', renderAI);
   function aiPlan(a) {
     // Same rules as prompts/any-llm.md
@@ -611,7 +611,8 @@
     if (!$('#incMerchants').checked) sum.top_merchants = sum.top_merchants.map((m) => ({ category: m.category, total: m.total, payments: m.payments }));
     const json = JSON.stringify(sum);
     const adv = [];
-    if (!a.platform || !a.plan || !a.budget || !a.share) adv.push('Answer the four questions above to tailor this.');
+    if (!a.platform) adv.push('Pick your assistant above, then copy the prompt and paste it into a new chat.');
+    if (a.plan !== 'paid' && a.budget !== '5') adv.push('On a free plan the prompt still asks for about 300 words, so you don\'t run out of messages halfway through. Choose Paid for the longer read.');
     if (!a.share || a.share === 'summary') adv.push('The summary below fits comfortably in a free plan.');
     if (a.share === 'pdf') adv.push(plan.months === 12 ? 'Attach your statement PDF with this prompt. Up to 12 months is reasonable on your plan.' : `On your answers, attach at most ${plan.months === 1 ? '1 month' : plan.months + ' months'} of statement (a 12-month PDF can be 60,000 to 150,000 tokens), or use the summary instead.`);
     if (a.share === 'pdf' || a.share === 'sms') adv.push('A statement or raw messages include people\'s names and phone numbers. The summary doesn\'t.');
@@ -625,7 +626,7 @@
 
 I used Pesadithi Lab (an open-source tool that runs in my browser) to analyse my ${A.provider} money. ${what}
 
-I'm on ${a.platform || 'an AI assistant'}${a.plan ? ` (${a.plan} plan)` : ''} and want to spend ${plan.lvl} of my usage on this, so keep your answer under ${plan.words} words. Don't ask for more data unless it's essential.
+I'm on ${a.platform || 'an AI assistant'}${a.plan ? ` (${a.plan} plan)` : ''} and want ${a.budget === '50' ? 'a deep dive' : a.budget === '20' ? 'a proper review' : 'a quick read'}, so keep your answer under ${plan.words} words. Don't ask for more data unless it's essential.
 
 Please:
 1. The three most important things about my TIMING: when money arrives, how fast it goes, the days I run low, and the hours I spend.

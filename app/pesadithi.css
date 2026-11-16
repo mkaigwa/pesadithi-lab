@@ -643,3 +643,21 @@ h1 em, h2 em, h3 em { font-weight: var(--ew); }
 .wl-sm { font-style: normal; font-size: 12px; } .wl-sm img { height: 26px; }
 
 .wl[data-logo="airtel"] img { height: 40px; margin: -5px 0 -1px; }
+
+.aq { margin: 26px 0 10px; display: flex; flex-direction: column; gap: 2px; } .aq b { font-size: 17px; }
+.choices.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; max-width: 900px; }
+.choices.opts button { border-radius: 14px; text-align: left; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 0; }
+.choices.opts button b { font-size: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.choices.opts button small { font-size: 13.5px; line-height: 1.4; color: var(--muted); font-weight: 400; }
+.choices.opts button[aria-pressed="true"] { background: var(--mint); color: var(--ink); border-color: var(--brand); box-shadow: 0 0 0 1.5px var(--brand) inset; }
+.choices.opts button[aria-pressed="true"] small { color: var(--text); }
+
+.rail .flags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; font-size: 22px; line-height: 1; }
+.rail .flags i { font-style: normal; cursor: default; }
+.rail .rest { font-size: 13px; color: var(--muted); margin-top: 4px; }
+/* Flags as round badges in an overlapping stack */
+.rail .flags { gap: 0; margin: 8px 0 2px; padding-left: 6px; }
+.rail .flags i { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 40px; line-height: 1; margin-left: -6px; box-shadow: 0 0 0 2.5px #fff, 0 1px 3px rgba(15,38,32,.25); background: #fff; position: relative; transition: transform .2s; }
+.rail .flags i:hover { transform: translateY(-3px); z-index: 2; }
+.rail .flags { gap: 7px; padding-left: 0; }
+.rail .flags i { width: 32px; height: 22px; border-radius: 5px; margin-left: 0; font-size: 34px; box-shadow: 0 0 0 1px rgba(15,38,32,.14), 0 2px 5px -2px rgba(15,38,32,.35); }
