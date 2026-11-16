@@ -1,5 +1,7 @@
 # Pesadithi Lab
 
+Made by [Mark Kaigwa](https://mark.co.ke) ([@mkaigwa on X](https://x.com/mkaigwa)). If you build on it, keep the credit.
+
 **The story of your mobile money, told through timing.** Load your M-PESA statement or your money SMS and see when money arrives, how fast it goes, the days you run low, when you borrow to cover the gap, and what that really costs.
 
 *Pesadithi* combines Swahili *pesa* (money) and *hadithi* (story).

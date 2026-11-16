@@ -3,8 +3,9 @@
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const P = window.PDParse, AN = window.PDAnalyse, MC = window.PDMerchants;
-  const C = { in: '#00968f', out: '#b8454f', credit: '#b97a10', loan: '#7d5db5', bad: '#c0262d', good: '#2e7d4f', ink: '#16161a', grid: '#ececf1', muted: '#9b9ba8' };
-  const S = { raw: null, A: null, demo: false, period: 12, src: null, busy: false, token: 0, lastInput: null, pwFails: 0, game: null, targets: {}, ai: {} };
+  // Money in is green, money out is red, credit violet, loans amber (validated for colour-blind separation; in and out also differ by position)
+  const C = { in: '#1f8a4c', out: '#d23b2e', credit: '#7a4fd0', loan: '#e08a00', fee: '#5b6670', bad: '#a3170f', good: '#1f8a4c', ink: '#0f2318', grid: '#e6eee9', muted: '#8c9d93' };
+  const S = { calMode: null, raw: null, A: null, demo: false, period: 12, src: null, busy: false, token: 0, lastInput: null, pwFails: 0, game: null, targets: {}, ai: {} };
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem('pesadithi:' + k)); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem('pesadithi:salt', SALT); localStorage.setItem('pesadithi:' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
@@ -254,26 +255,57 @@
   }
   function calendarChart(el, A) {
     const rows = A.daily; const months = Array.from(new Set(rows.map((d) => d.date.slice(0, 7))));
+    const mode = S.calMode || (A.hasCredit ? 'credit' : 'net');
     const ml = 66, cell = Math.max(14, Math.min(24, Math.floor(((el.clientWidth || 700) - ml) / 31)));
     const wNeed = ml + 31 * cell + 6, gh = months.length * cell, barH = 80, hgt = gh + barH + 36;
-    const crd = A.hasCredit; const { svg } = svgIn(el, hgt, `Calendar of days by month, shaded by ${crd ? credit() + ' owed' : 'spending'}, with totals by date`, wNeed);
-    const val = (d) => (crd ? d.owed : d.out);
-    const op = d3.scaleSqrt().domain([0, d3.quantile(rows.map(val).filter((v) => v > 0).sort(d3.ascending), 0.97) || 1]).range([0.15, 1]).clamp(true);
-    const col = crd ? C.credit : C.out;
+    const LBL = { in: 'money in', out: 'money out', net: 'net (in minus out)', credit: credit() + ' owed' };
+    const { svg } = svgIn(el, hgt, `Calendar of days by month, shaded by ${LBL[mode]}, with totals by date`, wNeed);
+    const val = (d) => (mode === 'in' ? d.in : mode === 'out' ? d.out : mode === 'credit' ? d.owed : d.in - d.out);
+    const q = d3.quantile(rows.map((d) => Math.abs(val(d))).filter((v) => v > 0).sort(d3.ascending), 0.95) || 1;
+    const op = d3.scaleSqrt().domain([0, q]).range([0.16, 1]).clamp(true);
+    const colOf = (v) => (mode === 'in' ? C.in : mode === 'out' ? C.out : mode === 'credit' ? C.credit : v >= 0 ? C.in : C.out);
     months.forEach((m, j) => svg.append('text').attr('x', ml - 8).attr('y', j * cell + cell / 2 + 4).attr('text-anchor', 'end').text(d3.utcFormat('%b %Y')(dt(m + '-01'))));
     const t = tipFor(el);
     hit(svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (d) => ml + (+d.date.slice(8, 10) - 1) * cell + 1).attr('y', (d) => months.indexOf(d.date.slice(0, 7)) * cell + 1).attr('width', cell - 2).attr('height', cell - 2).attr('rx', 2)
-      .style('fill', (d) => (val(d) > 0 ? col : C.grid)).style('opacity', (d) => (val(d) > 0 ? op(val(d)) : 1)),
-    (ev, d) => t.show(ev, `<b>${fmtDate(d.date)}</b><br>${crd ? `<span>Owed to ${credit()}</span> ${F(d.owed)}<br>` : ''}<span>Spent</span> ${F(d.out)}${d.in ? `<br><span>Received</span> ${F(d.in)}` : ''}<br><span>Balance</span> ${F(d.balance)}`), t);
-    svg.append('g').selectAll('circle').data(rows.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('circle').attr('cx', (d) => ml + (+d.date.slice(8, 10) - 0.5) * cell).attr('cy', (d) => months.indexOf(d.date.slice(0, 7)) * cell + cell / 2).attr('r', Math.max(2.5, cell * .17)).style('fill', C.ink).style('pointer-events', 'none');
-    const y0 = gh + barH + 6, key = crd ? 'creditDraw' : 'out';
-    const yb = d3.scaleLinear().domain([0, d3.max(A.dom, (d) => d[key]) || 1]).range([y0, gh + 14]);
-    hit(svg.append('g').selectAll('rect').data(A.dom).join('rect').attr('x', (d) => ml + (d.day - 1) * cell + 1).attr('width', cell - 2).attr('y', (d) => yb(d[key])).attr('height', (d) => y0 - yb(d[key])).attr('rx', 2).style('fill', col),
-      (ev, d) => t.show(ev, `<b>The ${ord(d.day)}</b><br><span>${crd ? credit() + ' used' : 'Spent'}, whole period</span> ${F(d[key])}<br><span>Received, whole period</span> ${F(d.in)}`), t);
-    [1, 10, 20, 31].forEach((d) => svg.append('text').attr('x', ml + (d - .5) * cell).attr('y', y0 + 16).attr('text-anchor', 'middle').text(d));
-    svg.append('text').attr('x', ml - 8).attr('y', y0 - 2).attr('text-anchor', 'end').text('By date');
+      .style('fill', (d) => (val(d) ? colOf(val(d)) : C.grid)).style('opacity', (d) => (val(d) ? op(Math.abs(val(d))) : 1)),
+    (ev, d) => t.show(ev, `<b>${fmtDate(d.date)}</b><br><span>In</span> ${F(d.in)}<br><span>Out</span> ${F(d.out)}<br><span>Net</span> ${d.in - d.out >= 0 ? '+' : '−'}${F(Math.abs(d.in - d.out))}${A.hasCredit ? `<br><span>Owed to ${credit()}</span> ${F(d.owed)}` : ''}<br><span>Balance</span> ${F(d.balance)}`), t);
+    svg.append('g').selectAll('circle').data(rows.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('circle').attr('cx', (d) => ml + (+d.date.slice(8, 10) - 0.5) * cell).attr('cy', (d) => months.indexOf(d.date.slice(0, 7)) * cell + cell / 2).attr('r', Math.max(2.5, cell * .17)).style('fill', C.ink).style('stroke', '#fff').style('stroke-width', 1).style('pointer-events', 'none');
+    // Bars by date of the month: in up and out down for in/out/net, credit drawn for credit
+    const y0 = gh + barH / 2 + 10;
+    if (mode === 'credit') {
+      const yb = d3.scaleLinear().domain([0, d3.max(A.dom, (d) => d.creditDraw) || 1]).range([gh + barH + 6, gh + 14]);
+      hit(svg.append('g').selectAll('rect').data(A.dom).join('rect').attr('x', (d) => ml + (d.day - 1) * cell + 1).attr('width', cell - 2).attr('y', (d) => yb(d.creditDraw)).attr('height', (d) => gh + barH + 6 - yb(d.creditDraw)).attr('rx', 2).style('fill', C.credit),
+        (ev, d) => t.show(ev, `<b>The ${ord(d.day)}</b><br><span>${credit()} used, whole period</span> ${F(d.creditDraw)}`), t);
+    } else {
+      const v = (d) => (mode === 'in' ? d.in : mode === 'out' ? -d.out : d.in - d.out);
+      const mx = d3.max(A.dom, (d) => Math.abs(v(d))) || 1; const yb = d3.scaleLinear().domain([0, mx]).range([0, barH / 2 - 4]);
+      svg.append('g').selectAll('rect').data(A.dom).join('rect').attr('x', (d) => ml + (d.day - 1) * cell + 1).attr('width', cell - 2).attr('y', (d) => (v(d) >= 0 ? y0 - yb(v(d)) : y0 + 1)).attr('height', (d) => yb(Math.abs(v(d)))).attr('rx', 2).style('fill', (d) => (v(d) >= 0 ? C.in : C.out));
+      svg.append('line').attr('x1', ml).attr('x2', ml + 31 * cell).attr('y1', y0 + .5).attr('y2', y0 + .5).style('stroke', C.muted);
+      hit(svg.append('g').selectAll('rect').data(A.dom).join('rect').attr('x', (d) => ml + (d.day - 1) * cell).attr('width', cell).attr('y', gh + 8).attr('height', barH).style('fill', 'transparent'),
+        (ev, d) => t.show(ev, `<b>The ${ord(d.day)}, whole period</b><br><span>In</span> ${F(d.in)}<br><span>Out</span> ${F(d.out)}<br><span>Net</span> ${d.in - d.out >= 0 ? '+' : '−'}${F(Math.abs(d.in - d.out))}`), t);
+    }
+    [1, 10, 20, 31].forEach((d) => svg.append('text').attr('x', ml + (d - .5) * cell).attr('y', gh + barH + 22).attr('text-anchor', 'middle').text(d));
+    svg.append('text').attr('x', ml - 8).attr('y', gh + barH / 2 + 14).attr('text-anchor', 'end').text('By date');
     if (wNeed > (el.clientWidth || 0) + 4) { const hnt = document.createElement('p'); hnt.className = 'small muted scrollhint'; hnt.textContent = 'Swipe sideways to see the rest of the month →'; el.before(hnt); }
-    dataTable(el, 'Totals by date of the month', ['Date', 'Received', 'Spent'].concat(crd ? [credit() + ' used'] : []), A.dom.map((d) => [ord(d.day), n0(d.in), n0(d.out)].concat(crd ? [n0(d.creditDraw)] : [])));
+    dataTable(el, 'Totals by date of the month', ['Date', 'In', 'Out', 'Net'].concat(A.hasCredit ? [credit() + ' used'] : []), A.dom.map((d) => [ord(d.day), n0(d.in), n0(d.out), n0(d.in - d.out)].concat(A.hasCredit ? [n0(d.creditDraw)] : [])));
+  }
+  function flowChart(el, A) {
+    const rows = A.months; const hgt = 300; const { svg, w } = svgIn(el, hgt, 'Money in above the line and money out below it, by month, with the net as a dot');
+    const mx = d3.max(rows, (m) => Math.max(m.in, m.out)) || 1;
+    const ml = 48, top = 16, bot = hgt - 26, mid = (top + bot) / 2;
+    const y = d3.scaleLinear().domain([-mx, mx]).nice().range([bot, top]);
+    const x = d3.scaleBand().domain(rows.map((m) => m.month)).range([ml, w - 4]).padding(.24);
+    y.ticks(4).forEach((v) => { svg.append('line').attr('x1', ml).attr('x2', w).attr('y1', y(v)).attr('y2', y(v)).style('stroke', v === 0 ? C.muted : C.grid); svg.append('text').attr('x', ml - 6).attr('y', y(v) + 4).attr('text-anchor', 'end').text((v > 0 ? '+' : v < 0 ? '−' : '') + kfmt(Math.abs(v))); });
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (m) => x(m.month)).attr('width', x.bandwidth()).attr('y', (m) => y(m.in)).attr('height', (m) => y(0) - y(m.in)).attr('rx', 3).style('fill', C.in).style('opacity', (m) => (m.partial ? .45 : 1));
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (m) => x(m.month)).attr('width', x.bandwidth()).attr('y', y(0) + 1).attr('height', (m) => y(-m.out) - y(0)).attr('rx', 3).style('fill', C.out).style('opacity', (m) => (m.partial ? .45 : 1));
+    svg.append('path').datum(rows).attr('d', d3.line().x((m) => x(m.month) + x.bandwidth() / 2).y((m) => y(m.in - m.out))).style('fill', 'none').style('stroke', C.ink).style('stroke-width', 1.2).style('stroke-dasharray', '2 3');
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', (m) => x(m.month) + x.bandwidth() / 2).attr('cy', (m) => y(m.in - m.out)).attr('r', 4.5).style('fill', C.ink).style('stroke', '#fff').style('stroke-width', 2);
+    const every = Math.ceil(rows.length / Math.max(2, Math.floor(w / 52)));
+    svg.append('g').attr('transform', `translate(0,${bot})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8).tickFormat((m, i) => (i % every ? '' : d3.utcFormat('%b')(dt(m + '-01'))))).call((g) => g.select('.domain').remove());
+    const t = tipFor(el);
+    hit(svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (m) => x(m.month) - x.step() * .12).attr('width', x.step()).attr('y', top).attr('height', bot - top).style('fill', 'transparent'),
+      (ev, m) => t.show(ev, `<b>${d3.utcFormat('%B %Y')(dt(m.month + '-01'))}${m.partial ? ' (part month)' : ''}</b><br><span>In</span> +${F(m.in)}<br><span>Out</span> −${F(m.out)}<br><span>Net</span> ${m.in - m.out >= 0 ? '+' : '−'}${F(Math.abs(m.in - m.out))}`), t);
+    dataTable(el, 'Money in, out and net by month', ['Month', 'In', 'Out', 'Net'], rows.map((m) => [d3.utcFormat('%b %Y')(dt(m.month + '-01')) + (m.partial ? ' (part)' : ''), n0(m.in), n0(m.out), n0(m.in - m.out)]));
   }
   function heatChart(el, A) {
     const ml = 40, cw = Math.max(12, Math.floor(((el.clientWidth || 700) - ml) / 24)), ch = Math.max(20, Math.min(30, cw)), hgt = ch * 7 + 28;
@@ -305,7 +337,7 @@
     dataTable(el, 'Spending by category', ['Category', 'Spent', 'Payments', 'Share'], rows.map((d) => [d.category, n0(d.total), d.count, (d.total / tot * 100).toFixed(1) + '%']));
   }
   function feesChart(el, A) {
-    const all = [['transaction', 'Transaction costs', '#8a8a96'], ['credit', credit() + ' fees', C.credit], ['loans', 'Loan fees', C.loan], ['penalties', 'Penalties', C.bad]];
+    const all = [['transaction', 'Transaction costs', C.fee], ['credit', credit() + ' fees', C.credit], ['loans', 'Loan fees', C.loan], ['penalties', 'Penalties', C.bad]];
     const keys = all.filter((k) => d3.sum(A.feeMonths, (r) => r[k[0]]) > 0);
     if (!keys.length) { el.innerHTML = '<p class="muted">No fees found in this period.</p>'; return []; }
     const rows = A.feeMonths; const st = d3.stack().keys(keys.map((k) => k[0]))(rows);
@@ -342,7 +374,7 @@
 
   /* ---------------- Story ---------------- */
   function ch(id, kicker, title, body, tag) { return `<section class="chapter" id="${id}" aria-labelledby="${id}-h"><div class="k">${kicker}</div><${tag || 'h2'} id="${id}-h">${title}</${tag || 'h2'}>${body}</section>`; }
-  function big(v, l) { return `<div class="big"><div class="v">${v}</div><div class="l">${l}</div></div>`; }
+  function big(v, l, cls) { return `<div class="big${cls ? ' ' + cls : ''}"><div class="v">${v}</div><div class="l">${l}</div></div>`; }
   function suggestions(A) {
     const out = [];
     if (A.hasCredit && A.lowDay && A.bigInDays.some((d) => d >= 20) && A.lowDay.day <= 22) out.push(`Most of the money arrives around the ${A.bigInDays.slice(0, 2).map(ord).join(' and ')}, but the balance is lowest around the ${ord(A.lowDay.day)}. Moving part of it to land around the ${ord(Math.max(1, A.lowDay.day - 2))} could close the gap that ${credit()} fills.`);
@@ -361,26 +393,38 @@
     const tl = A.trend; const cn = credit(); const sug = suggestions(A);
     let n = 0; const num = () => 'Chapter ' + (++n) + ' · ';
     const chapters = [];
-    chapters.push(['cover', 'Overview', ch('cover', `${S.demo ? '<span>Demo: invented data</span> · ' : ''}${A.cur} · ${fmtDate(A.start)} to ${fmtDate(A.end)}`, A.hasCredit ? `${n0(A.creditDays)} of ${pl(A.nDays, 'day')} ended owing ${cn}` : `${FB(A.totalIn)} in, ${FB(A.totalOut)} out`,
+    chapters.push(['cover', 'Overview', ch('cover', `${S.demo ? '<span>Demo: invented data</span> · ' : ''}${window.PD_OWNER ? `<span>${esc(window.PD_OWNER)}'s money story</span> · ` : ''}${A.cur} · ${fmtDate(A.start)} to ${fmtDate(A.end)}`, A.hasCredit ? `${n0(A.creditDays)} of ${pl(A.nDays, 'day')} ended owing ${cn}` : `${FB(A.totalIn)} in, ${FB(A.totalOut)} out`,
       `<p class="lede">${S.demo ? 'Meet Amani, a fictional person with invented data, so you can see how the story reads. ' : ''}Here is what ${pl(A.txCount, 'transaction')} say about timing: when money arrives, how fast it goes, and what filling the gaps costs.</p>
-      <div class="bigs">${big(FB(A.totalIn), 'came in')}${big(FB(A.totalOut), 'went out' + (ownShare > 0.05 ? `, ${pct(ownShare)} of it to ${their} own banks, cards or savings` : ''))}${A.lifespan != null ? big(A.lifespan.toFixed(1) + ' days', 'until half of a big payment is spent (typical)') : ''}${big(FB(A.feesTotal), 'in fees and charges' + (A.avoidableTotal ? `, ${F(A.avoidableTotal)} avoidable` : ''))}</div>
+      <div class="bigs">${big('+' + FB(A.totalIn), 'came in', 'in')}${big('−' + FB(A.totalOut), 'went out' + (ownShare > 0.05 ? `, ${pct(ownShare)} of it to ${their} own banks, cards or savings` : ''), 'out')}${A.hasCredit ? big(n0(A.creditDays) + ' days', `ended owing ${cn}, which cost about ${F(A.creditFees)}`, 'credit') : A.lifespan != null ? big(A.lifespan.toFixed(1) + ' days', 'until half of a big payment is spent (typical)') : ''}${big(FB(A.feesTotal), 'in fees and charges' + (A.avoidableTotal ? `, ${F(A.avoidableTotal)} avoidable` : ''), 'fee')}</div>
       <div class="btn-row">${S.demo ? '<a class="btn" href="#start">Now try it with my own data</a>' : ''}<button class="btn ghost small" type="button" data-act="storymode">Story mode (vertical)</button><a class="btn ghost small" href="#sort">Sort the people</a><a class="btn ghost small" href="#ai">Ask your AI</a></div>`, 'h1')]);
+    chapters.push(['flow', 'In and out', ch('flow', num() + 'in and out, month by month', (() => { const fm = A.months.filter((m) => !m.partial); const neg = fm.filter((m) => m.in < m.out).length; return fm.length ? (neg ? `${neg} of ${pl(fm.length, 'full month')} spent more than came in` : `Every full month took in more than it spent`) : 'Money in and out by month'; })(), `<p class="muted">Green bars rise with money in; red bars drop with money out. The dot is what was left: above the line, money kept; below it, money drawn down or borrowed.${A.ownOut ? ` Transfers between ${their} own accounts count on both sides.` : ''}</p><div class="legend"><span><i style="background:${C.in}"></i>Money in</span><span><i style="background:${C.out}"></i>Money out</span><span><i style="background:${C.ink};border-radius:50%"></i>Net</span></div><div class="chart" data-c="flow"></div>`)]);
     chapters.push(['shape', 'The shape', ch('shape', num() + 'the shape of the period', A.hasCredit ? `Above the line, money held. Below it, money owed to ${cn}.` : 'The balance, day by day', `<p class="muted">Each day's closing balance${A.hasCredit ? ` rises above the line; ${cn} owed drops below it` : ''}. Ticks along the top mark money coming in of ${F(A.bigCut)} or more.</p><div class="chart" data-c="river"></div><div class="legend"><span><i style="background:${C.in}"></i>Balance</span>${A.hasCredit ? `<span><i style="background:${C.credit}"></i>Owed to ${cn}</span>` : ''}<span><i style="background:${C.ink}"></i>Big payment in</span></div>${tl ? `<p class="insight">Between ${d3.utcFormat('%B %Y')(dt(tl.first.month + '-01'))} and ${d3.utcFormat('%B %Y')(dt(tl.last.month + '-01'))}, money in per month ${tl.first.in === tl.last.in ? `stayed at ${F(tl.first.in)}` : `moved from ${F(tl.first.in)} to ${F(tl.last.in)}`}, and money out ${tl.first.out === tl.last.out ? `stayed at ${F(tl.first.out)}` : `moved from ${F(tl.first.out)} to ${F(tl.last.out)}`}. (Full months only.)</p>` : ''}`)]);
     if (A.lifespan != null) chapters.push(['drain', 'How long it lasts', ch('drain', num() + 'how long money lasts', `Half of a big payment is spent within ${A.lifespan.toFixed(1)} days`, `<p class="muted">For each payment in of ${F(A.bigCut)} or more (${pl(A.bigInsCount, 'payment')}), how much is still unspent, day by day. Transfers to ${their} own banks, savings and business payroll don't count as spending.</p><div class="chart" data-c="drain"></div>${A.lifespan75 != null ? `<p class="insight">Three quarters is gone by day ${A.lifespan75.toFixed(1)}. ${A.lifespan75 < 15 ? 'That leaves the rest of the month running on what is left, or on credit.' : 'That is a steady pace.'}</p>` : ''}`)]);
-    chapters.push(['month', 'The month', ch('month', num() + 'the month inside the month', A.lowDay ? `The balance is usually lowest around the ${ord(A.lowDay.day)}` : 'When in the month money moves', `<p class="muted">Each square is a day, shaded by ${A.hasCredit ? `how much was owed to ${cn} at the end of it` : 'how much was spent'}. Black dots mark big payments in. The bars underneath add up each date across the period.</p><div class="chart scrollx" data-c="cal"></div>${A.bigInDays.length ? `<p class="insight">The biggest payments in land around the ${A.bigInDays.map(ord).join(', ')}.${A.hasCredit && A.dom.some((d) => d.creditDraw) ? ` ${cn} is used most on the ${ord(d3.greatest(A.dom, (d) => d.creditDraw).day)}.` : ''}</p>` : ''}`)]);
+    chapters.push(['month', 'The month', ch('month', num() + 'the month inside the month', A.lowDay ? `The balance is usually lowest around the ${ord(A.lowDay.day)}` : 'When in the month money moves', `<p class="muted">Each square is a day. Switch what it shows: money in, money out, the net of the two, ${A.hasCredit ? `or what was owed to ${cn}` : 'or the balance'}. Black dots mark big payments in. The bars underneath add up each date across the period.</p><div class="toggle" role="group" aria-label="Calendar shows" id="calToggle"><button type="button" data-m="in">Money in</button><button type="button" data-m="out">Money out</button><button type="button" data-m="net">Net</button>${A.hasCredit ? `<button type="button" data-m="credit">Owed to ${cn}</button>` : ''}</div><div class="chart scrollx" data-c="cal"></div>${A.bigInDays.length ? `<p class="insight">The biggest payments in land around the ${A.bigInDays.map(ord).join(', ')}.${A.hasCredit && A.dom.some((d) => d.creditDraw) ? ` ${cn} is used most on the ${ord(d3.greatest(A.dom, (d) => d.creditDraw).day)}.` : ''}</p>` : ''}`)]);
     chapters.push(['clock', 'Money clock', ch('clock', num() + 'the money clock', `Spending peaks on ${WD[A.habits.peakWeekday]}, around ${hourLabel(A.habits.peakHour)}`, `<p class="muted">Payments by day and hour. Darker squares hold more money. Transfers to ${their} own accounts are left out.</p><div class="chart scrollx" data-c="heat"></div><div class="bigs">${big(pct(A.habits.lateNightShare), 'of spending happens between 10pm and 4am')}${big(pct(A.habits.weekendShare), 'happens at weekends')}${A.habits.cafeVisits ? big(n0(A.habits.cafeVisits), `café and restaurant payments, about ${Math.round(A.habits.cafePerWeek)} a week`) : ''}</div>`)]);
-    chapters.push(['where', 'Where it goes', ch('where', num() + 'where it goes', topCat ? `Of every ${A.cur} 100 spent, ${Math.round(topCat.total / d3.sum(spendCats, (c) => c.total) * 100)} went to ${topCat.category.toLowerCase()}` : 'Where it goes', `<p class="muted">Spending only.${A.ownOut ? ` Money moved to ${their} own banks, cards and savings (${F(A.ownOut)}) is left out.` : ''} Each square is 1 in every 100.</p><div class="chart" data-c="units"></div><h3 style="margin-top:30px">Who got paid most</h3><p class="small muted">With a note on who each business is. Payment platforms hide the real shop behind them.</p><div class="mcards">${A.merchants.slice(0, 9).map((m) => `<div class="mcard"><div class="n">${esc(titleCase(m.name))}</div><div class="c">${esc(m.category)} · ${pl(m.count, 'payment')}</div><div class="a">${F(m.total)}</div>${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}</div>`).join('')}</div><p class="small muted">${pl(A.people.length, 'person', 'people')} received ${F(d3.sum(A.people, (p) => p.total))} across ${pl(A.habits.peopleSends, 'send')}. <a href="#sort">Sort them</a> to see what that money really is.</p>`)]);
+    chapters.push(['where', 'Where it goes', ch('where', num() + 'where it goes', topCat ? `Of every ${A.cur} 100 spent, ${Math.round(topCat.total / d3.sum(spendCats, (c) => c.total) * 100)} went to ${topCat.category.toLowerCase()}` : 'Where it goes', `<p class="muted">Spending only.${A.ownOut ? ` Money moved to ${their} own banks, cards and savings (${F(A.ownOut)}) is left out.` : ''} Each square is 1 in every 100.</p><div class="chart" data-c="units"></div><h3 style="margin-top:30px">Who got paid most</h3><p class="small muted">With a note on who each business is. Payment platforms hide the real shop behind them.</p><div class="mcards">${A.merchants.slice(0, 6).map((m) => `<div class="mcard"><div class="n">${esc(titleCase(m.name))}</div><div class="c">${esc(m.category)} · ${pl(m.count, 'payment')}</div><div class="a">${F(m.total)}</div>${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}</div>`).join('')}</div>${A.merchants.length > 6 ? `<details class="datatable"><summary>All ${pl(Math.min(25, A.merchants.length), 'place')} paid most</summary><div class="scrollx"><table class="merch"><thead><tr><th>Paid to</th><th>Category</th><th class="n">Payments</th><th class="n">${A.cur}</th></tr></thead><tbody>${A.merchants.slice(0, 25).map((m) => `<tr><td>${esc(titleCase(m.name))}${m.note ? `<span class="note">${esc(m.note)}</span>` : ''}</td><td>${esc(m.category)}</td><td class="n">${m.count}</td><td class="n">${n0(m.total)}</td></tr>`).join('')}</tbody></table></div></details>` : ''}<p class="small muted">${pl(A.people.length, 'person', 'people')} received ${F(d3.sum(A.people, (p) => p.total))} across ${pl(A.habits.peopleSends, 'send')}. <a href="#sort">Sort them</a> to see what that money really is.</p>`)]);
+    { const H = A.habits; const small = A.draws ? A.draws.filter((d) => d.amt < 500).length : 0; const cards = [];
+      if (H.cafeVisits) cards.push(['Café and restaurant payments', n0(H.cafeVisits), `${F(H.cafeSpend)} in all, about ${Math.round(H.cafePerWeek)} a week`]);
+      if (A.hasCredit) cards.push([`${cn} top-ups after 7pm`, n0(H.drawsAfter7pm), `Typical top-up ${F(H.medianDraw)}; ${pl(small, 'top-up')} under ${A.cur} 500`]);
+      if (A.hasCredit && H.redraw) cards.push([`Repaid ${cn}, then used it again the same day`, n0(H.redraw), 'Money arrived, cleared what was owed, and a new top-up followed within hours']);
+      if (H.peopleSends) cards.push(['Sends to people', n0(H.peopleSends), `${F(H.peopleFees)} in transaction costs`]);
+      cards.push(['Late-night spending', pct(H.lateNightShare), 'of spending between 10pm and 4am']);
+      cards.push(['Weekend spending', pct(H.weekendShare), 'of spending on Saturdays and Sundays']);
+      chapters.push(['habits', 'Habits', ch('habits', num() + 'habits in the data', 'Small, frequent, and often in the evening', `<div class="habits">${cards.map(([t, v, s2]) => `<div class="habit"><div class="t">${esc(t)}</div><div class="v">${v}</div><div class="s">${esc(s2)}</div></div>`).join('')}</div>`)]); }
     if (A.hasCredit || A.loans.length) {
       const loanP = d3.sum(A.loans, (l) => l.principal);
       chapters.push(['credit', 'Borrowing', ch('credit', num() + 'borrowing', A.hasCredit ? `${pl(A.draws.length, cn + ' top-up')}, typically ${F(A.habits.medianDraw)}${A.draws.length && A.habits.drawsAfter7pm / A.draws.length > .3 ? ', often in the evening' : ''}` : pl(A.loans.length, 'loan'), `<div class="bigs">${A.hasCredit ? big(F(A.creditDrawn), `${cn} used across ${pl(A.draws.length, 'top-up')}`) + big(n0(A.habits.drawsAfter7pm), 'top-ups after 7pm') + big(n0(A.habits.redraw), `times money came in, cleared ${cn}, and ${cn} was used again the same day`) : ''}${A.loans.length ? big(F(loanP), `borrowed in ${pl(A.loans.length, 'loan')}, costing ${F(A.loanCost)}`) : ''}</div>${A.loans.filter((l) => l.days != null).length ? `<h3>Every loan, side by side</h3><p class="small muted">Each bar runs from the day of borrowing to the day of repaying. Green: repaid inside 10 days. Purple: by the due date. Red: late, with a penalty.</p><div class="chart" data-c="loans"></div>` : ''}${A.hasCredit ? `<p class="insight">${cn} cost about ${F(A.creditFees)}: ${F(A.accessFees)} in access fees${A.creditFeesEstimated ? ' (estimated at 1% of what was used, because statements don\'t list it)' : ''} ${A.dailyCharges > 0 ? ` plus an estimated ${F(A.dailyCharges)} in daily charges` : ''}${A.creditFeesEstimated ? '. Statements don\'t show daily charges, so the real cost is higher' : ''}.${A.loans.length ? ` Per ${A.cur} 100 borrowed, ${cn} cost about ${(A.creditFees / (A.creditDrawn || 1) * 100).toFixed(1)} and loans about ${(A.loanCost / (loanP || 1) * 100).toFixed(1)}.` : ''}</p>` : ''}${S.raw.kind === 'statement' && A.loans.length ? '<p class="small muted">Statements show the total repaid, not the penalty on its own, so late fees are included in loan costs here but not listed separately.</p>' : ''}`)]);
     }
     chapters.push(['price', 'The price', ch('price', num() + 'the price paid', A.avoidableTotal ? `${F(A.avoidableTotal)} that could have been kept` : `${F(A.feesTotal)} in fees and charges`, `${S.raw.kind === 'statement' ? '<p class="small muted">Read from a statement. Statements list every transaction cost line by line but leave out Fuliza daily charges and loan penalties, while SMS show those but not every cost. So the same months can give a different fee total from each source.</p>' : ''}<div class="chart" data-c="fees"></div><div class="legend" id="feesLegend"></div>${A.avoidable.length ? `<h3 style="margin-top:26px">Avoidable</h3><div class="ledger">${A.avoidable.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(a.what)}</div><div class="nt">${esc(a.note)}</div></div><div class="a ${/penalty/i.test(a.what) ? 'bad' : ''}">${F(a.amount)}</div></div>`).join('')}</div>` : ''}${A.toCheck.length ? `<h3 style="margin-top:26px">Worth checking</h3><p class="small muted">The same amount to the same place within 30 minutes. It may be deliberate, or a payment that went through twice. Reversed payments are already left out.</p><div class="ledger">${A.toCheck.map((a) => `<div class="row"><div class="d">${fmtDate(a.date)}</div><div><div class="w">${esc(titleCase(a.party))}</div><div class="nt">${esc(a.note)}</div></div><div class="a">${F(a.amount)}</div></div>`).join('')}</div>` : ''}`)]);
     if (A.biggest.length) chapters.push(['outliers', 'Stand-outs', ch('outliers', num() + 'payments that stood out', 'Unusual payments', `<p class="muted">Payments much bigger than usual for that place, or to places paid only once or twice. Regular bills, rent and cash withdrawals are left out.</p><div class="ledger">${A.biggest.map((t) => `<div class="row"><div class="d">${fmtDate(t.ts)}</div><div><div class="w">${esc(t.person ? 'A person' : titleCase(t.party))}</div><div class="nt">${esc(t.category)}${t.note ? ' · ' + esc(t.note) : ''}</div></div><div class="a">${F(t.amt)}</div></div>`).join('')}</div>${A.spikeDays.length ? `<p class="insight">The heaviest days were ${A.spikeDays.slice(0, 3).map((d) => `${fmtDate(d.date)} (${F(d.out)})`).join(', ')}.</p>` : ''}`)]);
+    if (Array.isArray(window.PD_NOTES) && window.PD_NOTES.length && !S.demo) chapters.push(['notes', 'Your questions', ch('notes', num() + 'your questions, answered from the data', 'What the texts say about the questions you asked', window.PD_NOTES.map((q) => `<div class="qa"><b>${esc(q.q)}</b>${esc(q.a)}</div>`).join(''))]);
     chapters.push(['try', 'What to try', ch('try', num() + 'what to try', sug.length === 1 ? 'One small change the data points to' : `${['', 'One', 'Two', 'Three'][sug.length]} small changes the data points to`, sug.map((s, i) => `<div class="try"><b>Try ${i + 1}</b>${esc(s)}</div>`).join('') + `<div class="next">${S.demo ? '<a href="#start"><b>Try it with my data</b><span class="small muted">Statement PDF, SMS export or pasted messages. Stays on your device.</span></a>' : ''}<a href="#sort"><b>Sort the people</b><span class="small muted">Label who gets sent money, in a quick swipe game.</span></a><a href="#budget"><b>Build a budget</b><span class="small muted">Monthly averages and targets by category.</span></a><a href="#ai"><b>Ask your AI</b><span class="small muted">A prompt and summary for Claude, ChatGPT or Gemini, with no people's names.</span></a><button type="button" data-act="storymode"><b>Story mode (vertical)</b><span class="small muted">A tall 9:16 version to screen-record and share.</span></button></div>`)]);
     el.innerHTML = chapters.map((c) => c[2]).join('');
     $('#chapterNav').innerHTML = chapters.map((c) => `<a href="#${c[0]}" data-ch="${c[0]}">${c[1]}</a>`).join('');
     drawCharts();
     $$('[data-act="storymode"]').forEach((b) => b.addEventListener('click', openStoryMode));
+    if (!S.calMode) S.calMode = A.hasCredit ? 'credit' : 'net';
+    $$('#calToggle button').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.m === S.calMode)); b.addEventListener('click', () => { S.calMode = b.dataset.m; $$('#calToggle button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); const el = $('[data-c="cal"]'); el.previousElementSibling && el.previousElementSibling.classList.contains('scrollhint') && el.previousElementSibling.remove(); if (el.nextElementSibling && el.nextElementSibling.classList.contains('datatable')) el.nextElementSibling.remove(); calendarChart(el, S.A); }); });
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) $$('#chapterNav a').forEach((a) => { const on = a.dataset.ch === e.target.id; a.classList.toggle('on', on); if (on) a.scrollIntoView({ block: 'nearest', inline: 'center' }); }); }), { rootMargin: '-30% 0px -60% 0px' });
     $$('.chapter').forEach((c) => io.observe(c));
     $$('#chapterNav a').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); document.getElementById(a.dataset.ch).scrollIntoView({ behavior: 'smooth' }); }));
@@ -391,7 +435,7 @@
     $$('[data-c]').forEach((el) => {
       const c = el.dataset.c;
       try {
-        if (c === 'river') riverChart(el, A); if (c === 'drain') drainChart(el, A); if (c === 'cal') calendarChart(el, A); if (c === 'heat') heatChart(el, A); if (c === 'units') unitChart(el, A); if (c === 'loans') loanChart(el, A);
+        if (c === 'flow') flowChart(el, A); if (c === 'river') riverChart(el, A); if (c === 'drain') drainChart(el, A); if (c === 'cal') calendarChart(el, A); if (c === 'heat') heatChart(el, A); if (c === 'units') unitChart(el, A); if (c === 'loans') loanChart(el, A);
         if (c === 'fees') { const keys = feesChart(el, A); const lg = $('#feesLegend'); if (lg) lg.innerHTML = keys.map((k) => `<span><i style="background:${k[2]}"></i>${k[1]}</span>`).join(''); }
       } catch (e) { console.error(e); el.innerHTML = '<p class="small muted">This chart couldn\'t be drawn for this data.</p>'; }
     });
@@ -574,18 +618,18 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   function stopCount() { clearInterval(SM.count); SM.count = null; $('#smCount').hidden = true; }
   function slides() {
     const A = S.A; const s = []; const d = S.demo; const cn = credit(); const their = d ? 'her' : 'your';
-    if (A.hasCredit) s.push({ k: d ? 'Meet Amani · invented data' : 'Your money story', v: `${A.creditDays} days`, t: `of ${A.nDays} ended owing ${cn}.`, dd: d ? 'Amani is fictional. Her patterns are the kind this tool finds.' : 'Here is why, in under a minute.' });
+    if (A.hasCredit) s.push({ k: d ? 'Meet Amani · invented data' : 'Your money story', v: `${A.creditDays} days`, cls: 'credit', t: `of ${A.nDays} ended owing ${cn}.`, dd: d ? 'Amani is fictional. Her patterns are the kind this tool finds.' : 'Here is why, in under a minute.' });
     else s.push({ k: d ? 'Meet Amani · invented data' : 'Your money story', v: n0(A.txCount), t: `transactions in ${pl(Math.round(A.monthsEq), 'month')}.`, dd: 'Here is what they say about timing.' });
-    s.push({ k: 'Money in, money out', v: FB(A.totalIn), t: `came in. ${FB(A.totalOut)} went out.`, dd: A.ownOut > A.totalOut * .05 ? `${pct(A.ownOut / A.totalOut)} of what went out moved to ${their} own banks, cards or savings.` : `Net: ${A.totalIn >= A.totalOut ? '+' : '−'}${kfmt(Math.abs(A.totalIn - A.totalOut))}.` });
+    s.push({ k: 'Money in, money out', cls: 'in', v: '+' + FB(A.totalIn), t: `came in. −${FB(A.totalOut)} went out.`, dd: A.ownOut > A.totalOut * .05 ? `${pct(A.ownOut / A.totalOut)} of what went out moved to ${their} own banks, cards or savings.` : `Net: ${A.totalIn >= A.totalOut ? '+' : '−'}${kfmt(Math.abs(A.totalIn - A.totalOut))}.` });
     if (A.lifespan != null) s.push({ k: 'How long it lasts', v: A.lifespan.toFixed(1) + ' days', t: 'until half of a big payment is spent.', dd: A.lifespan75 ? `Three quarters gone by day ${A.lifespan75.toFixed(1)}.` : '', viz: 'drain' });
     if (A.hasCredit && A.lowDay) s.push({ k: 'The gap', v: `The ${ord(A.lowDay.day)}`, t: `is when ${their} balance is usually lowest.`, dd: A.bigInDays.length ? `Money lands around the ${ord(A.bigInDays[0])}. ${cn} fills the gap.` : '', viz: 'dom' });
     s.push({ k: 'The money clock', v: hourLabel(A.habits.peakHour), t: `on ${WD[A.habits.peakWeekday]} is peak spending time.`, dd: `${pct(A.habits.lateNightShare)} of spending happens between 10pm and 4am.` });
     if (A.habits.cafeVisits > 10) s.push({ k: 'A habit', v: `${Math.round(A.habits.cafePerWeek)} a week`, t: 'café and restaurant visits.', dd: `${F(A.habits.cafeSpend / A.monthsEq)} a month.` });
     if (A.loans.length) s.push({ k: 'Borrowing', v: `${A.cur} ${Math.round(A.loanCost / (d3.sum(A.loans, (l) => l.principal) || 1) * 100)}`, t: 'paid for every 100 borrowed on loans.', dd: A.hasCredit ? `${cn}: about ${A.cur} ${(A.creditFees / (A.creditDrawn || 1) * 100).toFixed(1)} per 100.` : '' });
-    s.push({ k: 'The price', v: F(A.feesTotal), t: 'in fees and charges.', dd: A.avoidableTotal ? `${F(A.avoidableTotal)} of it was avoidable.` : '' });
+    s.push({ k: 'The price', cls: 'out', v: F(A.feesTotal), t: 'in fees and charges.', dd: A.avoidableTotal ? `${F(A.avoidableTotal)} of it was avoidable.` : '' });
     const tip = A.loans.some((l) => l.rollover || l.cashbackMissed) ? { v: 'Repay by day 10', t: d3.sum(A.loans, (l) => l.rollover) ? 'Avoid late penalties and earn the early-repayment refund.' : 'Earn back part of the loan fee with the early-repayment refund.' } : A.hasCredit && A.lowDay ? { v: `Move money to the ${ord(Math.max(1, A.lowDay.day - 2))}`, t: `Close the gap before ${cn} has to.` } : { v: 'Sort your people', t: 'See what the money you send really is.' };
     s.push({ k: 'Try this', v: tip.v, t: tip.t, dd: '', small: true });
-    s.push({ k: 'Pesadithi Lab', v: 'Read your own', t: 'Free, open source, and your data stays on your device.', dd: '', url: 'github.com/mkaigwa/pesadithi-lab' });
+    s.push({ k: 'Pesadithi Lab', v: 'Read your own', t: 'Free, open source, and your data stays on your device.', dd: 'Made by Mark Kaigwa · mark.co.ke', url: 'github.com/mkaigwa/pesadithi-lab' });
     return s;
   }
   function miniViz(kind) {
@@ -609,7 +653,7 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   function drawSlide() {
     const s = SM.slides[SM.i];
     $('#smBar').innerHTML = SM.slides.map((_, i) => `<i class="${i <= SM.i ? 'on' : ''}"></i>`).join('');
-    $('#smSlide').innerHTML = `<div class="sk">${esc(s.k)}</div><div class="sv${s.small ? ' small' : ''}">${esc(s.v)}</div><div class="st">${esc(s.t)}</div>${s.dd ? `<div class="sd">${esc(s.dd)}</div>` : ''}${s.viz ? miniViz(s.viz) : ''}${s.url ? `<div class="surl">${esc(s.url)}</div>` : ''}`;
+    $('#smSlide').innerHTML = `<div class="sk">${esc(s.k)}</div><div class="sv${s.small ? ' small' : ''}${s.cls ? ' ' + s.cls : ''}">${esc(s.v)}</div><div class="st">${esc(s.t)}</div>${s.dd ? `<div class="sd">${esc(s.dd)}</div>` : ''}${s.viz ? miniViz(s.viz) : ''}${s.url ? `<div class="surl">${esc(s.url)}</div>` : ''}`;
     $('#smLive').textContent = `Slide ${SM.i + 1} of ${SM.slides.length}: ${s.v} ${s.t}`;
   }
   const dwell = (s) => Math.max(3000, Math.min(6500, 1600 + ((s.v + ' ' + s.t + ' ' + (s.dd || '')).split(/\s+/).length) * 220));
@@ -633,5 +677,9 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   /* ---------------- Start ---------------- */
   setDataUI(false);
   $('#btnDemo').disabled = false; $('#btnDemo').textContent = 'See a demo story';
-  route();
+  if (window.PD_PRELOAD) {
+    // A private copy that opens straight onto its owner's own data
+    fetch(window.PD_PRELOAD).then((r) => r.text()).then((t) => { S.raw = P.fromMessages(t, 'preloaded'); S.demo = false; S.period = window.PD_PERIOD || 12; compute(); if (!location.hash || location.hash === '#home' || location.hash === '#start') history.replaceState(null, '', '#story'); route(); })
+      .catch(() => route());
+  } else route();
 })();
