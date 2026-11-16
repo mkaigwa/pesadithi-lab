@@ -9,7 +9,7 @@
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem('pesadithi:' + k)); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem('pesadithi:salt', SALT); localStorage.setItem('pesadithi:' + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
-    any() { try { return Object.keys(localStorage).some((k) => k.startsWith('pesadithi:') && k !== 'pesadithi:salt'); } catch (e) { return false; } },
+    any() { try { return Object.keys(localStorage).some((k) => k.startsWith('pesadithi:') && k !== 'pesadithi:salt' && k !== 'pesadithi:type'); } catch (e) { return false; } },
     clear() { try { Object.keys(localStorage).filter((k) => k.startsWith('pesadithi:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* ignore */ } }
   };
   // People's names are never stored: only a scrambled code (FNV-1a hash) for each name you sorted
@@ -738,6 +738,8 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     setTimeout(() => requestAnimationFrame(frame), reduce ? 0 : 600);
   }
   heroAnim();
+  // Type options: A Fraunces, B Bricolage Grotesque, C Young Serif (body stays Hanken Grotesk)
+  (function () { let t = 'a'; try { t = localStorage.getItem('pesadithi:type') || 'a'; } catch (e) { /* none */ } const set = (v) => { document.documentElement.dataset.type = v; $$('.typepick button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === v))); try { localStorage.setItem('pesadithi:type', v); } catch (e) { /* none */ } if (S.A && !$('#v-story').hidden) setTimeout(drawCharts, 60); }; $$('.typepick button').forEach((b) => b.addEventListener('click', () => set(b.dataset.t))); set(t); })();
 
   /* ---------------- Start ---------------- */
   setDataUI(false);

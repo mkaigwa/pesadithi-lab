@@ -7,7 +7,7 @@ for d in ('js', 'demo'): shutil.copytree(os.path.join(SRC, d), os.path.join(OUT,
 os.remove(os.path.join(OUT, 'demo', 'demo-mpesa-statement.pdf'))  # hosts may refuse embedded PDFs
 s = open(os.path.join(SRC, 'index.html')).read()
 s = re.sub(r'<meta http-equiv="Content-Security-Policy"[^>]*>', '''<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,300..600;1,7..72,300..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..800,0..100,0..1;1,9..144,300..800,0..100,0..1&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Young+Serif&family=Martian+Mono:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
 <script>window.PD_PDFJS_LIB='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';window.PD_PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';</script>''', s)
 s = s.replace('<script src="vendor/d3.min.js" defer></script>', '<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" defer></script>')
 s = s.replace('The page loads only its own files: fonts, a chart library and a PDF reader, all served from the same place.', 'This hosted copy loads two open-source libraries (d3 for charts, pdf.js for statements) from cdnjs and its fonts from Google Fonts. Those requests carry none of your data. The GitHub version serves every file itself.')

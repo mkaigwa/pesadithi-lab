@@ -414,3 +414,40 @@ footer { background: var(--soft); }
 .sm .lock { display: inline; font: 400 clamp(14px, 2.4cqh, 30px) var(--serif); }
 .sm .lock i { font-style: italic; font-weight: 300; }
 @media (prefers-reduced-motion: reduce) { .anim .g, .anim .gx, .anim .f, .anim .p, .anim .ln { transform: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; } }
+
+/* ================= Three type options (Nov 2026). Body stays Hanken Grotesk. ================= */
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('vendor/fonts/fraunces-latin-full-normal.woff2') format('woff2-variations'); }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 100 900; font-display: swap; src: url('vendor/fonts/fraunces-latin-full-italic.woff2') format('woff2-variations'); }
+@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-weight: 200 800; font-display: swap; src: url('vendor/fonts/bricolage-grotesque-latin-wght-normal.woff2') format('woff2-variations'); }
+@font-face { font-family: 'Young Serif'; font-weight: 400; font-display: swap; src: url('vendor/fonts/young-serif-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Martian Mono'; font-weight: 400; font-display: swap; src: url('vendor/fonts/martian-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Martian Mono'; font-weight: 500; font-display: swap; src: url('vendor/fonts/martian-mono-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Geist Mono'; font-weight: 400; font-display: swap; src: url('vendor/fonts/geist-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Geist Mono'; font-weight: 500; font-display: swap; src: url('vendor/fonts/geist-mono-latin-500-normal.woff2') format('woff2'); }
+
+:root { --hw: 560; --ew: 500; --ls: -.025em; }
+/* A: Fraunces, a soft, sturdy serif with real weight */
+:root, :root[data-type="a"] { --serif: 'Fraunces', Georgia, serif; --mono: 'JetBrains Mono', ui-monospace, monospace; --hw: 560; --ew: 520; --ls: -.022em; }
+:root[data-type="a"] h1, :root[data-type="a"] h2, :root[data-type="a"] h3, :root:not([data-type]) h1, :root:not([data-type]) h2 { font-variation-settings: "SOFT" 60, "WONK" 0; }
+/* B: Bricolage Grotesque, a bold, characterful grotesque with Wrapped energy */
+:root[data-type="b"] { --serif: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif; --mono: 'Geist Mono', ui-monospace, monospace; --hw: 700; --ew: 700; --ls: -.035em; }
+:root[data-type="b"] h1 em, :root[data-type="b"] h2 em, :root[data-type="b"] h3 em { font-style: normal; }
+/* C: Young Serif, a heavy, warm, one-weight editorial serif */
+:root[data-type="c"] { --serif: 'Young Serif', Georgia, serif; --mono: 'Martian Mono', ui-monospace, monospace; --hw: 400; --ew: 400; --ls: -.02em; }
+:root[data-type="c"] h1 em, :root[data-type="c"] h2 em, :root[data-type="c"] h3 em { font-style: normal; }
+
+h1, h2, h3, .chapter h1, .chapter h2, .chapter#cover h1, .hero h1, .big .v, .habit .v, .ledger .a, .mcard .a, .tally4 b, .insight, .qa b, .sm .slide .sv, .sm .slide .st, .next b { font-weight: var(--hw); letter-spacing: var(--ls); }
+h1 em, h2 em, h3 em { font-weight: var(--ew); }
+.insight, .sm .slide .st { font-weight: calc(var(--hw) - 120); }
+:root[data-type="c"] .insight, :root[data-type="c"] .sm .slide .st { font-weight: 400; }
+.chapter .k, .hero .kicker, .try b, .sm .slide .sk { font-weight: 500; }
+:root[data-type="b"] .chapter .k, :root[data-type="b"] .hero .kicker, :root[data-type="b"] .try b, :root[data-type="b"] .sm .slide .sk { font-style: normal; font-family: var(--sans); font-weight: 600; letter-spacing: .02em; }
+
+.typepick { position: fixed; left: 12px; bottom: 12px; z-index: 90; display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 4px; box-shadow: 0 8px 24px rgba(15,38,32,.14); font: 500 13px var(--sans); }
+.typepick span { padding: 0 8px 0 10px; color: var(--muted); }
+.typepick button { border: 0; background: none; border-radius: 99px; min-height: 36px; padding: 0 12px; cursor: pointer; font: 600 14px var(--sans); color: var(--ink); }
+.typepick button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.typepick button b { font-weight: inherit; }
+@media print { .typepick { display: none; } }
+:root[data-type="b"] .hero h1, :root[data-type="c"] .hero h1 { font-size: clamp(40px, 6.8vw, 64px); }
+:root[data-type="b"] .chapter#cover h1, :root[data-type="c"] .chapter#cover h1 { font-size: clamp(36px, 6.2vw, 60px); }
