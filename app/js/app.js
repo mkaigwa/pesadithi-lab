@@ -703,6 +703,16 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
   $('#smNext').addEventListener('click', () => step(1)); $('#smPrev').addEventListener('click', () => step(-1)); $('#smClose').addEventListener('click', () => closeStoryMode());
   $('#smPlay').addEventListener('click', () => (SM.timer ? stopPlay() : play()));
   $('#smRec').addEventListener('click', () => { stopCount(); SM.rec = true; SM.i = 0; drawSlide(); stopPlay(); $('#sm').classList.add('rec'); let c = 3; $('#smCount').hidden = false; $('#smCount').textContent = c; SM.count = setInterval(() => { c--; if (c > 0) $('#smCount').textContent = c; else { stopCount(); play(); } }, 1000); });
+  // Story mode looks: a wallpaper for every slide, and a way to hide amounts before posting
+  const WKEY = 'pesadithi:wall';
+  const setWall = (w) => { $('#smFrame').dataset.wall = w; $$('.wsw').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.wall === w))); try { localStorage.setItem(WKEY, w); } catch (e) { /* not remembered */ } };
+  $$('.wsw').forEach((b) => b.addEventListener('click', () => setWall(b.dataset.wall)));
+  try { setWall(localStorage.getItem(WKEY) || 'auto'); } catch (e) { setWall('auto'); }
+  // Amounts start hidden, so nobody posts their income by accident
+  const HKEY = 'pesadithi:hideamt';
+  const setHide = (on) => { $('#smFrame').classList.toggle('hideamt', on); $('#smHide').setAttribute('aria-pressed', String(on)); $('#smHide').textContent = on ? 'Show amounts' : 'Hide amounts'; try { localStorage.setItem(HKEY, on ? '1' : '0'); } catch (e) { /* not remembered */ } };
+  $('#smHide').addEventListener('click', () => setHide(!$('#smFrame').classList.contains('hideamt')));
+  let hide0 = true; try { hide0 = localStorage.getItem(HKEY) !== '0'; } catch (e) { /* default hidden */ } setHide(hide0);
   $('#btnStoryMode').addEventListener('click', openStoryMode);
   document.addEventListener('keydown', (e) => {
     if ($('#sm').hidden) return;

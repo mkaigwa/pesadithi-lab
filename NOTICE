@@ -1,0 +1,21 @@
+Pesadithi Lab
+Copyright 2026 Mark Kaigwa
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+"Pesadithi" and the Pesadithi Lab name and logo are not licensed under the
+Apache License. Section 6 of the licence grants no permission to use them,
+except to describe where this work came from.
+
+The software is provided "AS IS", WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND (see sections 7 and 8 of the licence on the disclaimer of warranty and
+the limitation of liability). It is not financial advice.
+
+M-PESA, M-Pesa, Airtel Money, MTN MoMo, Mixx, ChatGPT, Claude, Gemini,
+DeepSeek and Copilot, and their logos, belong to their respective owners.
+They are named only to show what this software works with.
+
+Third-party components:
+- d3 (ISC licence)
+- pdf.js (Apache License 2.0)
+- Besley, Hanken Grotesk, JetBrains Mono and Roboto fonts (SIL Open Font Licence)

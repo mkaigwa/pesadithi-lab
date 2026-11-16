@@ -9,7 +9,7 @@ Made by [Mark Kaigwa](https://mark.co.ke) ([@mkaigwa on X](https://x.com/mkaigwa
 - **Runs in your browser.** Your file is read on your device and never uploaded. No account, no cookies, no analytics.
 - **Works with M-PESA** (statement PDF, SMS from a Mac, Android SMS backups, pasted messages). **MTN MoMo and Airtel Money are in beta.**
 - **Works with the AI you already use.** Generates a short, anonymised summary and a prompt sized for free or paid Claude, ChatGPT or Gemini.
-- **Open source** (MIT). Read every line; that's the point.
+- **Open source** (Apache 2.0). Read every line; that's the point.
 
 > Not affiliated with Safaricom, M-PESA, NCBA, MTN or Airtel. Not financial advice. Some figures, such as Fuliza daily charges, are estimates. Your official statement is the final word.
 
@@ -94,4 +94,4 @@ Bug reports in [Issues](https://github.com/mkaigwa/pesadithi-lab/issues) are wel
 
 ## Licence
 
-MIT. Third-party: d3 (ISC), pdf.js (Apache 2.0), Inter and Literata fonts (SIL Open Font Licence).
+Apache License 2.0: see [LICENSE](LICENSE) and [NOTICE](NOTICE). The licence covers the code, not the Pesadithi name. Third-party: d3 (ISC), pdf.js (Apache 2.0), Besley, Hanken Grotesk, JetBrains Mono and Roboto fonts (SIL Open Font Licence).
