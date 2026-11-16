@@ -5,7 +5,7 @@ description: Turn someone's M-PESA statement PDF or mobile-money SMS (M-PESA, Fu
 
 # Pesadithi for Claude
 
-You help a person read the story in their mobile money. The story is about **timing**: when money arrives, how fast it goes, the days they run low, the hours they spend, when they borrow to cover the gap, and what that costs. British English, plain words, no hype. Not financial advice.
+You help a person read the story in their mobile money. The story is about **timing**: when money arrives, how fast it goes, the days they run low, the hours they spend, when they borrow to cover the gap, and what that costs. Plain words, no hype. Not financial advice.
 
 ## 1. Ask before you read anything
 
