@@ -7,6 +7,19 @@
   const tc = (s) => String(s).toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const C = { in: '#17803f', out: '#d23b2e', credit: '#2457d6', loan: '#e08a00', fee: '#5b6670', ink: '#0f2620', line: '#dce4e0', mint: '#e4f4ec', brand: '#17694e' };
+
+  /* ---------- Hero: year, week, month, year ---------- */
+  (function () {
+    const r = document.getElementById('heroRot'); if (!r || reduce) return;
+    const w = Array.from(r.children); let i = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      const cur = w[i]; i = (i + 1) % w.length; const nx = w[i];
+      cur.classList.remove('on'); cur.classList.add('out');
+      nx.classList.remove('out'); nx.classList.add('on');
+      setTimeout(() => cur.classList.remove('out'), 460);
+    }, 2400);
+  })();
   if (!$('#minis')) return;
 
   /* ---------- Demo buttons and route shortcuts ---------- */
@@ -28,7 +41,7 @@
   // Wallet logos: same manifest; the wallet name stays as the image's alt text
   $$('.wl[data-logo]').forEach((el) => logoFor(el.dataset.logo).then((src) => { if (!src) return; const img = new Image(); img.onload = () => { img.alt = el.textContent; el.textContent = ''; el.appendChild(img); el.classList.add('has-logo'); }; img.src = src; }));
   const aiRow = $('#aiRow');
-  if (aiRow) aiRow.innerHTML = Object.keys(AIS).map((k) => `<span class="ai-tile"><span class="ai" data-ai="${k}"></span><small>${AIS[k]}</small></span>`).join('');
+  if (aiRow) aiRow.innerHTML = Object.keys(AIS).map((k) => `<span class="ai-tile" data-k="${k}"><span class="ai" data-ai="${k}"></span><small>${AIS[k]}</small></span>`).join('');
   $$('.ai[data-ai]').forEach(fillAi);
 
   /* ---------- Wallet ticker ---------- */
@@ -193,10 +206,23 @@
     // 6. Ask your AI: a typed prompt and the size of the summary
     if (V('ai')){
       let tokens = 0; try { tokens = Math.round(JSON.stringify(window.PDAnalyse.summary(A, { merchants: 8, demo: true, provider: 'M-PESA' })).length / 3.6); } catch (e) { tokens = 0; }
-      const line = `Here is a year of my mobile money: KES ${n0(A.totalIn)} in, ${A.creditDays} days on Fuliza, half of each payday gone in ${Math.round(A.lifespan)} days. What should I change first?`;
-      const tEl = $('#aiType');
-      const type = () => { if (reduce) { tEl.textContent = line; return; } let i = 0; const f = () => { tEl.textContent = line.slice(0, i); i += 2; if (i <= line.length + 1) setTimeout(f, 28); }; f(); };
-      whenSeen(card('ai'), () => { type(); if (tokens) countTo(K('ai'), tokens, (v) => n0(v) + ' tokens'); else K('ai').textContent = 'Free-plan sized'; });
+      const QS = [
+        ['chatgpt', 'ChatGPT', `Half of each payday is gone in ${Math.round(A.lifespan)} days. What should I change first?`],
+        ['claude', 'Claude', `I was on Fuliza ${A.creditDays} days this year. How do I lean on it less without losing my limit?`],
+        ['gemini', 'Gemini', `Charges cost me KES ${n0(A.feesTotal)}. Which ones could I have avoided?`],
+        ['deepseek', 'DeepSeek', 'Which week of the month should I plan around, and why?'],
+        ['copilot', 'Copilot', 'Give me 3 things to try next month, smallest first.']
+      ];
+      const tEl = $('#aiType'), who = $('#aiWho');
+      const pick = (k) => $$('#aiRow .ai-tile').forEach((t) => t.classList.toggle('on', t.dataset.k === k));
+      let qi = 0, timer = null;
+      const show = () => {
+        const [k, name, q] = QS[qi % QS.length]; pick(k); who.textContent = 'You, in ' + name;
+        if (reduce) { tEl.textContent = q; return; }
+        let i = 0; const f = () => { tEl.textContent = q.slice(0, i); i += 2; if (i <= q.length + 1) timer = setTimeout(f, 30); else timer = setTimeout(() => { qi++; show(); }, 2600); }; f();
+      };
+      if (tokens) $('#aiFit').textContent = `About ${n0(tokens)} tokens for Amani's year: comfortably inside the free tier of all five.`;
+      whenSeen(card('ai'), () => { show(); if (tokens) countTo(K('ai'), tokens, (v) => n0(v) + ' tokens'); else K('ai').textContent = 'Free-plan sized'; });
       K('ai').textContent = tokens ? n0(tokens) + ' tokens' : 'Free-plan sized';
     }
 

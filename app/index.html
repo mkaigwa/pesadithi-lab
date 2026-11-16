@@ -35,7 +35,7 @@
   <div class="wrap hero">
    <div>
     <div class="kicker">Your year in mobile money</div>
-    <h1>Where did your money go this year? <em>Your M-PESA SMSes already know.</em></h1>
+    <h1 class="hero-h">Where did your mobile money go this <span class="rot" id="heroRot" aria-hidden="true"><b class="on">year?</b><b>week?</b><b>month?</b></span><span class="vh">year?</span> <em>Your M-PESA SMSes already know.</em></h1>
     <p class="lede">Attach your M-PESA SMSes or statement. In a minute you see how many days half your pay lasts, when Fuliza steps in, what you saved and what the charges cost you. It all stays on your phone.</p>
     <div class="btn-row" style="margin-top:26px">
       <button class="btn" id="btnDemo" type="button" disabled>Loading…</button>
@@ -115,10 +115,20 @@
         <div class="mn"><b class="mbig" data-k="sort">…</b><span class="mlab">Sort your people</span></div>
         <p class="small muted">Your statement knows names. You know relationships. One swipe each.</p>
       </article>
-      <article class="mini" data-m="ai">
-        <div class="mv" data-viz="ai"><div class="ai-row" id="aiRow"></div><div class="ai-prompt"><span id="aiType"></span><i class="caret"></i></div></div>
+      <article class="mini mini-ai" data-m="ai">
         <div class="mn"><b class="mbig" data-k="ai">…</b><span class="mlab">Ask your own AI</span></div>
-        <p class="small muted">An anonymised summary and a prompt, sized for free plans. No names, phone numbers or message text leave with it.</p>
+        <p class="small muted">Pesadithi writes the question and a short, anonymised summary of your year. You paste both into the assistant you already use, free or paid, and it tells you what to change.</p>
+        <div class="mv mv-ai" data-viz="ai">
+          <div class="ai-row" id="aiRow"></div>
+          <div class="ai-chat"><div class="ai-who" id="aiWho">You, in ChatGPT</div><div class="ai-bubble"><span id="aiType"></span><i class="caret"></i></div><div class="ai-att" id="aiAtt"><span class="ai-clip" aria-hidden="true">+</span><span>Amani's summary attached</span></div></div>
+        </div>
+        <dl class="ai-facts">
+          <div><dt>Goes with it</dt><dd>Totals, categories, Fuliza days, charges and patterns by week.</dd></div>
+          <div><dt>Stays on your phone</dt><dd>People's names, phone numbers and the SMS text itself.</dd></div>
+          <div><dt>Fits a free plan</dt><dd id="aiFit">Short enough for the free tier of any of the five.</dd></div>
+          <div><dt>4 quick choices</dt><dd>Your assistant, free or paid, how deep, and what you share. Safest options are already set.</dd></div>
+        </dl>
+        <a class="linkbtn small ai-go" href="#ai">See the prompt it writes</a>
       </article>
     </div>
     <div class="share-strip">

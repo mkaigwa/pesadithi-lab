@@ -4,7 +4,7 @@ Wallet logos in use: M-PESA Kenya (`mpesa.png`), MTN MoMo (`mtn-momo.png`), M-Pe
 
 ## Assistant logos
 
-The home page and the "Ask your AI" page show a tile for ChatGPT, Claude, Gemini, DeepSeek and Copilot. Until a logo file is added, each tile shows a plain letter.
+The home page and the "Ask your AI" page show a tile for ChatGPT, Claude, Gemini, DeepSeek and Copilot. ChatGPT, Claude, Gemini and DeepSeek use the icons from the open-source LobeHub icon set (`@lobehub/icons-static-png`, MIT licence), resized to 128 px. Copilot was supplied by Mark Kaigwa. Any assistant without a file listed in `logos.json` falls back to a plain letter.
 
 To show the official logos:
 
