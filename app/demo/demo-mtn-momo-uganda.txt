@@ -1,0 +1,139 @@
+You have withdrawn UGX 100,000 from agent MUKWANO ENTERPRISES on 2026-09-02 14:00:00. Fee: UGX 2,500. Your new balance: UGX 182,500. Transaction Id: 92561961703.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-09-03 14:00:00. Fee: UGX 500. Your new balance: UGX 177,000. Financial Transaction Id: 67599266524.
+
+You have withdrawn UGX 100,000 from agent MUKWANO ENTERPRISES on 2026-09-04 11:00:00. Fee: UGX 2,500. Your new balance: UGX 74,500. Transaction Id: 99308841429.
+
+You have received UGX 150,000 from MUSOKE JOHN (256701234567) on 2026-09-05 03:00:00. Your new balance: UGX 224,500. Financial Transaction Id: 30737132534.
+
+You have withdrawn UGX 50,000 from agent MUKWANO ENTERPRISES on 2026-09-06 08:00:00. Fee: UGX 2,500. Your new balance: UGX 172,000. Transaction Id: 80334422148.
+
+Payment of UGX 46,000 to CAPITAL SHOPPERS NTINDA was successful on 2026-09-07 03:00:00. Fee: UGX 0. New balance: UGX 126,000. Transaction Id: 48838697618.
+
+Payment of UGX 22,000 to CAPITAL SHOPPERS NTINDA was successful on 2026-09-07 10:00:00. Fee: UGX 0. New balance: UGX 104,000. Transaction Id: 37562724242.
+
+You have received UGX 150,000 from MUSOKE JOHN (256701234567) on 2026-09-08 07:00:00. Your new balance: UGX 254,000. Financial Transaction Id: 22393331668.
+
+Payment of UGX 46,000 to CAFE JAVAS ACACIA was successful on 2026-09-09 11:00:00. Fee: UGX 0. New balance: UGX 208,000. Transaction Id: 87391183853.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-09-10 13:00:00. Fee: UGX 1,000. Your new balance: UGX 172,000. Financial Transaction Id: 54995375402.
+
+You have withdrawn UGX 50,000 from agent MUKWANO ENTERPRISES on 2026-09-10 21:00:00. Fee: UGX 2,500. Your new balance: UGX 119,500. Transaction Id: 52208257849.
+
+You have withdrawn UGX 50,000 from agent MUKWANO ENTERPRISES on 2026-09-11 08:00:00. Fee: UGX 2,500. Your new balance: UGX 67,000. Transaction Id: 19176473303.
+
+You have received UGX 150,000 from MUSOKE JOHN (256701234567) on 2026-09-11 23:00:00. Your new balance: UGX 217,000. Financial Transaction Id: 60175570684.
+
+Payment of UGX 22,000 to CAFE JAVAS ACACIA was successful on 2026-09-13 04:00:00. Fee: UGX 0. New balance: UGX 195,000. Transaction Id: 28069158842.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-09-14 08:00:00. Fee: UGX 500. Your new balance: UGX 174,500. Financial Transaction Id: 30791834179.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-09-15 08:00:00. Fee: UGX 500. Your new balance: UGX 169,000. Financial Transaction Id: 88135834271.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-09-16 00:00:00. Fee: UGX 500. Your new balance: UGX 148,500. Financial Transaction Id: 24560313084.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-09-16 06:00:00. Fee: UGX 500. Your new balance: UGX 143,000. Financial Transaction Id: 31814934291.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-09-17 03:00:00. Fee: UGX 1,000. Your new balance: UGX 107,000. Financial Transaction Id: 30477316693.
+
+You have received UGX 150,000 from MUSOKE JOHN (256701234567) on 2026-09-18 06:00:00. Your new balance: UGX 257,000. Financial Transaction Id: 68191916714.
+
+Payment of UGX 22,000 to UMEME YAKA was successful on 2026-09-18 19:00:00. Fee: UGX 0. New balance: UGX 235,000. Transaction Id: 47243232382.
+
+Payment of UGX 15,000 to CAPITAL SHOPPERS NTINDA was successful on 2026-09-19 10:00:00. Fee: UGX 0. New balance: UGX 220,000. Transaction Id: 65862497769.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-09-19 20:00:00. Fee: UGX 500. Your new balance: UGX 214,500. Financial Transaction Id: 95085687246.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-09-20 19:00:00. Fee: UGX 1,000. Your new balance: UGX 178,500. Financial Transaction Id: 79847879950.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-09-21 04:00:00. Fee: UGX 500. Your new balance: UGX 173,000. Financial Transaction Id: 27213608288.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-09-21 15:00:00. Fee: UGX 1,000. Your new balance: UGX 137,000. Financial Transaction Id: 98555232772.
+
+Payment of UGX 8,500 to CAPITAL SHOPPERS NTINDA was successful on 2026-09-21 22:00:00. Fee: UGX 0. New balance: UGX 128,500. Transaction Id: 86510140907.
+
+You have sent UGX 12,000 to NAKATO SARAH 256772123456 on 2026-09-22 18:00:00. Fee: UGX 500. Your new balance: UGX 116,000. Financial Transaction Id: 64572871406.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-09-23 21:00:00. Fee: UGX 1,000. Your new balance: UGX 80,000. Financial Transaction Id: 61063420570.
+
+You have received UGX 150,000 from MUSOKE JOHN (256701234567) on 2026-09-24 14:00:00. Your new balance: UGX 230,000. Financial Transaction Id: 24861061811.
+
+You have received UGX 950,000 from KAMPALA TRADERS LTD (256770000111) on 2026-09-25 10:00:00. Reason: salary. Your new balance: UGX 1,180,000. Financial Transaction Id: 30329135091.
+
+You have received UGX 950,000 from KAMPALA TRADERS LTD (256770000111) on 2026-09-26 10:00:00. Reason: salary. Your new balance: UGX 2,130,000. Financial Transaction Id: 32646881080.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-09-27 04:00:00. Fee: UGX 500. Your new balance: UGX 2,109,500. Financial Transaction Id: 38562574992.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-09-27 10:00:00. Fee: UGX 500. Your new balance: UGX 2,104,000. Financial Transaction Id: 63734443049.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-09-27 19:00:00. Fee: UGX 500. Your new balance: UGX 2,083,500. Financial Transaction Id: 91440585668.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-09-28 06:00:00. Fee: UGX 500. Your new balance: UGX 2,063,000. Financial Transaction Id: 73175356744.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-09-29 09:00:00. Fee: UGX 500. Your new balance: UGX 2,042,500. Financial Transaction Id: 66606574156.
+
+Payment of UGX 15,000 to UMEME YAKA was successful on 2026-09-29 19:00:00. Fee: UGX 0. New balance: UGX 2,027,500. Transaction Id: 73540021463.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-09-30 16:00:00. Fee: UGX 1,000. Your new balance: UGX 1,991,500. Financial Transaction Id: 94968392378.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-01 00:00:00. Fee: UGX 500. Your new balance: UGX 1,971,000. Financial Transaction Id: 85043040839.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-02 02:00:00. Fee: UGX 1,000. Your new balance: UGX 1,935,000. Financial Transaction Id: 60701648426.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-03 04:00:00. Fee: UGX 1,000. Your new balance: UGX 1,899,000. Financial Transaction Id: 37790591981.
+
+Payment of UGX 22,000 to CAFE JAVAS ACACIA was successful on 2026-10-03 22:00:00. Fee: UGX 0. New balance: UGX 1,877,000. Transaction Id: 81679046273.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-04 09:00:00. Fee: UGX 500. Your new balance: UGX 1,856,500. Financial Transaction Id: 51597188228.
+
+You have sent UGX 12,000 to NAKATO SARAH 256772123456 on 2026-10-05 04:00:00. Fee: UGX 500. Your new balance: UGX 1,844,000. Financial Transaction Id: 21715874635.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-10-05 21:00:00. Fee: UGX 500. Your new balance: UGX 1,838,500. Financial Transaction Id: 41795996636.
+
+You have withdrawn UGX 100,000 from agent MUKWANO ENTERPRISES on 2026-10-06 23:00:00. Fee: UGX 2,500. Your new balance: UGX 1,736,000. Transaction Id: 53801918520.
+
+You have withdrawn UGX 50,000 from agent MUKWANO ENTERPRISES on 2026-10-07 20:00:00. Fee: UGX 2,500. Your new balance: UGX 1,683,500. Transaction Id: 80966195479.
+
+Payment of UGX 46,000 to NWSC WATER was successful on 2026-10-08 13:00:00. Fee: UGX 0. New balance: UGX 1,637,500. Transaction Id: 71556333280.
+
+You have sent UGX 12,000 to NAKATO SARAH 256772123456 on 2026-10-09 03:00:00. Fee: UGX 500. Your new balance: UGX 1,625,000. Financial Transaction Id: 15715380259.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-09 15:00:00. Fee: UGX 1,000. Your new balance: UGX 1,589,000. Financial Transaction Id: 16140833708.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-10 18:00:00. Fee: UGX 500. Your new balance: UGX 1,568,500. Financial Transaction Id: 68255601117.
+
+Payment of UGX 15,000 to UMEME YAKA was successful on 2026-10-11 02:00:00. Fee: UGX 0. New balance: UGX 1,553,500. Transaction Id: 56576552440.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-11 20:00:00. Fee: UGX 500. Your new balance: UGX 1,533,000. Financial Transaction Id: 56553536932.
+
+You have withdrawn UGX 100,000 from agent MUKWANO ENTERPRISES on 2026-10-13 00:00:00. Fee: UGX 2,500. Your new balance: UGX 1,430,500. Transaction Id: 67403836383.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-13 19:00:00. Fee: UGX 1,000. Your new balance: UGX 1,394,500. Financial Transaction Id: 59925175886.
+
+Payment of UGX 8,500 to CAFE JAVAS ACACIA was successful on 2026-10-14 03:00:00. Fee: UGX 0. New balance: UGX 1,386,000. Transaction Id: 33627971079.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-15 08:00:00. Fee: UGX 500. Your new balance: UGX 1,365,500. Financial Transaction Id: 68229755391.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-16 14:00:00. Fee: UGX 500. Your new balance: UGX 1,345,000. Financial Transaction Id: 95670783890.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-10-16 21:00:00. Fee: UGX 500. Your new balance: UGX 1,339,500. Financial Transaction Id: 49731134429.
+
+You have sent UGX 12,000 to NAKATO SARAH 256772123456 on 2026-10-17 08:00:00. Fee: UGX 500. Your new balance: UGX 1,327,000. Financial Transaction Id: 49176352663.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-17 15:00:00. Fee: UGX 1,000. Your new balance: UGX 1,291,000. Financial Transaction Id: 22393836412.
+
+You have sent UGX 5,000 to NAKATO SARAH 256772123456 on 2026-10-18 18:00:00. Fee: UGX 500. Your new balance: UGX 1,285,500. Financial Transaction Id: 28179846945.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-19 13:00:00. Fee: UGX 1,000. Your new balance: UGX 1,249,500. Financial Transaction Id: 52833191804.
+
+You have sent UGX 20,000 to NAKATO SARAH 256772123456 on 2026-10-19 20:00:00. Fee: UGX 500. Your new balance: UGX 1,229,000. Financial Transaction Id: 55525751917.
+
+You have withdrawn UGX 100,000 from agent MUKWANO ENTERPRISES on 2026-10-20 20:00:00. Fee: UGX 2,500. Your new balance: UGX 1,126,500. Transaction Id: 76676126623.
+
+Payment of UGX 22,000 to CAFE JAVAS ACACIA was successful on 2026-10-21 18:00:00. Fee: UGX 0. New balance: UGX 1,104,500. Transaction Id: 55713850298.
+
+Payment of UGX 22,000 to CAFE JAVAS ACACIA was successful on 2026-10-22 22:00:00. Fee: UGX 0. New balance: UGX 1,082,500. Transaction Id: 95790822232.
+
+You have sent UGX 35,000 to NAKATO SARAH 256772123456 on 2026-10-23 18:00:00. Fee: UGX 1,000. Your new balance: UGX 1,046,500. Financial Transaction Id: 18366581358.
+
+Payment of UGX 8,500 to NWSC WATER was successful on 2026-10-24 20:00:00. Fee: UGX 0. New balance: UGX 1,038,000. Transaction Id: 41426627936.

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesadithi Lab: the story of your mobile money</title>
+<meta name="description" content="Turn your M-PESA statement or money SMS into a story about timing: when money arrives, how fast it goes, when you borrow and what it costs. Runs in your browser.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; connect-src 'self' blob: data:; form-action 'none'; base-uri 'self'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%2316161a%22/%3E%3Cpath d=%22M7 22c4-9 8-12 18-12%22 stroke=%22%2300968f%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="pesadithi.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="Pesadithi Lab home"><span><b>Pesadithi</b> Lab</span><span class="tag">beta</span></a>
+    <a class="demo-badge" id="demoBadge" href="#start" hidden title="This is invented data. Load your own.">Demo data · use mine</a>
+    <nav class="nav" aria-label="Main">
+      <a href="#home" data-view="home">Home</a>
+      <a href="#start" data-view="start">Load data</a>
+      <a href="#story" data-view="story" data-needs-data hidden>Story</a>
+      <a href="#sort" data-view="sort" data-needs-data hidden>Sort people</a>
+      <a href="#budget" data-view="budget" data-needs-data hidden>Budget</a>
+      <a href="#ai" data-view="ai" data-needs-data hidden>Ask your AI</a>
+      <a href="#privacy" data-view="privacy">Privacy and risks</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<!-- HOME -->
+<section id="v-home" data-v="home">
+  <div class="wrap hero">
+    <div class="kicker">Free · open source · runs in your browser</div>
+    <h1>Your mobile money has a story. Read it in two minutes.</h1>
+    <p class="lede">Load your M-PESA statement or your money SMS. See when money arrives, how fast it goes, when you borrow to cover the gap, and what that borrowing really costs.</p>
+    <div class="btn-row" style="margin-top:26px">
+      <button class="btn" id="btnDemo" type="button" disabled>Loading…</button>
+      <a class="btn ghost" href="#start">Use my own data</a>
+    </div>
+    <p class="small muted" style="margin-top:12px">The demo uses invented data for a fictional person. No upload, no sign-up.</p>
+    <div class="trust">
+      <div><b>Stays on your device</b>Your file is read by this page in your browser. It is never uploaded. You can switch off Wi-Fi after the page loads and it still works.</div>
+      <div><b>No account, no tracking</b>No sign-up, no cookies, no analytics. Close the tab and it's gone, unless you tick "Remember".</div>
+      <div><b>Open source</b>Every line is public on GitHub, so anyone can check these claims.</div>
+    </div>
+  </div>
+  <div class="wrap">
+    <h2 style="font-size:28px">What you'll see</h2>
+    <div class="preview">
+      <div class="card"><h3>How long money lasts</h3><p class="small muted">How many days until half of each big payment you receive is spent.</p></div>
+      <div class="card"><h3>The month inside the month</h3><p class="small muted">A calendar of the days you run low, and the date you lean on Fuliza most.</p></div>
+      <div class="card"><h3>Your money clock</h3><p class="small muted">The hours and days you spend most, including late nights.</p></div>
+      <div class="card"><h3>The price you paid</h3><p class="small muted">Fees, loan charges and penalties, and which ones you could have avoided.</p></div>
+      <div class="card"><h3>Sort your people</h3><p class="small muted">A quick swipe game to label who you send money to: family, household help, friends, work.</p></div>
+      <div class="card"><h3>Ask your own AI</h3><p class="small muted">A short, anonymised summary and a prompt for Claude, ChatGPT or Gemini, sized for free plans.</p></div>
+    </div>
+    <div class="honest">
+      <b>Before you start, what this can and can't do</b>
+      <ul>
+        <li>It works best with <b>M-PESA</b> (Kenya). <b>MTN MoMo</b> and <b>Airtel Money</b> are in beta: messages vary by country, so some may not be read.</li>
+        <li>Figures come from your statement or SMS. Some costs, such as Fuliza daily charges, are <b>estimates</b>. Your official statement is the final word.</li>
+        <li>Reading SMS straight from a Mac needs a powerful macOS permission. Read <a href="#privacy">Privacy and risks</a> before you choose that route.</li>
+        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN or Airtel.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- START -->
+<section id="v-start" data-v="start" hidden>
+  <div class="wrap" style="padding-top:44px;padding-bottom:60px">
+    <div class="kicker">Step 1 of 3</div>
+    <div class="notice" id="notice" role="status" hidden>Load your data first. Nothing is kept between visits, so after a reload the story needs your file again.</div>
+    <h1>Where is your money data?</h1>
+    <p class="muted">Pick the one you have. Not sure? Use the M-PESA statement: it works on any phone.</p>
+    <div class="sources" role="group" aria-label="Choose your data source">
+      <button class="source" type="button" data-src="pdf" aria-pressed="false"><h3>M-PESA statement (PDF)</h3><p class="small muted">The official statement Safaricom emails you, opened with the code they send by SMS.</p><div class="meta"><span class="pill rec">Recommended</span><span class="pill">Any phone</span><span class="pill">About 5 minutes</span></div></button>
+      <button class="source" type="button" data-src="mac" aria-pressed="false"><h3>Messages from a Mac (.json)</h3><p class="small muted">For iPhone users whose texts sync to a Mac. Shows the most detail, including Fuliza and M-Shwari fees.</p><div class="meta"><span class="pill">iPhone + Mac</span><span class="pill risk">Needs Full Disk Access</span></div></button>
+      <button class="source" type="button" data-src="android" aria-pressed="false"><h3>Android SMS backup (.xml)</h3><p class="small muted">Export your texts with the SMS Backup &amp; Restore app, then load the file here.</p><div class="meta"><span class="pill">Android</span><span class="pill risk">Backup app reads all texts</span></div></button>
+      <button class="source" type="button" data-src="paste" aria-pressed="false"><h3>Paste messages</h3><p class="small muted">Copy some M-PESA texts from your phone and paste them in. Good for a quick try.</p><div class="meta"><span class="pill">Any phone</span><span class="pill">1 minute</span></div></button>
+      <button class="source" type="button" data-src="momo" aria-pressed="false"><h3>MTN MoMo or Airtel Money</h3><p class="small muted">Paste or upload your money texts. Formats differ by country, so some may not be read.</p><div class="meta"><span class="pill beta">Beta</span><span class="pill">Uganda, Ghana, Rwanda, Zambia, Kenya</span></div></button>
+    </div>
+
+    <div id="srcHelp" class="steps" hidden></div>
+
+    <div id="loader" hidden>
+      <div class="kicker" style="margin-top:28px">Step 2 of 3</div>
+      <h3>Load it</h3>
+      <div class="drop" id="drop">
+        <p style="margin:0 0 10px"><b>Drop your file here</b> or</p>
+        <label class="btn ghost small" for="file">Choose a file</label>
+        <input id="file" type="file" class="sr" accept=".pdf,.json,.xml,.txt,.csv,application/pdf,application/json,text/xml,text/plain,text/csv">
+        <p class="small muted" id="fileName" style="margin:10px 0 0">PDF, JSON, XML, CSV or TXT. Up to 25 MB.</p>
+      </div>
+      <div class="field" id="pwField" hidden>
+        <label for="pw">PDF password</label>
+        <input id="pw" type="password" autocomplete="off" placeholder="The code Safaricom sent you by SMS" aria-describedby="pwHelp">
+        <span class="small muted" id="pwHelp"><b>This is not your M-PESA PIN.</b> Statements are locked with a code sent by SMS when you request them. Each statement has its own code. Press Enter to read.</span>
+      </div>
+      <div class="field" id="pasteField">
+        <label for="paste">Or paste messages</label>
+        <textarea id="paste" placeholder="Paste your M-PESA, MoMo or Airtel Money messages here, one after another."></textarea>
+      </div>
+      <div class="btn-row"><button class="btn" id="btnRead" type="button">Read my data</button><button class="linkbtn small" id="btnSample" type="button" hidden>Paste a sample for me</button></div>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </div>
+
+    <div id="found" class="found" hidden>
+      <div class="kicker">Step 3 of 3</div>
+      <h3 id="foundTitle">We found your transactions</h3>
+      <p id="foundText" class="muted"></p>
+      <details id="skippedBox" hidden><summary class="small">Messages we couldn't read</summary><ul id="skippedList" class="small muted"></ul></details>
+      <p style="margin-top:16px"><b>Which period?</b></p>
+      <p class="small muted" id="periodText"></p>
+      <div class="periods" role="group" aria-label="Period" id="periods">
+        <button type="button" data-p="1">Last month</button><button type="button" data-p="3">3 months</button><button type="button" data-p="6">6 months</button><button type="button" data-p="12" aria-pressed="false">12 months</button><button type="button" data-p="0">Everything</button>
+      </div>
+      <div class="btn-row"><button class="btn" id="btnStory" type="button">Tell me my story</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section id="v-story" data-v="story" hidden>
+  <div class="storynav" aria-label="Chapters"><div class="wrap" id="chapterNav"></div></div>
+  <div class="wrap" id="story"></div>
+</section>
+
+<!-- SORT -->
+<section id="v-sort" data-v="sort" hidden>
+  <div class="wrap" style="padding-top:44px">
+    <div class="kicker">Sort your people</div>
+    <h1>Who are you really sending money to?</h1>
+    <p class="muted">Your statement only knows names. You know the relationships. Sort each person once and your budget gets honest. Press a category, use number keys, or swipe: <b>right</b> repeats your last choice, <b>left</b> skips.</p>
+    <div class="progress" aria-hidden="true"><i id="gameBar"></i></div>
+    <p class="small muted" id="gameCount" aria-live="polite"></p>
+    <div class="game">
+      <div>
+        <div class="deck" id="deck"></div>
+        <div class="narr" id="narr" role="status" aria-live="polite"></div>
+        <div class="btn-row" id="gameCtrls"><button class="btn ghost small" id="gUndo" type="button">Undo</button><button class="btn ghost small" id="gSkip" type="button">Skip</button><button class="btn ghost small" id="gAdd" type="button">Add a category</button></div>
+      </div>
+      <aside class="card white tally" aria-label="Running totals"><h3 style="font-size:18px">Your categories so far</h3><div id="tally"><p class="small muted">Nothing sorted yet.</p></div><button class="btn small ghost" id="toBudget" type="button" style="margin-top:14px">Build my budget</button></aside>
+    </div>
+  </div>
+</section>
+
+<!-- BUDGET -->
+<section id="v-budget" data-v="budget" hidden>
+  <div class="wrap" style="padding-top:44px;padding-bottom:60px">
+    <div class="kicker">Budget</div>
+    <h1>Give your money a job</h1>
+    <p class="muted">Monthly averages, by category, from the period you chose. Set a monthly target for each line. Transfers to your own banks and savings are left out of spending.</p>
+    <div class="bigs" id="budgetBigs"></div>
+    <div class="scrollx"><table class="budget" id="budgetTable"><thead><tr><th>Category</th><th class="n">Monthly average</th><th class="n">Target</th><th class="n">Difference</th></tr></thead><tbody></tbody></table></div>
+    <div class="btn-row" style="margin-top:20px"><button class="btn ghost small" id="bCsv" type="button">Download budget (CSV)</button><button class="btn ghost small" id="bLedger" type="button">Download all transactions (CSV)</button>
+      <label class="small check"><input type="checkbox" id="remember"> Remember my sorting and targets in this browser (people are stored as scrambled codes, never names)</label></div>
+  </div>
+</section>
+
+<!-- AI -->
+<section id="v-ai" data-v="ai" hidden>
+  <div class="wrap" style="padding-top:44px;padding-bottom:60px">
+    <div class="kicker">Ask your AI</div>
+    <h1>Take your story to Claude, ChatGPT or Gemini</h1>
+    <p class="muted">This builds a short summary of totals and patterns, with no people's names, phone numbers or message text, plus a prompt. Answer four questions and it sizes everything to your plan.</p>
+    <p><b>Which assistant?</b></p><div class="choices" data-q="platform"><button type="button" data-a="Claude">Claude</button><button type="button" data-a="ChatGPT">ChatGPT</button><button type="button" data-a="Gemini">Gemini</button><button type="button" data-a="another assistant">Another</button></div>
+    <p><b>Free or paid plan?</b></p><div class="choices" data-q="plan"><button type="button" data-a="free">Free</button><button type="button" data-a="paid">Paid</button></div>
+    <p><b>How much of your usage are you happy to spend on this?</b></p><div class="choices" data-q="budget"><button type="button" data-a="5">A little (about 5%)</button><button type="button" data-a="20">Some (about 20%)</button><button type="button" data-a="50">A lot (about half)</button></div>
+    <p><b>What should it look at?</b></p><div class="choices" data-q="share"><button type="button" data-a="summary">This summary (recommended)</button><button type="button" data-a="pdf">My statement PDF</button><button type="button" data-a="sms">My raw messages</button></div>
+    <label class="small check"><input type="checkbox" id="incMerchants" checked> Include shop and business names (never people)</label>
+    <div class="advice" id="aiAdvice" role="status" aria-live="polite">Answer the questions above.</div>
+    <div class="btn-row"><button class="btn" id="copyPrompt" type="button">Copy prompt and summary</button><span class="small muted" id="aiSize"></span><span class="small" id="copyState" role="status" aria-live="polite"></span></div>
+    <pre class="out" id="aiOut" tabindex="0" aria-label="Prompt and summary"></pre>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="v-privacy" data-v="privacy" hidden>
+  <div class="wrap prose" style="padding-top:44px;padding-bottom:60px">
+    <div class="kicker">Privacy and risks</div>
+    <h1>What happens to your data, in plain words</h1>
+    <p><b>This page:</b> your file is opened and read by JavaScript inside your browser. Nothing is uploaded, and there is no server that could receive it. The page loads only its own files: fonts, a chart library and a PDF reader, all served from the same place. You can check this: load the page, switch off Wi-Fi or mobile data, then load your file. It still works. For a PDF, choose the PDF route once while online so the PDF reader loads first.</p>
+    <p><b>Nothing is saved</b> unless you tick "Remember my sorting and targets". Even then, only your category choices and budget targets are kept in this browser, with each person stored as a scrambled code rather than a name. Your transactions are never kept. "Clear my data" at the bottom of the page removes everything.</p>
+    <h2>Each route, honestly</h2>
+    <div class="scrollx"><table class="risk-table">
+      <thead><tr><th>Route</th><th>Who it suits</th><th>What you give access to</th><th>Watch out for</th></tr></thead>
+      <tbody>
+        <tr><td><b>M-PESA statement PDF</b></td><td>Anyone with M-PESA, any phone</td><td>Only the PDF you choose</td><td>Request it from the M-PESA app or *334#. The password arrives by SMS. Statements show less about loan fees than SMS do.</td></tr>
+        <tr><td><b>Messages from a Mac</b></td><td>iPhone users with a Mac where texts sync (Text Message Forwarding on)</td><td><b>Full Disk Access</b> for the app that runs the script. This is broad: that app can read every file on your Mac, not just Messages.</td><td>Turn it on, run the script, turn it off again. The script reads a copy, keeps only money messages, drops code and PIN texts, and has no internet code. Android phones don't sync texts to a Mac.</td></tr>
+        <tr><td><b>Android SMS backup</b></td><td>Android users</td><td>An SMS backup app can read <b>all</b> your texts, including bank codes</td><td>Export to your phone, load the file, then delete the export. Don't upload it to cloud storage or chat apps.</td></tr>
+        <tr><td><b>Windows PC</b></td><td>Anyone on Windows</td><td>Only the file you choose</td><td>Windows can't read phone texts directly. Use the statement PDF, or an Android backup file.</td></tr>
+        <tr><td><b>Paste messages</b></td><td>Quick tries</td><td>Only what you paste</td><td>Copying from your phone is slow for big histories, so you'll see fewer patterns.</td></tr>
+        <tr><td><b>An AI assistant</b></td><td>People who want coaching or a deeper read</td><td>Whatever you paste goes to that company</td><td>Check its data settings. Some free plans may use chats to improve their models. The summary here leaves out people's names and message text; a full statement doesn't.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Steps and menus described here were correct in November 2026. Apps change; the official app is the final word.</p>
+    <h2>What we'll never claim</h2>
+    <p>That figures are exact where they are estimated, that every message format will be read, or that this replaces your official statement or a financial adviser. If something looks wrong, it may be a message we couldn't read: check the "messages we couldn't read" list after loading.</p>
+    <h2>Not affiliated</h2>
+    <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Apple, Google, OpenAI or Anthropic. Product names belong to their owners.</p>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap btn-row" style="justify-content:space-between">
+  <span>Pesadithi Lab · open source · <a href="https://github.com/mkaigwa/pesadithi-lab" rel="noopener">GitHub</a></span>
+  <span class="btn-row"><button class="linkbtn" id="btnStoryMode" type="button" data-needs-data hidden>Story mode (vertical)</button><button class="linkbtn" id="btnClear" type="button" hidden>Clear my data</button></span>
+</div></footer>
+
+<div class="sm" id="sm" hidden role="dialog" aria-modal="true" aria-label="Story mode">
+  <div class="frame" id="smFrame"><div class="bar" id="smBar"></div><span class="smdemo" id="smDemo" hidden>Demo · invented data</span><div class="slide" id="smSlide"></div><button class="tapl" id="smPrev" aria-label="Previous slide"></button><button class="tapr" id="smNext" aria-label="Next slide"></button><div class="foot"><span>Pesadithi Lab</span><span>github.com/mkaigwa/pesadithi-lab</span></div><div class="smcount" id="smCount" hidden aria-hidden="true"></div></div>
+  <div class="ctrl"><button type="button" id="smPlay">Auto-play</button><button type="button" id="smRec" title="Hides these buttons, counts down from 3, then plays once. Press H to show them again.">Record mode</button><button type="button" id="smClose">Close (Esc)</button></div>
+  <div class="sr" id="smLive" aria-live="polite"></div>
+</div>
+
+<script src="vendor/d3.min.js" defer></script>
+<script src="js/merchants.js" defer></script>
+<script src="js/parse.js" defer></script>
+<script src="js/analyse.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
