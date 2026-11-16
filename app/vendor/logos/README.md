@@ -1,4 +1,8 @@
-# Assistant logos
+# Logos (wallets and assistants)
+
+Wallet logos in use: M-PESA Kenya (`mpesa.png`), MTN MoMo (`mtn-momo.png`), M-Pesa Tanzania (`mpesa-tz.png`), M-PESA Ethiopia (`mpesa-et.png`), supplied by Mark Kaigwa. Airtel Money still shows its name: add `airtel.png` and the key `"airtel"` to use a logo.
+
+## Assistant logos
 
 The home page and the "Ask your AI" page show a tile for ChatGPT, Claude, Gemini, DeepSeek and Copilot. Until a logo file is added, each tile shows a plain letter.
 

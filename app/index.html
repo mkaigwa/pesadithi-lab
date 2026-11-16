@@ -66,11 +66,10 @@
     <div class="wrap">
       <div class="rails-head"><h2 id="railsH">Reads the money texts you already get</h2><p class="small muted">No bank login, no API, no app to install. If your wallet sends you a text for every move, Pesadithi can read it.</p></div>
       <ul class="rail-list">
-        <li class="rail full"><b>M-PESA</b><span>Kenya</span><em>Full support: SMS, statement PDF, Fuliza and M-Shwari</em></li>
-        <li class="rail beta"><b>Airtel Money</b><span>Kenya, Uganda, Tanzania, Rwanda, Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
-        <li class="rail beta"><b>MTN MoMo</b><span>Uganda, Ghana, Rwanda, Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
-        <li class="rail soon"><b>T-Kash</b><span>Kenya</span><em>Next: paste a few texts and tell us what was missed</em></li>
-        <li class="rail soon"><b>And the rest</b><span>Equitel, M-Pesa Tanzania, Mixx, Orange Money, Wave</span><em>On the list. Ten sample texts get a wallet added</em></li>
+        <li class="rail full"><b class="wl" data-logo="mpesa">M-PESA</b><span>🇰🇪 Kenya</span><em>Full support: SMS, statement PDF, Fuliza and M-Shwari</em></li>
+        <li class="rail beta"><b class="wl" data-logo="airtel">Airtel Money</b><span>🇰🇪 Kenya · 🇺🇬 Uganda · 🇹🇿 Tanzania · 🇷🇼 Rwanda · 🇿🇲 Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
+        <li class="rail beta"><b class="wl" data-logo="mtn">MTN MoMo</b><span>🇺🇬 Uganda · 🇬🇭 Ghana · 🇷🇼 Rwanda · 🇿🇲 Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
+        <li class="rail soon"><b>And the rest</b><span class="rl-logos"><i class="wl wl-sm" data-logo="mpesa-tz">M-Pesa Tanzania</i><i class="wl wl-sm" data-logo="mpesa-et">M-PESA Ethiopia</i></span><span>M-Pesa 🇹🇿 · M-PESA 🇪🇹 · Equitel 🇰🇪 · Mixx 🇹🇿 · Orange Money 🇸🇳 🇨🇮 · Wave 🇸🇳</span><em>On the list. Ten sample texts get a wallet added</em></li>
       </ul>
       <div class="ticker" aria-hidden="true"><span class="tk-prov" id="tkProv">M-PESA</span><span class="tk-msg" id="tkMsg"></span></div>
     </div>
@@ -80,6 +79,7 @@
   <div class="wrap see" aria-labelledby="seeH">
     <div class="kicker">What you'll see</div>
     <h2 id="seeH" class="sec-h">Six things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
+    <p class="small muted fict">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented.</p>
     <div class="minis" id="minis">
       <article class="mini" data-m="lasts">
         <div class="mv" data-viz="lasts" aria-hidden="true"></div>
@@ -183,7 +183,7 @@
         <li>It works best with <b>M-PESA</b> (Kenya). <b>MTN MoMo</b> and <b>Airtel Money</b> are in beta: messages vary by country, so some may not be read.</li>
         <li>Figures come from your statement or SMS. Some costs, such as Fuliza daily charges, are <b>estimates</b>. Your official statement is the final word.</li>
         <li>Reading SMS straight from a Mac needs a powerful macOS permission. Read <a href="#privacy">Privacy and risks</a> before you choose that route.</li>
-        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN, Airtel or Telkom.</li>
+        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN or Airtel.</li>
       </ul>
     </div>
   </div>
@@ -201,7 +201,7 @@
       <button class="source" type="button" data-src="mac" aria-pressed="false"><h3>Messages from a Mac (.json)</h3><p class="small muted">For iPhone users whose texts sync to a Mac. Shows the most detail, including Fuliza and M-Shwari fees.</p><div class="meta"><span class="pill">iPhone + Mac</span><span class="pill risk">Needs Full Disk Access</span></div></button>
       <button class="source" type="button" data-src="android" aria-pressed="false"><h3>Android SMS backup (.xml)</h3><p class="small muted">Export your texts with the SMS Backup &amp; Restore app, then load the file here.</p><div class="meta"><span class="pill">Android</span><span class="pill risk">Backup app reads all texts</span></div></button>
       <button class="source" type="button" data-src="paste" aria-pressed="false"><h3>Paste messages</h3><p class="small muted">Copy some M-PESA texts from your phone and paste them in. Good for a quick try.</p><div class="meta"><span class="pill">Any phone</span><span class="pill">1 minute</span></div></button>
-      <button class="source" type="button" data-src="momo" aria-pressed="false"><h3>MTN MoMo or Airtel Money</h3><p class="small muted">Paste or upload your money texts. Formats differ by country, so some may not be read.</p><div class="meta"><span class="pill beta">Beta</span><span class="pill">Uganda, Ghana, Rwanda, Zambia, Kenya</span></div></button>
+      <button class="source" type="button" data-src="momo" aria-pressed="false"><h3>MTN MoMo or Airtel Money</h3><p class="small muted">Paste or upload your money texts. Formats differ by country, so some may not be read.</p><div class="meta"><span class="pill beta">Beta</span><span class="pill">🇺🇬 🇬🇭 🇷🇼 🇿🇲 🇰🇪</span></div></button>
     </div>
 
     <div id="srcHelp" class="steps" hidden></div>
@@ -323,7 +323,7 @@
     <h2>What we'll never claim</h2>
     <p>That figures are exact where they are estimated, that every message format will be read, or that this replaces your official statement or a financial adviser. If something looks wrong, it may be a message we couldn't read: check the "messages we couldn't read" list after loading.</p>
     <h2>Not affiliated</h2>
-    <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Telkom, Apple, Google, Microsoft, OpenAI, Anthropic or DeepSeek. Product names and logos belong to their owners.</p>
+    <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Apple, Google, Microsoft, OpenAI, Anthropic or DeepSeek. Product names and logos belong to their owners.</p>
   </div>
 </section>
 </main>
@@ -331,7 +331,7 @@
 <footer><div class="wrap btn-row" style="justify-content:space-between;flex-wrap:wrap">
   <span class="credit-line">Pesadithi Lab, made by <a href="https://mark.co.ke" rel="noopener">Mark Kaigwa</a> · <a href="https://x.com/mkaigwa" rel="noopener">@mkaigwa on X</a> · open source on <a href="https://github.com/mkaigwa/pesadithi-lab" rel="noopener">GitHub</a></span>
   <span class="btn-row"><button class="linkbtn" id="btnStoryMode" type="button" data-needs-data hidden>Story mode (vertical)</button><button class="linkbtn" id="btnClear" type="button" hidden>Clear my data</button></span>
-  <p class="tm small muted">ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, Airtel Money, MTN MoMo and T-Kash belong to their owners. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
+  <p class="tm small muted">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented. Figures on the shared money cards are invented illustrations. ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, M-Pesa, Airtel Money and MTN MoMo, and their logos, belong to Safaricom, Vodacom, Airtel and MTN. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
 </div></footer>
 
 <div class="sm" id="sm" hidden role="dialog" aria-modal="true" aria-label="Story mode">

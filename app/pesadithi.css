@@ -630,3 +630,14 @@ h1 em, h2 em, h3 em { font-weight: var(--ew); }
 .rail-list { align-items: stretch; }
 .mv[data-viz="clock"] svg { width: 142px; height: 142px; }
 .rail b { padding-right: 16px; }
+
+.rail-list { grid-template-columns: repeat(4, 1fr); }
+.wl.has-logo { padding: 0; line-height: 0; } .wl img { height: 30px; width: auto; max-width: 150px; display: block; }
+.rail span { line-height: 1.5; }
+.fict { margin: 6px 0 0; max-width: 80ch; font-size: 13px; }
+@media (max-width: 960px) { .rail-list .rail:last-child { grid-column: auto; } }
+@media (max-width: 600px) { .rail-list { grid-template-columns: 1fr 1fr; } }
+
+.wl[data-logo="mtn"] img { height: 42px; margin: -6px 0 -2px; }
+.rl-logos { display: flex; gap: 10px; align-items: center; margin: 4px 0 2px; }
+.wl-sm { font-style: normal; font-size: 12px; } .wl-sm img { height: 26px; }

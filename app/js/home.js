@@ -25,6 +25,8 @@
     el.innerHTML = `<span class="lm">${esc(LM[k] || name[0])}</span>`;
     logoFor(k).then((src) => { if (!src) return; const img = new Image(); img.onload = () => { el.innerHTML = ''; img.alt = ''; el.appendChild(img); el.classList.add('has-logo'); }; img.src = src; });
   }
+  // Wallet logos: same manifest; the wallet name stays as the image's alt text
+  $$('.wl[data-logo]').forEach((el) => logoFor(el.dataset.logo).then((src) => { if (!src) return; const img = new Image(); img.onload = () => { img.alt = el.textContent; el.textContent = ''; el.appendChild(img); el.classList.add('has-logo'); }; img.src = src; }));
   const aiRow = $('#aiRow');
   if (aiRow) aiRow.innerHTML = Object.keys(AIS).map((k) => `<span class="ai-tile"><span class="ai" data-ai="${k}"></span><small>${AIS[k]}</small></span>`).join('');
   $$('.ai[data-ai]').forEach(fillAi);
