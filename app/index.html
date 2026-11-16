@@ -35,8 +35,8 @@
   <div class="wrap hero">
    <div>
     <div class="kicker">Your year in mobile money</div>
-    <h1>Every SMS says what moved. <em>Together they tell your story.</em></h1>
-    <p class="lede">How many days does half your pay last? Attach your M-PESA SMSes or statement and find out in a minute: when money lands, how fast it goes, when Fuliza fills the gap, what you saved, and what it all cost.</p>
+    <h1>Where did your money go this year? <em>Your M-PESA SMSes already know.</em></h1>
+    <p class="lede">Attach your M-PESA SMSes or statement. In a minute you see how many days half your pay lasts, when Fuliza steps in, what you saved and what the charges cost you. It all stays on your phone.</p>
     <div class="btn-row" style="margin-top:26px">
       <button class="btn" id="btnDemo" type="button" disabled>Loading…</button>
       <a class="btn ghost" href="#start" data-pick="paste">Try with five SMS</a>
@@ -86,7 +86,7 @@
   <!-- WHAT YOU'LL SEE: live minis drawn from the demo -->
   <div class="wrap see" aria-labelledby="seeH">
     <div class="kicker">What you'll see</div>
-    <h2 id="seeH" class="sec-h">3 things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
+    <h2 id="seeH" class="sec-h">6 things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
     <p class="small muted fict">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented.</p>
     <div class="minis" id="minis">
       <article class="mini" data-m="lasts">
@@ -100,13 +100,26 @@
         <p class="small muted">The days you run low, and the date you lean on Fuliza most.</p>
       </article>
       
+      <article class="mini" data-m="clock">
+        <div class="mv" data-viz="clock" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="clock">…</b><span class="mlab">Your money clock</span></div>
+        <p class="small muted">The hours you spend most, including what goes after 10pm.</p>
+      </article>
       <article class="mini" data-m="fees">
         <div class="mv" data-viz="fees" aria-hidden="true"></div>
         <div class="mn"><b class="mbig" data-k="fees">…</b><span class="mlab">The price you paid</span></div>
         <p class="small muted">Fees, loan charges and penalties, and the part you could have avoided.</p>
       </article>
-      
-      
+      <article class="mini" data-m="sort">
+        <div class="mv" data-viz="sort" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="sort">…</b><span class="mlab">Sort your people</span></div>
+        <p class="small muted">Your statement knows names. You know relationships. One swipe each.</p>
+      </article>
+      <article class="mini" data-m="ai">
+        <div class="mv" data-viz="ai"><div class="ai-row" id="aiRow"></div><div class="ai-prompt"><span id="aiType"></span><i class="caret"></i></div></div>
+        <div class="mn"><b class="mbig" data-k="ai">…</b><span class="mlab">Ask your own AI</span></div>
+        <p class="small muted">An anonymised summary and a prompt, sized for free plans. No names, phone numbers or message text leave with it.</p>
+      </article>
     </div>
     <div class="share-strip">
       <div class="share-card" id="shareCard" aria-hidden="true"></div>
@@ -165,10 +178,10 @@
         </div>
       </article>
       <article class="seen-card" data-pattern="bridge">
-        <img src="img/roles/couple.jpg" alt="" width="960" height="717" loading="lazy">
+        <img src="img/roles/fuliza.jpg" alt="" width="960" height="717" loading="lazy">
         <div class="seen-body">
           <h3>The Fuliza bridge</h3>
-          <p>Fuliza isn't the problem. Not seeing the pattern is.</p>
+          <p>Nobody talks about it, but most of us use it. Fuliza isn't the problem. Not seeing the pattern is.</p>
           <p class="seen-check"><b>Your story checks</b> The days you borrow, and what each bridge really cost.</p>
           <p class="seen-tip"><b>Try this</b> Clear it the day money lands. Safaricom says limits grow with regular use and repaying on time.</p>
         </div>
@@ -204,9 +217,9 @@
         <img src="img/roles/sib.jpg" alt="" width="960" height="717" loading="lazy">
         <div class="seen-body">
           <h3>The small charges</h3>
-          <p>KES 23 here, KES 53 there. It adds up to real money by December.</p>
+          <p>Sending to Mum and Dad, then they withdraw at the shop in the village: two charges on the same money. KES 23 here, KES 53 there, and it adds up to real money by December.</p>
           <p class="seen-check"><b>Your story checks</b> Your charges by type, and the ones you could have skipped.</p>
-          <p class="seen-tip"><b>Try this</b> Paying a till costs you nothing; sending money and cashing out do. Pay tills directly, and withdraw less often.</p>
+          <p class="seen-tip"><b>Try this</b> Send home once a month instead of four times, and pay tills directly where you can. A till costs you nothing; sending and withdrawing do.</p>
         </div>
       </article>
     </div>
