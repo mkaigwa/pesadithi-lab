@@ -61,23 +61,129 @@
     <p class="cap">Invented texts for Amani, a fictional person. Each amount, payee and type is recognised and labelled.</p>
    </div>
   </div>
-  <div class="wrap">
-    <h2 style="font-size:28px">What you'll see</h2>
-    <div class="preview">
-      <div class="card"><h3>How long money lasts</h3><p class="small muted">How many days until half of each big payment you receive is spent.</p></div>
-      <div class="card"><h3>The month inside the month</h3><p class="small muted">A calendar of the days you run low, and the date you lean on Fuliza most.</p></div>
-      <div class="card"><h3>Your money clock</h3><p class="small muted">The hours and days you spend most, including late nights.</p></div>
-      <div class="card"><h3>The price you paid</h3><p class="small muted">Fees, loan charges and penalties, and which ones you could have avoided.</p></div>
-      <div class="card"><h3>Sort your people</h3><p class="small muted">A quick swipe game to label who you send money to: family, household help, friends, work.</p></div>
-      <div class="card"><h3>Ask your own AI</h3><p class="small muted">A short, anonymised summary and a prompt for Claude, ChatGPT or Gemini, sized for free plans.</p></div>
+  <!-- RAILS: which wallets it reads -->
+  <div class="rails" aria-labelledby="railsH">
+    <div class="wrap">
+      <div class="rails-head"><h2 id="railsH">Reads the money texts you already get</h2><p class="small muted">No bank login, no API, no app to install. If your wallet sends you a text for every move, Pesadithi can read it.</p></div>
+      <ul class="rail-list">
+        <li class="rail full"><b>M-PESA</b><span>Kenya</span><em>Full support: SMS, statement PDF, Fuliza and M-Shwari</em></li>
+        <li class="rail beta"><b>Airtel Money</b><span>Kenya, Uganda, Tanzania, Rwanda, Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
+        <li class="rail beta"><b>MTN MoMo</b><span>Uganda, Ghana, Rwanda, Zambia</span><em>Beta: sends, receipts, withdrawals, fees</em></li>
+        <li class="rail soon"><b>T-Kash</b><span>Kenya</span><em>Next: paste a few texts and tell us what was missed</em></li>
+        <li class="rail soon"><b>And the rest</b><span>Equitel, M-Pesa Tanzania, Mixx, Orange Money, Wave</span><em>On the list. Ten sample texts get a wallet added</em></li>
+      </ul>
+      <div class="ticker" aria-hidden="true"><span class="tk-prov" id="tkProv">M-PESA</span><span class="tk-msg" id="tkMsg"></span></div>
     </div>
+  </div>
+
+  <!-- WHAT YOU'LL SEE: live minis drawn from the demo -->
+  <div class="wrap see" aria-labelledby="seeH">
+    <div class="kicker">What you'll see</div>
+    <h2 id="seeH" class="sec-h">Six things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
+    <div class="minis" id="minis">
+      <article class="mini" data-m="lasts">
+        <div class="mv" data-viz="lasts" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="lasts">…</b><span class="mlab">How long money lasts</span></div>
+        <p class="small muted">How many days until half of each big payment you receive is gone.</p>
+      </article>
+      <article class="mini" data-m="cal">
+        <div class="mv" data-viz="cal" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="cal">…</b><span class="mlab">The month inside the month</span></div>
+        <p class="small muted">The days you run low, and the date you lean on Fuliza most.</p>
+      </article>
+      <article class="mini" data-m="clock">
+        <div class="mv" data-viz="clock" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="clock">…</b><span class="mlab">Your money clock</span></div>
+        <p class="small muted">The hours you spend most, including what goes after 10pm.</p>
+      </article>
+      <article class="mini" data-m="fees">
+        <div class="mv" data-viz="fees" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="fees">…</b><span class="mlab">The price you paid</span></div>
+        <p class="small muted">Fees, loan charges and penalties, and the part you could have avoided.</p>
+      </article>
+      <article class="mini" data-m="sort">
+        <div class="mv" data-viz="sort" aria-hidden="true"></div>
+        <div class="mn"><b class="mbig" data-k="sort">…</b><span class="mlab">Sort your people</span></div>
+        <p class="small muted">Your statement knows names. You know relationships. One swipe each.</p>
+      </article>
+      <article class="mini" data-m="ai">
+        <div class="mv" data-viz="ai"><div class="ai-row" id="aiRow"></div><div class="ai-prompt"><span id="aiType"></span><i class="caret"></i></div></div>
+        <div class="mn"><b class="mbig" data-k="ai">…</b><span class="mlab">Ask your own AI</span></div>
+        <p class="small muted">An anonymised summary and a prompt, sized for free plans. No names, phone numbers or message text leave with it.</p>
+      </article>
+    </div>
+    <div class="share-strip">
+      <div class="share-card" id="shareCard" aria-hidden="true"></div>
+      <div>
+        <div class="kicker">And one to share</div>
+        <h3 class="sec-h3">Your year, as a story you can post</h3>
+        <p class="muted">Story mode turns the whole thing into tall slides, Wrapped-style, ready to screen-record for WhatsApp Status, TikTok or Instagram. You choose what's on them. Names never are.</p>
+        <button class="btn" id="btnDemo2" type="button">See Amani's story</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS FIRST: objections before asking for data -->
+  <div class="asks" aria-labelledby="asksH">
+    <div class="wrap">
+      <div class="kicker">Before you hand over anything</div>
+      <h2 id="asksH" class="sec-h">Your money texts are some of the most private things on your phone. <em>So prove it first, then decide.</em></h2>
+      <div class="asks-grid">
+        <div>
+          <h3 class="sec-h3">Start small. Go further only if it's worth it</h3>
+          <ol class="ladder">
+            <li><span class="rung">1</span><div><b>Watch the demo</b><small>Amani is invented. You share nothing. 30 seconds.</small></div><button class="linkbtn small" id="btnDemo3" type="button">Open the demo</button></li>
+            <li><span class="rung">2</span><div><b>Paste five texts</b><small>Copy five M-PESA texts and paste them. See them labelled. 1 minute.</small></div><a class="small" href="#start" data-pick="paste">Paste texts</a></li>
+            <li><span class="rung">3</span><div><b>Load one month</b><small>A statement for last month only. Your first real pattern. 5 minutes.</small></div><a class="small" href="#start" data-pick="pdf">Load a statement</a></li>
+            <li><span class="rung">4</span><div><b>Your whole year</b><small>Twelve months is where the story lives: payday, the dry week, the true cost of Fuliza.</small></div><a class="small" href="#start">Load my year</a></li>
+          </ol>
+          <div class="proof"><b>The 20-second test</b> Load this page, switch off Wi-Fi and mobile data, then load your file. It still works, because there's nowhere for your data to go.</div>
+        </div>
+        <div class="faq">
+          <details open><summary>Does my data leave my phone or laptop?</summary><p>No. The page reads your file inside your browser. There is no server that could receive it, no account and no analytics. Close the tab and it's gone.</p></details>
+          <details><summary>Will Safaricom, my bank or my employer know?</summary><p>No. Pesadithi never contacts anyone. It reads texts and statements you already have. It isn't made by or linked to any wallet or bank.</p></details>
+          <details><summary>Why should I trust a stranger's website?</summary><p>You shouldn't have to. Every line is open source on GitHub, the page blocks itself from sending data anywhere, and you can run the offline test above. It's made by <a href="https://mark.co.ke" rel="noopener">Mark Kaigwa</a>, in public.</p></details>
+          <details><summary>Is the PDF password my M-PESA PIN?</summary><p>Never. Statements are locked with a one-off code sent by SMS. Nothing here will ever ask for your PIN. If anything does, close it.</p></details>
+          <details><summary>What if someone picks up my phone afterwards?</summary><p>Nothing stays unless you tick "Remember". Even then only your category labels and targets are kept, with people stored as scrambled codes. "Clear my data" wipes it in two taps.</p></details>
+          <details><summary>I'm a bit embarrassed by my numbers.</summary><p>Most people are. Nobody sees them but you, and the story is about timing, not judgement: when money arrives, how fast it goes, what borrowing costs. It never scolds.</p></details>
+          <details><summary>What if it reads something wrong?</summary><p>You'll see a list of every text it couldn't read, and estimates are labelled as estimates. Your official statement is always the final word.</p></details>
+          <details><summary>Is it free? What's the catch?</summary><p>It's free, with no ads and nothing to sell you. It's a lab: an experiment in showing people their own money clearly.</p></details>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARED MONEY: roles -->
+  <div class="wrap shared" aria-labelledby="sharedH">
+    <div class="kicker">Shared money <span class="pill beta">In design</span></div>
+    <h2 id="sharedH" class="sec-h">Your money is rarely just yours. <em>Pesadithi is learning to tell that story too.</em></h2>
+    <p class="lede-s muted">Most of us carry other people in our wallets: a partner, a flat, our parents, a chama. Each role asks a different question, and each needs a different line on what gets shared.</p>
+    <div class="roles" role="tablist" aria-label="Roles">
+      <button role="tab" aria-selected="true" data-role="couple">Spouse or partner</button>
+      <button role="tab" aria-selected="false" data-role="flat">Roommate</button>
+      <button role="tab" aria-selected="false" data-role="sib">Siblings</button>
+      <button role="tab" aria-selected="false" data-role="first">First-born and carer</button>
+      <button role="tab" aria-selected="false" data-role="chama">Chama officer</button>
+    </div>
+    <div class="role-panel" id="rolePanel" role="tabpanel" aria-live="polite"></div>
+    <div class="contract">
+      <h3 class="sec-h3">How sharing will work, whoever it's with</h3>
+      <ol>
+        <li><b>Each person runs it on their own phone.</b> Nobody uploads a statement to anyone else.</li>
+        <li><b>You choose an envelope.</b> Rent, school fees, Mum's upkeep, the chama. Only lines you put in it count.</li>
+        <li><b>You send a card, not a statement.</b> Totals for that envelope only, as an image or a short code. Nothing else crosses.</li>
+        <li><b>Either side can stop.</b> Delete the card and the shared view is gone.</li>
+      </ol>
+      <p class="small muted">Which role should come first? Tell Mark on <a href="https://x.com/mkaigwa" rel="noopener">X</a> or open an issue on <a href="https://github.com/mkaigwa/pesadithi-lab/issues" rel="noopener">GitHub</a>.</p>
+    </div>
+
     <div class="honest">
       <b>Before you start, what this can and can't do</b>
       <ul>
         <li>It works best with <b>M-PESA</b> (Kenya). <b>MTN MoMo</b> and <b>Airtel Money</b> are in beta: messages vary by country, so some may not be read.</li>
         <li>Figures come from your statement or SMS. Some costs, such as Fuliza daily charges, are <b>estimates</b>. Your official statement is the final word.</li>
         <li>Reading SMS straight from a Mac needs a powerful macOS permission. Read <a href="#privacy">Privacy and risks</a> before you choose that route.</li>
-        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN or Airtel.</li>
+        <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN, Airtel or Telkom.</li>
       </ul>
     </div>
   </div>
@@ -181,9 +287,9 @@
 <section id="v-ai" data-v="ai" hidden>
   <div class="wrap" style="padding-top:44px;padding-bottom:60px">
     <div class="kicker">Ask your AI</div>
-    <h1>Take your story to Claude, ChatGPT or Gemini</h1>
+    <h1>Take your story to the AI you already use</h1>
     <p class="muted">This builds a short summary of totals and patterns, with no people's names, phone numbers or message text, plus a prompt. Answer four questions and it sizes everything to your plan.</p>
-    <p><b>Which assistant?</b></p><div class="choices" data-q="platform"><button type="button" data-a="Claude">Claude</button><button type="button" data-a="ChatGPT">ChatGPT</button><button type="button" data-a="Gemini">Gemini</button><button type="button" data-a="another assistant">Another</button></div>
+    <p><b>Which assistant?</b></p><div class="choices ai-choices" data-q="platform"><button type="button" data-a="ChatGPT"><span class="ai" data-ai="chatgpt"></span>ChatGPT</button><button type="button" data-a="Claude"><span class="ai" data-ai="claude"></span>Claude</button><button type="button" data-a="Gemini"><span class="ai" data-ai="gemini"></span>Gemini</button><button type="button" data-a="DeepSeek"><span class="ai" data-ai="deepseek"></span>DeepSeek</button><button type="button" data-a="Copilot"><span class="ai" data-ai="copilot"></span>Copilot</button><button type="button" data-a="another assistant">Another</button></div>
     <p><b>Free or paid plan?</b></p><div class="choices" data-q="plan"><button type="button" data-a="free">Free</button><button type="button" data-a="paid">Paid</button></div>
     <p><b>How much of your usage are you happy to spend on this?</b></p><div class="choices" data-q="budget"><button type="button" data-a="5">A little (about 5%)</button><button type="button" data-a="20">Some (about 20%)</button><button type="button" data-a="50">A lot (about half)</button></div>
     <p><b>What should it look at?</b></p><div class="choices" data-q="share"><button type="button" data-a="summary">This summary (recommended)</button><button type="button" data-a="pdf">My statement PDF</button><button type="button" data-a="sms">My raw messages</button></div>
@@ -210,21 +316,22 @@
         <tr><td><b>Android SMS backup</b></td><td>Android users</td><td>An SMS backup app can read <b>all</b> your texts, including bank codes</td><td>Export to your phone, load the file, then delete the export. Don't upload it to cloud storage or chat apps.</td></tr>
         <tr><td><b>Windows PC</b></td><td>Anyone on Windows</td><td>Only the file you choose</td><td>Windows can't read phone texts directly. Use the statement PDF, or an Android backup file.</td></tr>
         <tr><td><b>Paste messages</b></td><td>Quick tries</td><td>Only what you paste</td><td>Copying from your phone is slow for big histories, so you'll see fewer patterns.</td></tr>
-        <tr><td><b>An AI assistant</b></td><td>People who want coaching or a deeper read</td><td>Whatever you paste goes to that company</td><td>Check its data settings. Some free plans may use chats to improve their models. The summary here leaves out people's names and message text; a full statement doesn't.</td></tr>
+        <tr><td><b>An AI assistant</b></td><td>People who want coaching or a deeper read</td><td>Whatever you paste goes to that company</td><td>Check its data settings. Some free plans may use chats to improve their models. The summary here leaves out people's names and message text; a full statement doesn't. DeepSeek's own apps store data on servers in China under its privacy policy; weigh that before pasting anything personal.</td></tr>
       </tbody>
     </table></div>
     <p class="small muted">Steps and menus described here were correct in November 2026. Apps change; the official app is the final word.</p>
     <h2>What we'll never claim</h2>
     <p>That figures are exact where they are estimated, that every message format will be read, or that this replaces your official statement or a financial adviser. If something looks wrong, it may be a message we couldn't read: check the "messages we couldn't read" list after loading.</p>
     <h2>Not affiliated</h2>
-    <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Apple, Google, OpenAI or Anthropic. Product names belong to their owners.</p>
+    <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Telkom, Apple, Google, Microsoft, OpenAI, Anthropic or DeepSeek. Product names and logos belong to their owners.</p>
   </div>
 </section>
 </main>
 
-<footer><div class="wrap btn-row" style="justify-content:space-between">
+<footer><div class="wrap btn-row" style="justify-content:space-between;flex-wrap:wrap">
   <span class="credit-line">Pesadithi Lab, made by <a href="https://mark.co.ke" rel="noopener">Mark Kaigwa</a> · <a href="https://x.com/mkaigwa" rel="noopener">@mkaigwa on X</a> · open source on <a href="https://github.com/mkaigwa/pesadithi-lab" rel="noopener">GitHub</a></span>
   <span class="btn-row"><button class="linkbtn" id="btnStoryMode" type="button" data-needs-data hidden>Story mode (vertical)</button><button class="linkbtn" id="btnClear" type="button" hidden>Clear my data</button></span>
+  <p class="tm small muted">ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, Airtel Money, MTN MoMo and T-Kash belong to their owners. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
 </div></footer>
 
 <div class="sm" id="sm" hidden role="dialog" aria-modal="true" aria-label="Story mode">
@@ -238,5 +345,6 @@
 <script src="js/parse.js" defer></script>
 <script src="js/analyse.js" defer></script>
 <script src="js/app.js" defer></script>
+<script src="js/home.js" defer></script>
 </body>
 </html>

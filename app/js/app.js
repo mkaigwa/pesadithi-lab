@@ -617,6 +617,7 @@
     if (a.share === 'pdf' || a.share === 'sms') adv.push('A statement or raw messages include people\'s names and phone numbers. The summary doesn\'t.');
     if (a.share === 'sms') adv.push(`Paste your money messages where the prompt says, ${plan.months === 1 ? 'one month at most' : 'one month at a time, up to ' + plan.months + ' months'}. Never paste bank codes or chats.`);
     if (a.platform) adv.push(`Check ${a.platform === 'another assistant' ? 'its' : a.platform + '\'s'} data settings first: on some plans, chats can be used to improve models unless you switch that off.`);
+    if (a.platform === 'DeepSeek') adv.push('DeepSeek\'s own apps store chats on servers in China. Stick to the anonymised summary.');
     $('#aiAdvice').textContent = adv.join(' ');
     const mp = A.provider === 'M-PESA';
     const what = a.share === 'pdf' ? 'I have attached my statement PDF. The summary below covers the same period.' : a.share === 'sms' ? 'My money messages are pasted at the end, after the summary.' : 'Below is an anonymised summary: totals and patterns only, with no names of people.';
