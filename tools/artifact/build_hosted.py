@@ -3,7 +3,7 @@ Usage: python3 tools/artifact/build_hosted.py OUTDIR"""
 import os, re, shutil, sys
 SRC = os.path.join(os.path.dirname(__file__), '..', '..', 'app'); OUT = sys.argv[1]
 shutil.rmtree(OUT, ignore_errors=True); os.makedirs(OUT)
-for d in ('js', 'demo'): shutil.copytree(os.path.join(SRC, d), os.path.join(OUT, d))
+for d in ('js', 'demo', 'img'): shutil.copytree(os.path.join(SRC, d), os.path.join(OUT, d))
 shutil.copytree(os.path.join(SRC, 'vendor', 'logos'), os.path.join(OUT, 'vendor', 'logos'))
 os.remove(os.path.join(OUT, 'demo', 'demo-mpesa-statement.pdf'))  # hosts may refuse embedded PDFs
 s = open(os.path.join(SRC, 'index.html')).read()

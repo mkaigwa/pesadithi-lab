@@ -47,6 +47,7 @@
   /* ---------- Shared money roles ---------- */
   const ROLES = {
     couple: {
+      alt: 'A couple at their dining table in the evening, one pointing at a notebook, the other holding a phone',
       q: 'Are we pulling in the same direction?',
       share: 'One household envelope: rent, school fees, groceries, home help, and support to both families if you both agree.',
       keep: 'Personal spending, gifts, and anything you leave out of the envelope.',
@@ -55,6 +56,7 @@
       card: ['Ours · October', [['Rent', '45,000', 'You'], ['School fees', '38,500', 'Amina'], ['Groceries', '21,340', 'You 60 · Amina 40'], ['Home help', '12,000', 'Amina']], 'Tightest week together: 22 to 28 Oct']
     },
     flat: {
+      alt: 'Three young roommates in their living room, one holding up a phone and another an electricity token receipt',
       q: 'Who owes whom, without the awkward conversation?',
       share: 'Only the flat: rent, KPLC tokens, Wi-Fi, water, gas, the cleaner.',
       keep: 'Everything else. A roommate never sees how you spend.',
@@ -63,6 +65,7 @@
       card: ['Flat 4B · October', [['Rent', '36,000', 'Split 3 ways'], ['KPLC tokens', '2,850', ''], ['Wi-Fi', '3,999', ''], ['Your share', '14,283', 'You paid 21,700']], 'Kevin owes you 2,340 · Wanjiru owes you 5,077']
     },
     sib: {
+      alt: 'Three adult siblings on a veranda bench at the family home among tea fields, looking at a phone together',
       q: 'Are we carrying Mum and Dad fairly?',
       share: 'The family envelope: upkeep, medical bills, a younger sibling\'s school fees.',
       keep: 'Incomes. Siblings see contributions, never what each person earns.',
@@ -71,7 +74,8 @@
       card: ['Family · 2026', [['Upkeep for Mum and Dad', '120,000', ''], ['Dad\'s clinic', '18,450', ''], ['Baraka\'s school fees', '64,300', ''], ['Shiro · Kamau · You', 'On plan', 'You ahead by 6,200']], 'Coming up: Term 1 fees, 9 Jan']
     },
     first: {
-      q: 'How much of my income goes to others, and how much of it catches me off guard?',
+      alt: 'A woman helping her elderly mother with her shoes before a clinic visit, phone in hand',
+      q: 'How much of my income goes to my family, and how much of it catches me off guard?',
       share: 'Nothing, by default. This one is for you first.',
       keep: 'All of it, unless you choose to share the family envelope with your siblings.',
       get: 'The real share of your income that goes to family, split into planned support and sudden requests, and a standing amount with a buffer for the call you know will come.',
@@ -79,18 +83,19 @@
       card: ['Just you · 2026 · example', [['Came in', '1,920,550', ''], ['To family', '345,700', '18% of income'], ['Planned', '115,200', ''], ['Sudden requests', '230,500', 'Two in every three shillings']], 'Try: a standing 28,800 a month, plus a 40,000 buffer']
     },
     chama: {
-      q: 'Is the group\'s money separate from mine, and can I prove it?',
-      share: 'The chama envelope, with members: contributions in, payouts and loans out. For chairs, treasurers and secretaries, and for church treasurers and harambee or funeral committees too.',
-      keep: 'Your personal wallet. Members see the group\'s lines and nothing else.',
-      get: 'A monthly statement members can trust: who has paid, who is late, every payout with its date, the balance. And a clean handover when your term ends.',
-      tension: 'When group money passes through a personal line, it looks like your own income and spending. That blur is how trust in a chama breaks, even when the treasurer is honest.',
-      card: ['Umoja chama · October', [['Contributions', '84,000', '12 of 14 paid'], ['Late', '14,000', '2 members'], ['Loan to a member', '30,000', 'Due 15 Jan'], ['Group balance', '412,650', '']], 'Separate from your own wallet: yes']
+      alt: 'A chama meeting of women in a church hall, one holding up her phone to show she has paid',
+      q: 'Is my money in the chama safe, and is every shilling counted?',
+      share: 'Your contributions to the chama envelope. Members see the group\'s lines: who paid, payouts, loans and the balance. Officers carry the same card, with the duty to keep it current.',
+      keep: 'Your personal wallet. The group sees what you put in, and nothing about the rest of your money.',
+      get: 'Proof of every contribution you have made, when your payout turn falls, what the group holds today, and an early warning when someone falls behind.',
+      tension: 'Members trust their officers, yet trust grows when everyone can see the same numbers. A shared card makes checking normal, not an accusation.',
+      card: ['Umoja chama · your card', [['You paid this year', '84,000', '12 of 12 months'], ['Your payout turn', 'March', '7 of 14'], ['Group balance', '412,650', 'As at 31 Oct'], ['Members behind', '2', 'Officers notified']], 'Every contribution matched: yes']
     }
   };
   function renderRole(k) {
     const r = ROLES[k];
     $('#rolePanel').innerHTML = `<div class="rp-l"><p class="rq">${esc(r.q)}</p><dl class="rd"><div><dt>What you'd share</dt><dd>${esc(r.share)}</dd></div><div><dt>What stays private</dt><dd>${esc(r.keep)}</dd></div><div><dt>What you'd get</dt><dd>${esc(r.get)}</dd></div></dl><p class="rt"><b>The tension to design for</b> ${esc(r.tension)}</p></div>
-      <div class="rp-r" aria-hidden="true"><div class="receipt"><div class="rh">${esc(r.card[0])}</div>${r.card[1].map(([a, b, c]) => `<div class="rl"><span>${esc(a)}${c ? `<small>${esc(c)}</small>` : ''}</span><b>${esc(b)}</b></div>`).join('')}<div class="rf">${esc(r.card[2])}</div><div class="rc">Pesa<i>dithi</i> · shared card</div></div><p class="small muted">Illustration with invented figures</p></div>`;
+      <div class="rp-r"><figure class="rphoto"><img src="img/roles/${k}.jpg" alt="${esc(r.alt)}" width="960" height="717" loading="lazy"><figcaption>AI-generated illustration</figcaption></figure><div class="receipt" aria-hidden="true"><div class="rh">${esc(r.card[0])}</div>${r.card[1].map(([a, b, c]) => `<div class="rl"><span>${esc(a)}${c ? `<small>${esc(c)}</small>` : ''}</span><b>${esc(b)}</b></div>`).join('')}<div class="rf">${esc(r.card[2])}</div><div class="rc">Pesa<i>dithi</i> · shared card</div></div><p class="small muted">Card with invented figures</p></div>`;
   }
   const tabs = $$('.roles [role="tab"]');
   tabs.forEach((t, i) => {

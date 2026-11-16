@@ -8,6 +8,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; connect-src 'self' blob: data:; form-action 'self'; base-uri 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%2316161a%22/%3E%3Cpath d=%22M7 22c4-9 8-12 18-12%22 stroke=%22%2300968f%22 stroke-width=%223.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="pesadithi.css">
+<script src="js/theme.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -21,9 +22,10 @@
       <a href="#story" data-view="story" data-needs-data hidden>Story</a>
       <a href="#sort" data-view="sort" data-needs-data hidden>Sort people</a>
       <a href="#budget" data-view="budget" data-needs-data hidden>Budget</a>
-      <a href="#ai" data-view="ai" data-needs-data hidden>Ask your AI</a>
+      <a href="#ai" data-view="ai">Ask your AI</a>
       <a href="#privacy" data-view="privacy">Privacy and risks</a>
     </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5a8.5 8.5 0 1 0 10.8 10.8z" fill="currentColor"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.3" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg></button>
   </div>
 </header>
 
@@ -109,7 +111,7 @@
       <article class="mini" data-m="ai">
         <div class="mv" data-viz="ai"><div class="ai-row" id="aiRow"></div><div class="ai-prompt"><span id="aiType"></span><i class="caret"></i></div></div>
         <div class="mn"><b class="mbig" data-k="ai">…</b><span class="mlab">Ask your own AI</span></div>
-        <p class="small muted">An anonymised summary and a prompt, sized for free plans. No names, phone numbers or message text leave with it.</p>
+        <p class="small muted">An anonymised summary and a prompt, sized for free plans. No names, phone numbers or message text leave with it. <a href="#ai">Try it</a></p>
       </article>
     </div>
     <div class="share-strip">
@@ -162,8 +164,8 @@
       <button role="tab" aria-selected="true" data-role="couple">Spouse or partner</button>
       <button role="tab" aria-selected="false" data-role="flat">Roommate</button>
       <button role="tab" aria-selected="false" data-role="sib">Siblings</button>
-      <button role="tab" aria-selected="false" data-role="first">First-born and carer</button>
-      <button role="tab" aria-selected="false" data-role="chama">Chama officer</button>
+      <button role="tab" aria-selected="false" data-role="first">First-born</button>
+      <button role="tab" aria-selected="false" data-role="chama">Chama member</button>
     </div>
     <div class="role-panel" id="rolePanel" role="tabpanel" aria-live="polite"></div>
     <div class="contract">
@@ -184,6 +186,7 @@
         <li>Figures come from your statement or SMS. Some costs, such as Fuliza daily charges, are <b>estimates</b>. Your official statement is the final word.</li>
         <li>Reading SMS straight from a Mac needs a powerful macOS permission. Read <a href="#privacy">Privacy and risks</a> before you choose that route.</li>
         <li>This is not financial advice, and it isn't made by or affiliated with Safaricom, MTN or Airtel.</li>
+        <li>It's a personal, open-source project shared as it is, with no warranty. Bug reports are welcome, but fixes can't be promised. <a href="#privacy">Read the full note</a>.</li>
       </ul>
     </div>
   </div>
@@ -289,7 +292,9 @@
     <div class="kicker">Ask your AI</div>
     <h1>Take your story to the AI you already use</h1>
     <p class="muted">This builds a short summary of totals and patterns, with no people's names, phone numbers or message text, plus a prompt written for you. Four quick choices, already set to the safest options; change any of them.</p>
-    <p class="aq"><b>1. Which assistant do you use?</b></p><div class="choices ai-choices" data-q="platform"><button type="button" data-a="ChatGPT"><span class="ai" data-ai="chatgpt"></span>ChatGPT</button><button type="button" data-a="Claude"><span class="ai" data-ai="claude"></span>Claude</button><button type="button" data-a="Gemini"><span class="ai" data-ai="gemini"></span>Gemini</button><button type="button" data-a="DeepSeek"><span class="ai" data-ai="deepseek"></span>DeepSeek</button><button type="button" data-a="Copilot"><span class="ai" data-ai="copilot"></span>Copilot</button><button type="button" data-a="another assistant">Another</button></div>
+    <div class="ai-empty" id="aiEmpty" hidden><b>This page writes a prompt from your money story, so it needs one first.</b><span>Try it with Amani's demo year, or load your own statement. It takes about a minute either way.</span><div class="btn-row"><button class="btn small" id="aiDemo" type="button">Use the demo</button><a class="btn ghost small" href="#start">Load my data</a></div></div>
+    <div id="aiBody">
+    <p class="aq"><b>1. Which assistant do you use?</b></p><div class="choices opts ai-choices" data-q="platform"><button type="button" data-a="ChatGPT"><b><span class="ai" data-ai="chatgpt"></span>ChatGPT</b></button><button type="button" data-a="Claude"><b><span class="ai" data-ai="claude"></span>Claude</b></button><button type="button" data-a="Gemini"><b><span class="ai" data-ai="gemini"></span>Gemini</b></button><button type="button" data-a="DeepSeek"><b><span class="ai" data-ai="deepseek"></span>DeepSeek</b></button><button type="button" data-a="Copilot"><b><span class="ai" data-ai="copilot"></span>Copilot</b></button><button type="button" data-a="another assistant"><b><span class="ai ai-other" aria-hidden="true">+</span>Another</b></button></div>
     <p class="aq"><b>2. Free or paid plan?</b><span class="small muted">Free plans have tighter daily limits, so the prompt keeps things short.</span></p>
     <div class="choices opts" data-q="plan">
       <button type="button" data-a="free"><b>Free</b><small>Short, focused answer that won't eat your daily limit</small></button>
@@ -311,6 +316,7 @@
     <div class="advice" id="aiAdvice" role="status" aria-live="polite">Answer the questions above.</div>
     <div class="btn-row"><button class="btn" id="copyPrompt" type="button">Copy prompt and summary</button><span class="small muted" id="aiSize"></span><span class="small" id="copyState" role="status" aria-live="polite"></span></div>
     <pre class="out" id="aiOut" tabindex="0" aria-label="Prompt and summary"></pre>
+    </div>
   </div>
 </section>
 
@@ -336,6 +342,9 @@
     <p class="small muted">Steps and menus described here were correct in November 2026. Apps change; the official app is the final word.</p>
     <h2>What we'll never claim</h2>
     <p>That figures are exact where they are estimated, that every message format will be read, or that this replaces your official statement or a financial adviser. If something looks wrong, it may be a message we couldn't read: check the "messages we couldn't read" list after loading.</p>
+    <h2>Use it at your own risk, and how support works</h2>
+    <p>Pesadithi Lab is a personal project that Mark Kaigwa builds and shares in the open, in his own time. It comes as it is, with no warranty of any kind. Mark can't accept liability for any loss, cost or problem that comes from using it, from relying on its figures, or from changes other people make to the code. For anything that matters, check against your official statement, and talk to a professional before making financial decisions.</p>
+    <p>Bug reports on <a href="https://github.com/mkaigwa/pesadithi-lab/issues" rel="noopener">GitHub</a> are welcome and read. Mark isn't a full-time developer, though, so he can't promise to fix every issue or reply on a set timeline. If you can fix something yourself, a pull request is the quickest way to help everyone who uses it.</p>
     <h2>Not affiliated</h2>
     <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Apple, Google, Microsoft, OpenAI, Anthropic or DeepSeek. Product names and logos belong to their owners.</p>
   </div>
@@ -345,7 +354,7 @@
 <footer><div class="wrap btn-row" style="justify-content:space-between;flex-wrap:wrap">
   <span class="credit-line">Pesadithi Lab, made by <a href="https://mark.co.ke" rel="noopener">Mark Kaigwa</a> · <a href="https://x.com/mkaigwa" rel="noopener">@mkaigwa on X</a> · open source on <a href="https://github.com/mkaigwa/pesadithi-lab" rel="noopener">GitHub</a></span>
   <span class="btn-row"><button class="linkbtn" id="btnStoryMode" type="button" data-needs-data hidden>Story mode (vertical)</button><button class="linkbtn" id="btnClear" type="button" hidden>Clear my data</button></span>
-  <p class="tm small muted">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented. Figures on the shared money cards are invented illustrations. ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, M-Pesa, Airtel Money, MTN MoMo and Mixx, and their logos, belong to Safaricom, Vodacom, Airtel, MTN and Yas. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
+  <p class="tm small muted">Provided as is, with no warranty and no liability for how it is used; see <a href="#privacy">Privacy and risks</a>. All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented. Figures on the shared money cards are invented illustrations. ChatGPT, Claude, Gemini, DeepSeek and Copilot, and their logos, belong to OpenAI, Anthropic, Google, DeepSeek and Microsoft respectively. M-PESA, M-Pesa, Airtel Money, MTN MoMo and Mixx, and their logos, belong to Safaricom, Vodacom, Airtel, MTN and Yas. They are named only to show what Pesadithi works with; none of them made or endorses it.</p>
 </div></footer>
 
 <div class="sm" id="sm" hidden role="dialog" aria-modal="true" aria-label="Story mode">

@@ -86,6 +86,12 @@ claude/         Claude-only version: skill, dashboard and motion briefs
 qa/             launch QA reports and screenshots
 ```
 
+## Support and liability
+
+Pesadithi Lab is a personal project that Mark Kaigwa builds and shares in the open, in his own time. It is provided as is, with no warranty of any kind, and Mark accepts no liability for any loss, cost or problem arising from its use, from reliance on its figures, or from changes others make to the code. Check anything that matters against your official statement.
+
+Bug reports in [Issues](https://github.com/mkaigwa/pesadithi-lab/issues) are welcome and read. Mark isn't a full-time developer, so fixes and replies can't be promised on any timeline. If you can fix something, a pull request is the quickest way to help everyone.
+
 ## Licence
 
 MIT. Third-party: d3 (ISC), pdf.js (Apache 2.0), Inter and Literata fonts (SIL Open Font Licence).

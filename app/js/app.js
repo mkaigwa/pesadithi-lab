@@ -4,7 +4,10 @@
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const P = window.PDParse, AN = window.PDAnalyse, MC = window.PDMerchants;
   // Money in is green, money out is red, credit violet, loans amber (validated for colour-blind separation; in and out also differ by position)
-  const C = { in: '#1f8a4c', out: '#d23b2e', credit: '#7a4fd0', loan: '#e08a00', fee: '#5b6670', bad: '#a3170f', good: '#1f8a4c', ink: '#0f2318', grid: '#e6eee9', muted: '#8c9d93' };
+  const C_LIGHT = { in: '#1f8a4c', out: '#d23b2e', credit: '#7a4fd0', loan: '#e08a00', fee: '#5b6670', bad: '#a3170f', good: '#1f8a4c', ink: '#0f2318', grid: '#e6eee9', muted: '#8c9d93', surface: '#ffffff', axis: '#8a8a96' };
+  const C_DARK = { in: '#36a865', out: '#ee5a4c', credit: '#8f74ee', loan: '#cf8519', fee: '#a4adb5', bad: '#ff8a80', good: '#36a865', ink: '#eef2f0', grid: '#2b3033', muted: '#8d9894', surface: '#121416', axis: '#6b7478' };
+  const C = Object.assign({}, document.documentElement.getAttribute('data-theme') === 'dark' ? C_DARK : C_LIGHT);
+  window.addEventListener('pd-theme', (e) => { Object.assign(C, e.detail === 'dark' ? C_DARK : C_LIGHT); if (typeof drawCharts === 'function' && S && S.A && !document.getElementById('v-story').hidden) drawCharts(); });
   const S = { calMode: null, raw: null, A: null, demo: false, period: 12, src: null, busy: false, token: 0, lastInput: null, pwFails: 0, game: null, targets: {}, ai: { plan: 'free', budget: '5', share: 'summary' } };
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem('pesadithi:' + k)); } catch (e) { return null; } },
@@ -41,7 +44,7 @@
     $('#demoBadge').hidden = !(S.A && S.demo && view !== 'start');
     if (view === 'sort') renderGame();
     if (view === 'budget') renderBudget();
-    if (view === 'ai') renderAI();
+    if (view === 'ai') { $('#aiEmpty').hidden = !!S.A; $('#aiBody').hidden = !S.A; renderAI(); }
     if (view === 'story' && !$('#story').childElementCount) renderStory();
     window.scrollTo(0, 0);
     if (!firstRoute) { const hd = $('[data-v="' + view + '"] h1'); if (hd) { hd.setAttribute('tabindex', '-1'); hd.focus({ preventScroll: true }); } }
@@ -50,7 +53,7 @@
   function route() {
     const v = (location.hash || '#home').slice(1).split('/')[0];
     const ok = ['home', 'start', 'story', 'sort', 'budget', 'ai', 'privacy'];
-    if (['story', 'sort', 'budget', 'ai'].includes(v) && !S.A) { $('#notice').hidden = false; history.replaceState(null, '', '#start'); show('start'); return; }
+    if (['story', 'sort', 'budget'].includes(v) && !S.A) { $('#notice').hidden = false; history.replaceState(null, '', '#start'); show('start'); return; }
     if (ok.includes(v)) show(v);
     else if (document.getElementById(v) && S.A) { show('story'); setTimeout(() => document.getElementById(v).scrollIntoView(), 50); }
     else if (!S.A && v && v !== 'home' && v !== 'main') { $('#notice').hidden = false; history.replaceState(null, '', '#start'); show('start'); }
@@ -231,7 +234,7 @@
     if (A.hasCredit) yf.ticks(2).filter((v) => v > 0).forEach((v) => { svg.append('line').attr('x1', ml).attr('x2', w).attr('y1', yf(v)).attr('y2', yf(v)).style('stroke', C.grid); svg.append('text').attr('x', ml - 6).attr('y', yf(v) + 4).attr('text-anchor', 'end').text(kfmt(v)); });
     svg.append('path').datum(A.daily).attr('d', d3.area().x((d) => x(dt(d.date))).y0(mid).y1((d) => yb(d.balance)).curve(d3.curveStepAfter)).style('fill', C.in).style('opacity', .85);
     if (A.hasCredit) svg.append('path').datum(A.daily).attr('d', d3.area().x((d) => x(dt(d.date))).y0(mid).y1((d) => yf(d.owed)).curve(d3.curveStepAfter)).style('fill', C.credit);
-    svg.append('line').attr('x1', ml).attr('x2', w).attr('y1', mid).attr('y2', mid).style('stroke', '#8a8a96');
+    svg.append('line').attr('x1', ml).attr('x2', w).attr('y1', mid).attr('y2', mid).style('stroke', C.axis);
     svg.append('g').selectAll('line').data(A.daily.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('line').attr('x1', (d) => x(dt(d.date))).attr('x2', (d) => x(dt(d.date))).attr('y1', 2).attr('y2', 12).style('stroke', C.ink).style('stroke-width', 1.5);
     const short = A.nDays < 100;
     svg.append('g').attr('transform', `translate(0,${bot})`).call(d3.axisBottom(x).ticks(Math.max(3, Math.floor(w / 90))).tickSizeOuter(0).tickFormat(d3.utcFormat(short ? '%-d %b' : '%b'))).call((g) => g.select('.domain').remove());
@@ -269,7 +272,7 @@
     hit(svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (d) => ml + (+d.date.slice(8, 10) - 1) * cell + 1).attr('y', (d) => months.indexOf(d.date.slice(0, 7)) * cell + 1).attr('width', cell - 2).attr('height', cell - 2).attr('rx', 2)
       .style('fill', (d) => (val(d) ? colOf(val(d)) : C.grid)).style('opacity', (d) => (val(d) ? op(Math.abs(val(d))) : 1)),
     (ev, d) => t.show(ev, `<b>${fmtDate(d.date)}</b><br><span>In</span> ${F(d.in)}<br><span>Out</span> ${F(d.out)}<br><span>Net</span> ${d.in - d.out >= 0 ? '+' : '−'}${F(Math.abs(d.in - d.out))}${A.hasCredit ? `<br><span>Owed to ${credit()}</span> ${F(d.owed)}` : ''}<br><span>Balance</span> ${F(d.balance)}`), t);
-    svg.append('g').selectAll('circle').data(rows.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('circle').attr('cx', (d) => ml + (+d.date.slice(8, 10) - 0.5) * cell).attr('cy', (d) => months.indexOf(d.date.slice(0, 7)) * cell + cell / 2).attr('r', Math.max(2.5, cell * .17)).style('fill', C.ink).style('stroke', '#fff').style('stroke-width', 1).style('pointer-events', 'none');
+    svg.append('g').selectAll('circle').data(rows.filter((d) => d.in > 0 && d.in >= A.bigCut)).join('circle').attr('cx', (d) => ml + (+d.date.slice(8, 10) - 0.5) * cell).attr('cy', (d) => months.indexOf(d.date.slice(0, 7)) * cell + cell / 2).attr('r', Math.max(2.5, cell * .17)).style('fill', C.ink).style('stroke', C.surface).style('stroke-width', 1).style('pointer-events', 'none');
     // Bars by date of the month: in up and out down for in/out/net, credit drawn for credit
     const y0 = gh + barH / 2 + 10;
     if (mode === 'credit') {
@@ -299,7 +302,7 @@
     svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (m) => x(m.month)).attr('width', x.bandwidth()).attr('y', (m) => y(m.in)).attr('height', (m) => y(0) - y(m.in)).attr('rx', 3).style('fill', C.in).style('opacity', (m) => (m.partial ? .45 : 1));
     svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (m) => x(m.month)).attr('width', x.bandwidth()).attr('y', y(0) + 1).attr('height', (m) => y(-m.out) - y(0)).attr('rx', 3).style('fill', C.out).style('opacity', (m) => (m.partial ? .45 : 1));
     svg.append('path').datum(rows).attr('d', d3.line().x((m) => x(m.month) + x.bandwidth() / 2).y((m) => y(m.in - m.out))).style('fill', 'none').style('stroke', C.ink).style('stroke-width', 1.2).style('stroke-dasharray', '2 3');
-    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', (m) => x(m.month) + x.bandwidth() / 2).attr('cy', (m) => y(m.in - m.out)).attr('r', 4.5).style('fill', C.ink).style('stroke', '#fff').style('stroke-width', 2);
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', (m) => x(m.month) + x.bandwidth() / 2).attr('cy', (m) => y(m.in - m.out)).attr('r', 4.5).style('fill', C.ink).style('stroke', C.surface).style('stroke-width', 2);
     const every = Math.ceil(rows.length / Math.max(2, Math.floor(w / 52)));
     svg.append('g').attr('transform', `translate(0,${bot})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8).tickFormat((m, i) => (i % every ? '' : d3.utcFormat('%b')(dt(m + '-01'))))).call((g) => g.select('.domain').remove());
     const t = tipFor(el);
@@ -597,6 +600,7 @@
   /* ---------------- Ask your AI ---------------- */
   $$('.choices').forEach((g) => g.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', String(S.ai[g.dataset.q] === b.dataset.a)); b.addEventListener('click', () => { g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); S.ai[g.dataset.q] = b.dataset.a; renderAI(); }); }));
   $('#incMerchants').addEventListener('change', renderAI);
+  $('#aiDemo').addEventListener('click', async () => { try { const t = await (await fetch('demo/demo-mpesa-sms.json')).text(); S.raw = P.fromMessages(t, 'demo'); S.demo = true; S.period = 12; compute(); show('ai'); } catch (e) { /* stays on the empty state */ } });
   function aiPlan(a) {
     // Same rules as prompts/any-llm.md
     const lvl = a.budget === '50' ? 'a lot' : a.budget === '20' ? 'some' : 'a little';
