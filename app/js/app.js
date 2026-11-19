@@ -84,6 +84,8 @@
     $('#srcHelp').innerHTML = HELP[S.src]; $('#srcHelp').hidden = false; $('#loader').hidden = false;
     $('#pwField').hidden = S.src !== 'pdf';
     $('#pasteField').hidden = S.src === 'pdf' || S.src === 'shots';
+    $('#drop').hidden = S.src === 'paste';
+    $('#pasteLbl').textContent = S.src === 'paste' ? 'Paste your messages here' : 'Or paste messages';
     $('#btnSample').hidden = !['paste', 'momo'].includes(S.src);
     if (S.src === 'pdf') P.preloadPdf().catch(() => {});
     $('#srcHelp').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
@@ -190,7 +192,7 @@
     const ts = r.txs.map((t) => t.ts).sort();
     const span = Math.round((dt(ts[ts.length - 1]) - dt(ts[0])) / 864e5) + 1;
     const nTx = r.txs.filter((t) => t.dir === 'in' || t.dir === 'out').length;
-    $('#found').hidden = false; window.pdTrack && pdTrack('Data loaded', { route: S.src || 'unknown', kind: r.kind || 'sms', months: String(Math.max(1, Math.round(span / 30))) });
+    $('#found').hidden = false; requestAnimationFrame(() => $('#found').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })); window.pdTrack && pdTrack('Data loaded', { route: S.src || 'unknown', kind: r.kind || 'sms', months: String(Math.max(1, Math.round(span / 30))) });
     $('#foundTitle').textContent = `We found ${pl(nTx, r.provider + ' transaction')}`;
     $('#foundText').textContent = (r.kind === 'statement' ? 'Read from your statement' : `${n0(r.txs.length)} of ${pl(r.messages, 'message')} were transactions or loan updates`) + `, from ${fmtDate(ts[0])} to ${fmtDate(ts[ts.length - 1])} (${pl(span, 'day')}). Everything stayed on this device.${note}`;
     showSkipped(r.skipped);
@@ -340,7 +342,7 @@
     dataTable(el, 'Money in, out and net by month', ['Month', 'In', 'Out', 'Net'], rows.map((m) => [d3.utcFormat('%b %Y')(dt(m.month + '-01')) + (m.partial ? ' (part)' : ''), n0(m.in), n0(m.out), n0(m.in - m.out)]));
   }
   function heatChart(el, A) {
-    const ml = 40, cw = Math.max(12, Math.floor(((el.clientWidth || 700) - ml) / 24)), ch = Math.max(20, Math.min(30, cw)), hgt = ch * 7 + 28;
+    const ml = (el.clientWidth || 700) < 380 ? 34 : 40, cw = Math.max(10, Math.floor(((el.clientWidth || 700) - ml - 4) / 24)), ch = Math.max(20, Math.min(30, cw)), hgt = ch * 7 + 28;
     const { svg } = svgIn(el, hgt, 'Heatmap of spending by weekday and hour', ml + 24 * cw + 4);
     const op = d3.scaleSqrt().domain([0, d3.max(A.heat, (d) => d.amount) || 1]).range([0, 1]);
     const D = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -454,7 +456,7 @@
     {
       const pats = []; const spendPeople = d3.sum(A.people, (p) => p.total); const pochiIn = d3.sum(A.ins.filter((t) => t.pochi), (t) => t.amt); const borrowCost = A.creditFees + A.loanCost;
       if (A.lifespan != null && A.lifespan <= 10) pats.push(['flat', 'The dry week', `Half of ${their} big payments were gone in ${A.lifespan.toFixed(1)} days.`]);
-      if (A.hasCredit && A.creditDays >= 10) pats.push(['couple', 'The Fuliza bridge', `${pl(A.creditDays, 'day')} owing Fuliza, for ${F(A.creditFees)} in charges.`]);
+      if (A.hasCredit && A.creditDays >= 10) pats.push(['fuliza', 'The Fuliza bridge', `${pl(A.creditDays, 'day')} owing Fuliza, for ${F(A.creditFees)} in charges.`]);
       if (A.spend > 0 && spendPeople / A.spend >= 0.12) pats.push(['first', 'The family bank', `${pct(spendPeople / A.spend)} of spending went to people. Sort them to see how much is family.`]);
       if (pochiIn > 0) pats.push(['hustle', 'Two wallets, one phone', `${F(pochiIn)} came in through Pochi la Biashara.`]);
       if (A.ownOut > 0 && borrowCost > 0) pats.push(['chama', 'Saving while borrowing', `${F(A.ownOut)} went to savings and banks while borrowing cost ${F(borrowCost)}.`]);

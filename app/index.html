@@ -88,7 +88,7 @@
     <div class="kicker">What you'll see</div>
     <h2 id="seeH" class="sec-h">6 things your statement never tells you. <em>Shown here with Amani's demo year.</em></h2>
     <p class="small muted fict">All people in the demo, including Amani, are fictitious. Any resemblance to real persons, living or dead, is purely coincidental. Shops and services are named only to show how payments get labelled; every transaction is invented.</p>
-    <div class="minis" id="minis">
+    <div class="minis" id="minis" data-swipe>
       <article class="mini" data-m="lasts">
         <div class="mv" data-viz="lasts" aria-hidden="true"></div>
         <div class="mn"><b class="mbig" data-k="lasts">…</b><span class="mlab">How long money lasts</span></div>
@@ -177,7 +177,7 @@
     <div class="kicker">6 patterns in Kenyan wallets</div>
     <h2 id="seenH" class="sec-h">Most M-PESA stories rhyme. <em>See which ones are yours.</em></h2>
     <p class="lede-s muted">These show up again and again. Attach your SMSes and Pesadithi tells you which ones are yours, with your own numbers. No judgement, no lectures.</p>
-    <div class="seen-cards">
+    <div class="seen-cards" data-swipe>
       <article class="seen-card" data-pattern="dry">
         <img src="img/roles/flat.jpg" alt="" width="960" height="717" loading="lazy">
         <div class="seen-body">
@@ -309,7 +309,7 @@
         <span class="small muted" id="pwHelp"><b>This is not your M-PESA PIN.</b> Statements are locked with a code sent by SMS when you request them. Each statement has its own code. Press Enter to read.</span>
       </div>
       <div class="field" id="pasteField">
-        <label for="paste">Or paste messages</label>
+        <label for="paste" id="pasteLbl">Or paste messages</label>
         <textarea id="paste" placeholder="Paste your M-PESA, MoMo or Airtel Money messages here, one after another."></textarea>
       </div>
       <div class="btn-row"><button class="btn" id="btnRead" type="button">Read my data</button><button class="linkbtn small" id="btnSample" type="button" hidden>Paste a sample for me</button></div>
@@ -455,6 +455,7 @@
     <p>Pesadithi Lab is an independent, open-source project. It isn't made by, endorsed by or affiliated with Safaricom, M-PESA, NCBA, KCB, MTN, Airtel, Apple, Google, Microsoft, OpenAI, Anthropic or DeepSeek. Product names and logos belong to their owners.</p>
   </div>
 </section>
+  <div class="mcta" id="mcta" hidden><button class="btn ghost" type="button" id="mctaDemo">See a demo</button><a class="btn" href="#start">Attach your SMSes</a></div>
 </main>
 
 <footer><div class="wrap btn-row" style="justify-content:space-between;flex-wrap:wrap">

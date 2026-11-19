@@ -20,6 +20,33 @@
       setTimeout(() => cur.classList.remove('out'), 460);
     }, 2400);
   })();
+
+  /* ---------- Phones: swipe rows with dots, sticky call to action ---------- */
+  (function () {
+    const mq = window.matchMedia('(max-width: 720px)');
+    $$('[data-swipe]').forEach((row) => {
+      const items = Array.from(row.children); if (items.length < 2) return;
+      const dots = document.createElement('div'); dots.className = 'swipe-dots'; dots.setAttribute('aria-hidden', 'true');
+      dots.innerHTML = items.map(() => '<i></i>').join('') + '<span>Swipe</span>';
+      row.after(dots);
+      const ds = Array.from(dots.querySelectorAll('i'));
+      const upd = () => { const w = items[0].getBoundingClientRect().width + 12; const k = Math.min(items.length - 1, Math.round(row.scrollLeft / (w || 1))); ds.forEach((d, i) => d.classList.toggle('on', i === k)); const sp = dots.querySelector('span'); if (sp) sp.textContent = (k + 1) + ' of ' + items.length; };
+      row.addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true }); upd();
+      ds.forEach((d, i) => { d.style.cursor = 'pointer'; });
+    });
+    const bar = document.getElementById('mcta'); if (!bar) return;
+    const heroBtns = document.querySelector('.hero .btn-row'); const foot = document.querySelector('footer');
+    let heroGone = false, footIn = false;
+    const isHome = () => !location.hash || location.hash === '#home' || location.hash === '#';
+    const render = () => { const on = mq.matches && isHome() && heroGone && !footIn; bar.hidden = !mq.matches || !isHome(); bar.classList.toggle('on', on); };
+    if ('IntersectionObserver' in window) {
+      if (heroBtns) new IntersectionObserver((e) => { heroGone = !e[0].isIntersecting && e[0].boundingClientRect.top < 0; render(); }).observe(heroBtns);
+      if (foot) new IntersectionObserver((e) => { footIn = e[0].isIntersecting; render(); }).observe(foot);
+    }
+    window.addEventListener('hashchange', render); mq.addEventListener && mq.addEventListener('change', render);
+    const d = document.getElementById('mctaDemo'); if (d) d.addEventListener('click', () => { const b = document.getElementById('btnDemo'); if (b && !b.disabled) b.click(); });
+    render();
+  })();
   if (!$('#minis')) return;
 
   /* ---------- Demo buttons and route shortcuts ---------- */
