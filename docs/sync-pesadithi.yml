@@ -1,0 +1,30 @@
+# Copy this file into the mark-co-ke repo at .github/workflows/sync-pesadithi.yml
+# It copies the latest Pesadithi from mkaigwa/pesadithi-lab into public/pesadithi/
+# every 6 hours, or straight away when you press "Run workflow" in the Actions tab.
+# Cloudflare then publishes mark.co.ke/pesadithi/ as it does for any other commit.
+name: Sync Pesadithi
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: mkaigwa/pesadithi-lab
+          path: _pesadithi
+      - name: Copy the app into public/pesadithi
+        run: |
+          rm -rf public/pesadithi
+          cp -r _pesadithi/app public/pesadithi
+          rm -rf _pesadithi
+          git config user.name "Pesadithi sync"
+          git config user.email "mark@nendo.co.ke"
+          git add -A public/pesadithi
+          git diff --cached --quiet || git commit -m "Sync Pesadithi from pesadithi-lab"
+          git push
