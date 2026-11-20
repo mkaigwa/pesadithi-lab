@@ -1128,6 +1128,61 @@ html[data-theme="dark"] .fxnote.conv, html[data-theme="dark"] .ai-demo-note { ba
 .hero-nums .cap { text-align: left; font-size: 12.5px; color: var(--muted); margin-top: 14px; max-width: 60ch; }
 @media (max-width: 959px) { .hero-nums { margin-top: -10px; } }
 
+/* Besley's tabular figures draw the zero lighter than the other digits, so serif numbers use proportional lining figures */
+h1, h2, h3, .big .v, .mcard .a, .ledger .a, .pcard .facts b, .sm .slide .sv, .tally4 b, .habit .v, .insight, .pa, .bstat b, .sv, .v, .a { font-variant-numeric: lining-nums proportional-nums !important; }
+
+/* Who got paid most: one ranked list, bars to compare at a glance */
+.paidlist { list-style: none; padding: 0; margin: 16px 0 6px; display: grid; gap: 4px; }
+.paidlist li { display: grid; grid-template-columns: 18px 38px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.paidlist .pr { font-size: 13px; color: var(--muted); text-align: right; }
+.paidlist .pav { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 600 13px/1 var(--sans); color: hsl(var(--h) 45% 28%); background: hsl(var(--h) 55% 92%); }
+.paidlist .pn { font-weight: 600; font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.paidlist .pcat { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.paidlist .pbar { height: 8px; border-radius: 4px; background: #eef1f0; margin-top: 7px; overflow: hidden; }
+.paidlist .pbar i { display: block; height: 100%; border-radius: 4px; background: var(--out); opacity: .82; }
+.paidlist .pa { font: 600 19px/1 var(--serif); color: var(--ink); white-space: nowrap; }
+@media (max-width: 520px) { .paidlist li { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; } .paidlist .pr { display: none; } .paidlist .pav { width: 34px; height: 34px; font-size: 12px; } .paidlist .pa { font-size: 16px; } }
+
+/* Habits: a mark on every card, plus a meter for shares and a dot row for weekly counts */
+.habit .ht { display: flex; align-items: center; gap: 8px; }
+.habit .he { font-size: 20px; line-height: 1; flex: none; }
+.hmeter { display: block; height: 7px; border-radius: 4px; background: #eef1f0; margin: 8px 0 6px; overflow: hidden; }
+.hmeter i { display: block; height: 100%; background: var(--brand); border-radius: 4px; }
+.hdots { display: block; letter-spacing: 3px; color: var(--brand); font-size: 18px; line-height: 1; margin: 4px 0 4px; }
+
+/* Long lists fold after 3 rows */
+details.more { margin-top: 0; }
+details.more > summary { cursor: pointer; list-style: none; padding: 12px 0; font-size: 14px; font-weight: 600; color: var(--brand-dk); }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::before { content: '+ '; }
+details.more[open] > summary::before { content: '− '; }
+
+/* Before you hand over anything: heading and proof side by side, then two titled columns */
+.asks-head { display: grid; gap: 18px; align-items: end; margin-bottom: 30px; }
+@media (min-width: 960px) { .asks-head { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; } }
+.asks-head .sec-h { margin-bottom: 0; }
+.asks-head .proof { display: flex; gap: 14px; align-items: flex-start; margin: 0; border: 1.5px dashed var(--in); background: #fff; border-radius: 14px; padding: 16px 18px; font-size: 14.5px; line-height: 1.5; }
+.asks-head .proof b { display: block; font: 600 17px/1.3 var(--serif); color: var(--ink); margin-bottom: 3px; }
+.asks-head .proof .tb-ic { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--in-tint); color: var(--brand); }
+.faq > .sec-h3 { margin-bottom: 12px; }
+.lad-act { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font: 600 13.5px/1 var(--sans); color: var(--brand-dk); text-decoration: none; white-space: nowrap; cursor: pointer; }
+.lad-act:hover { border-color: var(--brand); }
+.ladder li:first-child .lad-act { background: var(--ink); border-color: var(--ink); color: #fff; }
+@media (max-width: 720px) { .ladder li { grid-template-columns: 36px 1fr; } .ladder .lad-act { grid-column: 2; justify-self: start; margin-top: 4px; } }
+
+@media (min-width: 900px) { .habits { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+@media (max-width: 520px) {
+  .paidlist .pnote { display: none; }
+  .habit .ht { flex-direction: column; align-items: flex-start; gap: 6px; }
+  #ch-borrow .bigs, .chapter .bigs { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px 16px; }
+}
+html[data-theme="dark"] .paidlist .pbar, html[data-theme="dark"] .hmeter { background: rgba(255,255,255,.09); }
+html[data-theme="dark"] .paidlist .pav { background: hsl(var(--h) 30% 22%); color: hsl(var(--h) 60% 82%); }
+html[data-theme="dark"] .lad-act { background: transparent; border-color: rgba(255,255,255,.22); color: var(--ink); }
+html[data-theme="dark"] .ladder li:first-child .lad-act { background: var(--ink); color: var(--bg, #0f1412); }
+html[data-theme="dark"] .asks-head .proof { background: transparent; }
+
 /* DARK:START (generated by tools/theme/build_dark.py; do not edit by hand) */
 html[data-theme="dark"] { color-scheme: dark; --bg: #121416; --ink: #eef2f0; --text: #d5dcd9; --muted: #9ba6a2; --faint: #8d9894; --line: #2b3033; --ctl: #4b5357; --panel: #1a1d20; --panel2: #212529; --soft: #1a1d20; --mint: #1b2621; --brand: #56c596; --brand-dk: #7fd6ae; --brand-tint: #1b2621; --brand-tint2: #24372e; --leaf: #6dbb95; --in: #36a865; --out: #ee5a4c; --credit: #7f97f0; --loan: #cf8519; --fee: #a4adb5; --bad: #ff8a80; --good: #36a865; --focus: #56c596; --in-tint: #16281d; --out-tint: #2e1916; --credit-tint: #1a2033; }
 html[data-theme="dark"] body { background: var(--bg); }
@@ -1233,6 +1288,12 @@ details.legal { background:#131313; }
 html[data-theme="dark"] .trustband .tb-ic.gh { background:#1c1d1d; }
 html[data-theme="dark"] .rail .rstat { background:#1e201f; }
 html[data-theme="dark"] .rail.beta .rstat { background:#2b251a; color:#fbc156; }
+html[data-theme="dark"] .paidlist .pbar { background:#1e201f; }
+html[data-theme="dark"] .hmeter { background:#1e201f; }
+html[data-theme="dark"] .asks-head .proof { background:#131313; }
+html[data-theme="dark"] .lad-act { background:#131313; }
+html[data-theme="dark"] html[data-theme="dark"] .paidlist .pbar, html[data-theme="dark"] html[data-theme="dark"] .hmeter { background:rgba(18,20,22,.09); }
+html[data-theme="dark"] html[data-theme="dark"] .ladder li:first-child .lad-act { color:var(--bg, #f1f3f2); }
 html[data-theme="dark"] .sm, html[data-theme="dark"] .dev, html[data-theme="dark"] .share-card, html[data-theme="dark"] .receipt { --ink: #0f2620; --text: #1b2e28; --muted: #55665f; --faint: #5f6f69; --line: #dce4e0; --ctl: #8fa29a; --panel: #f2f6f4; --panel2: #e9f1ec; --soft: #f2f6f4; --mint: #e4f4ec; --brand: #17694e; --brand-dk: #0f4f3a; --brand-tint: #e4f4ec; --brand-tint2: #c9e9d8; --leaf: #6dbb95; --glow: #3ddc97; --in: #17803f; --out: #d23b2e; --credit: #2457d6; --loan: #e08a00; --fee: #5b6670; --bad: #a3170f; --good: #17803f; --focus: #17694e; --in-tint: #e6f5ec; --out-tint: #fcecea; --credit-tint: #e9effc; color: var(--text); }
 html[data-theme="dark"] .receipt { background: #fff; box-shadow: 8px 8px 0 #24372e; }
 html[data-theme="dark"] .roles button[aria-selected="true"], html[data-theme="dark"] .periods button[aria-pressed="true"], html[data-theme="dark"] .choices:not(.opts) button[aria-pressed="true"], html[data-theme="dark"] .storynav a.on { background: var(--ink); border-color: var(--ink); }
