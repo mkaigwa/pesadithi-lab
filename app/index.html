@@ -53,24 +53,19 @@
 <!-- HOME -->
 <section id="v-home" data-v="home">
   <div class="wrap hero">
-   <div>
-    <div class="kicker">Your year in mobile money</div>
+   <div class="hero-copy">
+    <div class="kicker">Your money story, read from your own SMS</div>
     <h1 class="hero-h">Where did your mobile money go this <span class="rot" id="heroRot" aria-hidden="true"><b class="on">year?</b><b>week?</b><b>month?</b></span><span class="vh">year?</span> <em>Your M-PESA SMSes already know.</em></h1>
     <p class="lede">Attach your statement or export your text messages to see for yourself.</p>
     <div class="btn-row" style="margin-top:26px">
       <button class="btn" id="btnDemo" type="button" disabled>Loading…</button>
       <a class="btn ghost" href="#start" data-pick="paste">Try with five SMS</a>
     </div>
-    <div class="proofrow">
-      <span class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm-3 8V6a3 3 0 0 1 6 0v3z" fill="currentColor"/></svg><span>Your money data never leaves your phone</span></span>
-      <span class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z" fill="currentColor"/></svg><span>We never ask for your M-PESA PIN</span></span>
-    </div>
-    <p class="small muted" style="margin-top:12px">The demo uses invented data for a fictional person. No upload, no sign-up.</p>
-    <div class="trust">
-      <div><b>Stays on your device</b><span>Your file is read by this page in your browser and never uploaded. Switch off Wi-Fi and data after the page loads and it still works.</span></div>
-      <div><b>No account, no tracking</b><span>No sign-up, no cookies. Close the tab and it's gone, unless you tick "Remember".</span></div>
-      <div><b>Open source</b><span>Every line is public on GitHub, so anyone can check these claims.</span></div>
-    </div>
+    <ul class="ticks" aria-label="Privacy">
+      <li><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>Stays on your phone</li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>No sign-up</li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>Never asks for your PIN</li>
+    </ul>
    </div>
    <div class="phonewrap" aria-label="A hand holding an Android phone showing M-PESA SMS in Google Messages. Each one is read and labelled, with running totals underneath">
     <div class="inhand"><img class="handimg" src="img/hand-phone.webp" alt="" width="780" height="1380" decoding="async">
@@ -85,19 +80,29 @@
       </div>
     </div></div>
     </div>
-    <div class="tally4" id="heroTally"></div>
-    <p class="cap">Invented SMS in the style of M-PESA messages, for Amani, a fictional person: salary, a Ziidi saving, a Pochi la Biashara sale, Fuliza, and money moved from Pochi to M-PESA. Each one is recognised and labelled.</p>
+
    </div>
+   <div class="hero-nums">
+     <div class="tally4" id="heroTally"></div>
+     <p class="cap">Invented SMS in the style of M-PESA messages, for Amani, a fictional person: salary, a Ziidi saving, a Pochi la Biashara sale, Fuliza, and money moved from Pochi to M-PESA. Each one is recognised and labelled.</p>
+   </div>
+  </div>
+  <div class="trustband" aria-label="How your data is handled">
+    <ul class="wrap tb">
+      <li><span class="tb-ic"><svg class="ic lg" aria-hidden="true"><use href="#i-wifi-off"/></svg></span><div><b>Stays on your device</b><span>Read in your browser, never uploaded. It still works with Wi-Fi and data off.</span></div></li>
+      <li><span class="tb-ic"><svg class="ic lg" aria-hidden="true"><use href="#i-eye-off"/></svg></span><div><b>No account, no tracking</b><span>No sign-up, no cookies. Close the tab and it's gone, unless you tick "Remember".</span></div></li>
+      <li><span class="tb-ic gh"><img src="vendor/logos/github.png" alt="" width="26" height="26"></span><div><b>Open source</b><span>Every line is public on <a href="https://github.com/mkaigwa/pesadithi-lab" target="_blank" rel="noopener">GitHub</a>, so anyone can check these claims.</span></div></li>
+    </ul>
   </div>
   <!-- RAILS: which wallets it reads -->
   <div class="rails" aria-labelledby="railsH">
     <div class="wrap">
       <div class="rails-head"><h2 id="railsH">Reads the mobile money SMS you already get</h2><p class="small muted">No bank login, no API, no app to install. If your wallet sends you an SMS for every move, Pesadithi can read it.</p></div>
       <ul class="rail-list">
-        <li class="rail full"><b class="wl" data-logo="mpesa">M-PESA</b><span class="flags"><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i></span><span class="rl-logos"><i class="wl wl-sm" data-logo="fuliza">Fuliza</i><i class="wl wl-sm" data-logo="mshwari">M-Shwari</i><i class="wl wl-sm" data-logo="ziidi">Ziidi</i></span><em>Full support: SMS, statement PDF, Fuliza, M-Shwari and Ziidi</em></li>
-        <li class="rail beta"><b class="wl" data-logo="airtel">Airtel Money</b><span class="flags"><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i><i role="img" aria-label="Uganda" title="Uganda">🇺🇬</i><i role="img" aria-label="Tanzania" title="Tanzania">🇹🇿</i><i role="img" aria-label="Rwanda" title="Rwanda">🇷🇼</i><i role="img" aria-label="Zambia" title="Zambia">🇿🇲</i></span><em>Beta: sends, receipts, withdrawals, fees</em></li>
-        <li class="rail beta"><b class="wl" data-logo="mtn">MTN MoMo</b><span class="flags"><i role="img" aria-label="Uganda" title="Uganda">🇺🇬</i><i role="img" aria-label="Ghana" title="Ghana">🇬🇭</i><i role="img" aria-label="Rwanda" title="Rwanda">🇷🇼</i><i role="img" aria-label="Zambia" title="Zambia">🇿🇲</i></span><em>Beta: sends, receipts, withdrawals, fees</em></li>
-        <li class="rail soon"><b>And the rest</b><span class="rl-logos"><i class="wl wl-sm" data-logo="mpesa-tz">M-Pesa Tanzania</i><i class="wl wl-sm" data-logo="mpesa-et">M-PESA Ethiopia</i><i class="wl wl-sm" data-logo="mixx">Mixx by Yas</i></span><span class="rest">Equitel, Orange Money and Wave</span><span class="flags"><i role="img" aria-label="Tanzania" title="Tanzania">🇹🇿</i><i role="img" aria-label="Ethiopia" title="Ethiopia">🇪🇹</i><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i><i role="img" aria-label="Senegal" title="Senegal">🇸🇳</i><i role="img" aria-label="Côte d'Ivoire" title="Côte d'Ivoire">🇨🇮</i></span><em>On the list. Ten sample SMS get a wallet added</em></li>
+        <li class="rail full"><i class="rstat">Full support</i><b class="wl" data-logo="mpesa">M-PESA</b><span class="flags"><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i></span><span class="rl-logos"><i class="wl wl-sm" data-logo="fuliza">Fuliza</i><i class="wl wl-sm" data-logo="mshwari">M-Shwari</i><i class="wl wl-sm" data-logo="ziidi">Ziidi</i></span><em>SMS and statement PDF, with Fuliza, M-Shwari and Ziidi</em></li>
+        <li class="rail beta"><i class="rstat">Beta</i><b class="wl" data-logo="airtel">Airtel Money</b><span class="flags"><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i><i role="img" aria-label="Uganda" title="Uganda">🇺🇬</i><i role="img" aria-label="Tanzania" title="Tanzania">🇹🇿</i><i role="img" aria-label="Rwanda" title="Rwanda">🇷🇼</i><i role="img" aria-label="Zambia" title="Zambia">🇿🇲</i></span><em>Sends, receipts, withdrawals, fees</em></li>
+        <li class="rail beta"><i class="rstat">Beta</i><b class="wl" data-logo="mtn">MTN MoMo</b><span class="flags"><i role="img" aria-label="Uganda" title="Uganda">🇺🇬</i><i role="img" aria-label="Ghana" title="Ghana">🇬🇭</i><i role="img" aria-label="Rwanda" title="Rwanda">🇷🇼</i><i role="img" aria-label="Zambia" title="Zambia">🇿🇲</i></span><em>Sends, receipts, withdrawals, fees</em></li>
+        <li class="rail soon"><i class="rstat">Coming</i><b>And the rest</b><span class="rl-logos"><i class="wl wl-sm" data-logo="mpesa-tz">M-Pesa Tanzania</i><i class="wl wl-sm" data-logo="mpesa-et">M-PESA Ethiopia</i><i class="wl wl-sm" data-logo="mixx">Mixx by Yas</i></span><span class="rest">Equitel, Orange Money and Wave</span><span class="flags"><i role="img" aria-label="Tanzania" title="Tanzania">🇹🇿</i><i role="img" aria-label="Ethiopia" title="Ethiopia">🇪🇹</i><i role="img" aria-label="Kenya" title="Kenya">🇰🇪</i><i role="img" aria-label="Senegal" title="Senegal">🇸🇳</i><i role="img" aria-label="Côte d'Ivoire" title="Côte d'Ivoire">🇨🇮</i></span><em>On the list. Ten sample SMS get a wallet added</em></li>
       </ul>
       <div class="ticker" aria-hidden="true"><span class="tk-prov" id="tkProv">M-PESA</span><span class="tk-msg" id="tkMsg"></span></div>
     </div>
