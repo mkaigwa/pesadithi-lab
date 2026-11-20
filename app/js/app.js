@@ -27,7 +27,7 @@
   const FX_DATE = 'mid-November 2026';
   const fxv = (v) => (window.PD_FX ? v * window.PD_FX.rate : v);
   const F = (v) => AN.fmt(v, S.A ? S.A.cur : 'KES');
-  const FB = (v) => cur() + ' ' + (Math.abs(v) >= 1e6 ? d3.format('.2f')(v / 1e6) + 'm' : n0(v));
+  const FB = (v0) => { const v = fxv(v0); return cur() + ' ' + (Math.abs(v) >= 1e6 ? d3.format('.2f')(v / 1e6) + 'm' : n0(v)); };
   const pct = (v) => Math.round(v * 100) + '%';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pl = (n, one, many) => n0(n) + ' ' + (Math.round(n) === 1 ? one : (many || one + 's'));
@@ -452,7 +452,12 @@
   }
 
   /* ---------------- Story ---------------- */
-  function ch(id, kicker, title, body, tag) { return `<section class="chapter" id="${id}" aria-labelledby="${id}-h"><div class="k">${kicker}</div><${tag || 'h2'} id="${id}-h">${title}</${tag || 'h2'}>${body}</section>`; }
+  function ch(id, kicker, title, body, tag) {
+    // The how-to-read paragraph that opens most chapters folds behind a small link, so the headline and chart come first
+    const m = /^<p class="muted">([\s\S]*?)<\/p>/.exec(body);
+    if (m && id !== 'cover') body = `<details class="howto"><summary>How to read this</summary><p>${m[1]}</p></details>` + body.slice(m[0].length);
+    return `<section class="chapter" id="${id}" aria-labelledby="${id}-h"><div class="k">${kicker}</div><${tag || 'h2'} id="${id}-h">${title}</${tag || 'h2'}>${body}</section>`;
+  }
   function big(v, l, cls) { return `<div class="big${cls ? ' ' + cls : ''}"><div class="v">${v}</div><div class="l">${l}</div></div>`; }
   function suggestions(A) {
     const out = [];
@@ -514,10 +519,33 @@
       if (A.habits.lateNightShare >= 0.08) pats.push([null, 'The 2am wallet', `${pct(A.habits.lateNightShare)} of spending happened between 10pm and 4am.`]);
       if (pats.length) chapters.push(['you', 'Which ones are you', ch('you', num() + 'which ones are you', `${pats.length === 1 ? 'One pattern shows' : ['', '', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][pats.length] + ' patterns show'} up in ${S.demo ? 'Amani\'s' : 'your'} money`, `<p class="muted">The same patterns show up in wallets across Kenya. Here's the evidence from ${S.demo ? 'her' : 'your'} own SMS.</p><div class="pats">${pats.map(([img, t, ev]) => `<div class="pat">${img ? `<img src="img/roles/${img}.jpg" alt="" loading="lazy">` : '<div class="pat-noimg" aria-hidden="true">10pm–4am</div>'}<div><b>${esc(t)}</b><span>${ev}</span></div></div>`).join('')}</div>`)]);
     }
-    chapters.push(['try', 'What to try', ch('try', num() + 'what to try', sug.length === 1 ? 'One small change the data points to' : `${['', 'One', 'Two', 'Three'][sug.length]} small changes the data points to`, sug.map((s, i) => `<div class="try"><b>Try ${i + 1}</b>${esc(s)}</div>`).join('') + `<div class="next">${S.demo ? '<a href="#start"><b>Try it with my data</b><span class="small muted">Statement PDF, SMS export or pasted messages. Stays on your device.</span></a>' : ''}<a href="#sort"><b>Sort the people</b><span class="small muted">Label who gets sent money, in a quick swipe game.</span></a><a href="#budget"><b>Build a budget</b><span class="small muted">Monthly averages and targets by category.</span></a><a href="#ai"><b>Ask your AI</b><span class="small muted">A prompt and summary for Claude, ChatGPT or Gemini, with no people's names.</span></a><button type="button" data-act="storymode"><b>Story mode (vertical)</b><span class="small muted">A tall 9:16 version to screen-record and share.</span></button></div>`)]);
+    chapters.push(['try', 'What to try', ch('try', 'What to try', sug.length === 1 ? 'One small change the data points to' : `${['', 'One', 'Two', 'Three'][sug.length]} small changes the data points to`, sug.map((s, i) => `<div class="try"><b>Try ${i + 1}</b>${esc(s)}</div>`).join('') + `<div class="next">${S.demo ? '<a href="#start"><b>Try it with my data</b><span class="small muted">Statement PDF, SMS export or pasted messages. Stays on your device.</span></a>' : ''}<a href="#sort"><b>Sort the people</b><span class="small muted">Label who gets sent money, in a quick swipe game.</span></a><a href="#budget"><b>Build a budget</b><span class="small muted">Monthly averages and targets by category.</span></a><a href="#ai"><b>Ask your AI</b><span class="small muted">A prompt and summary for Claude, ChatGPT or Gemini, with no people's names.</span></a><button type="button" data-act="storymode"><b>Story mode (vertical)</b><span class="small muted">A tall 9:16 version to screen-record and share.</span></button><a href="https://mark.co.ke/lab" rel="noopener"><b>More from Mark\'s Lab</b><span class="small muted">Pesadithi is one of the tools Mark builds in public with AI. See the others.</span></a></div>`)]);
+    // The short version: the 3 findings that stand out most, scored by how unusual they are. The full story stays one tap away.
+    const has = (id) => chapters.some((c) => c[0] === id);
+    const cand = [];
+    if (has('credit') && A.hasCredit && A.nDays) cand.push({ id: 'credit', sc: A.creditDays / A.nDays * 3, v: `${n0(A.creditDays)} days`, l: `of ${pl(A.nDays, 'day')} ended owing ${cn}, for about ${F(A.creditFees)} in charges`, r: A.creditDays / A.nDays, c: C.credit });
+    if (has('drain') && A.lifespan != null) cand.push({ id: 'drain', sc: A.lifespan <= 7 ? 2.2 : A.lifespan <= 12 ? 1.4 : 0.5, v: `${A.lifespan.toFixed(1)} days`, l: `is how long it takes for half of a big payment to be spent`, r: Math.min(1, A.lifespan / 30), c: C.out });
+    if (has('price') && A.avoidableTotal > 0) cand.push({ id: 'price', sc: 1.5 + (A.feesTotal ? A.avoidableTotal / A.feesTotal : 0), v: F(A.avoidableTotal), l: `went on charges and penalties that could have been kept`, r: A.feesTotal ? A.avoidableTotal / A.feesTotal : 0, c: C.bad });
+    { const fm = A.months.filter((m) => !m.partial); const neg = fm.filter((m) => m.in < m.out).length; if (has('flow') && fm.length && neg) cand.push({ id: 'flow', sc: neg / fm.length * 2.5, v: `${neg} of ${fm.length}`, l: `full months spent more than came in`, r: neg / fm.length, c: C.out }); }
+    if (has('where') && topCat && spendCats.length) { const sh = topCat.total / d3.sum(spendCats, (c) => c.total); cand.push({ id: 'where', sc: sh * 3, v: pct(sh), l: `of spending went to ${topCat.category.toLowerCase()}`, r: sh, c: C.out }); }
+    if (has('habits') && A.habits.weekendShare > 0.38) cand.push({ id: 'habits', sc: (A.habits.weekendShare - 0.29) * 6, v: pct(A.habits.weekendShare), l: `of spending happened at weekends, against 29% if it were spread evenly`, r: A.habits.weekendShare, c: C.out });
+    if (has('habits') && A.habits.lateNightShare >= 0.08) cand.push({ id: 'habits', sc: A.habits.lateNightShare * 12, v: pct(A.habits.lateNightShare), l: `of spending happened between 10pm and 4am`, r: A.habits.lateNightShare, c: C.out });
+    const seen = new Set(); const top3 = cand.sort((a, b) => b.sc - a.sc).filter((c) => !seen.has(c.id) && seen.add(c.id)).slice(0, 3);
+    const keep = new Set(['cover', 'short', 'try']);
+    const nFull = chapters.filter((c) => !keep.has(c[0])).length;
+    if (top3.length >= 2) {
+      const shortHTML = `<section class="chapter short" id="short" aria-labelledby="short-h"><div class="k">The short version</div><h2 id="short-h">${['', '', 'Two', 'Three'][top3.length]} things that stand out in ${S.demo ? 'Amani\'s' : 'your'} money</h2><div class="finds">${top3.map((f, i) => `<a class="find" href="#${f.id}" data-full="${f.id}"><span class="fi">${i + 1}</span><b class="fv">${f.v}</b><span class="fl">${esc(f.l)}</span><span class="fm" aria-hidden="true"><i style="width:${Math.max(3, Math.min(100, f.r * 100)).toFixed(1)}%;background:${f.c}"></i></span><span class="fgo">See the chart</span></a>`).join('')}</div><div class="fullbar"><button class="btn" type="button" data-act="full">Read the full story: ${nFull} chapters</button><span class="small muted">Every chart, the money clock, borrowing, habits and more. About 5 minutes.</span></div></section>`;
+      chapters.splice(1, 0, ['short', 'Short version', shortHTML]);
+    }
+    chapters.forEach((c) => { if (!keep.has(c[0])) c[2] = c[2].replace('<section class="chapter"', '<section class="chapter extra"'); });
     el.innerHTML = chapters.map((c) => c[2]).join('') + (S.demo ? '' : worthHTML());
     if (!S.demo) wireWorth();
-    $('#chapterNav').innerHTML = chapters.map((c) => `<a href="#${c[0]}" data-ch="${c[0]}">${c[1]}</a>`).join('');
+    $('#chapterNav').innerHTML = chapters.map((c) => `<a href="#${c[0]}" data-ch="${c[0]}"${keep.has(c[0]) ? '' : ' class="extra"'}>${c[1]}</a>`).join('');
+    let full = false; try { full = localStorage.getItem('pesadithi:full') === '1'; } catch (e) { /* storage may be blocked */ }
+    document.body.classList.toggle('story-full', full || !$('#short'));
+    const openFull = (to) => { if (!document.body.classList.contains('story-full')) { document.body.classList.add('story-full'); try { localStorage.setItem('pesadithi:full', '1'); } catch (e) { /* ignore */ } drawCharts(); } const t = document.getElementById(to); if (t) setTimeout(() => t.scrollIntoView({ behavior: 'smooth' }), 60); };
+    $$('[data-act="full"]').forEach((b) => b.addEventListener('click', () => openFull('flow')));
+    $$('.find[data-full]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); openFull(a.dataset.full); }));
     drawCharts();
     $$('#cover .big .v').forEach(countUp);
     $$('[data-act="storymode"]').forEach((b) => b.addEventListener('click', openStoryMode));
@@ -525,7 +553,7 @@
     $$('#calToggle button').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.m === S.calMode)); b.addEventListener('click', () => { S.calMode = b.dataset.m; $$('#calToggle button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); const el = $('[data-c="cal"]'); el.previousElementSibling && el.previousElementSibling.classList.contains('scrollhint') && el.previousElementSibling.remove(); if (el.nextElementSibling && el.nextElementSibling.classList.contains('datatable')) el.nextElementSibling.remove(); calendarChart(el, S.A); }); });
     const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) $$('#chapterNav a').forEach((a) => { const on = a.dataset.ch === e.target.id; a.classList.toggle('on', on); if (on) a.scrollIntoView({ block: 'nearest', inline: 'center' }); }); }), { rootMargin: '-30% 0px -60% 0px' });
     $$('.chapter').forEach((c) => io.observe(c));
-    $$('#chapterNav a').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); document.getElementById(a.dataset.ch).scrollIntoView({ behavior: 'smooth' }); }));
+    $$('#chapterNav a').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); if (a.classList.contains('extra')) { openFull(a.dataset.ch); return; } document.getElementById(a.dataset.ch).scrollIntoView({ behavior: 'smooth' }); }));
   }
   function drawCharts() {
     const A = S.A; if (!A) return;
