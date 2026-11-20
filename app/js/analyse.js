@@ -171,7 +171,13 @@
     return { cur, start, end, nDays, monthsEq, txCount, accessFees, creditFeesEstimated, txs, ins, outs, totalIn, totalOut, ownOut, spend: totalOut - ownOut, daily, months, dom, bigInDays, lowDay, heat, byHour, byWd, lifespans, drain, bigInsCount: bigIns.length, lifespan: d3.median(lifespans) || null, lifespan75: d3.median(lifespans75) || null, bigCut, payees, people, merchants, categories, inSources, hasCredit, draws, creditDays, creditDrawn: sum(draws), creditFees, dailyCharges, loans, loanCost, txFees, feesTotal, feeMonths, avoidable, avoidableTotal: sum(avoidable, (a) => a.amount), toCheck: dupes, biggest, spikeDays, habits, trend };
   }
 
-  function fmt(v, cur) { return (cur || 'KES') + ' ' + d3.format(',.0f')(v || 0); }
+  function fmt(v, cur) {
+    // Optional display conversion set by the page (window.PD_FX = { from, to, rate })
+    const fx = typeof window !== 'undefined' && window.PD_FX; let c = cur || 'KES';
+    if (fx && fx.to && c === fx.from) { v = (v || 0) * fx.rate; c = fx.to; }
+    const ab = Math.abs(v || 0);
+    return c + ' ' + d3.format(ab > 0 && ab < 10 && c === 'USD' ? ',.2f' : ',.0f')(v || 0);
+  }
 
   /* Compact, anonymised summary for any AI assistant. Aggregates only; people are never named. */
   function summary(A, opts) {

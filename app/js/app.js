@@ -20,8 +20,13 @@
   let SALT = ''; try { SALT = localStorage.getItem('pesadithi:salt') || ''; if (!SALT) { SALT = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join(''); } } catch (e) { SALT = String(Math.random()).slice(2); }
   const h = (s0) => { const s = SALT + '|' + s0; let x = 0x811c9dc5; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(36); };
   const n0 = d3.format(',.0f');
-  const cur = () => (S.A ? S.A.cur : 'KES');
-  const F = (v) => AN.fmt(v, cur());
+  const cur = () => (window.PD_FX && window.PD_FX.to) || (S.A ? S.A.cur : 'KES');
+  // Indicative mid rates, units per US dollar, around 10 November 2026 (CBK/KRA, Bank of Tanzania, Bank of Uganda quotes)
+  const FX = { KES: 129.91, TZS: 2640.44, UGX: 4050, USD: 1 };
+  const FX_NAME = { KES: 'Kenya shilling', TZS: 'Tanzania shilling', UGX: 'Uganda shilling', USD: 'US dollar' };
+  const FX_DATE = 'mid-November 2026';
+  const fxv = (v) => (window.PD_FX ? v * window.PD_FX.rate : v);
+  const F = (v) => AN.fmt(v, S.A ? S.A.cur : 'KES');
   const FB = (v) => cur() + ' ' + (Math.abs(v) >= 1e6 ? d3.format('.2f')(v / 1e6) + 'm' : n0(v));
   const pct = (v) => Math.round(v * 100) + '%';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -34,7 +39,41 @@
   const coarse = () => matchMedia('(pointer: coarse)').matches;
   const fmtDate = (ts) => d3.utcFormat('%-d %b %Y')(new Date(ts.slice(0, 10) + 'T00:00:00Z'));
   const dt = (s) => new Date(s.slice(0, 10) + 'T00:00:00Z');
-  const kfmt = (v) => (Math.abs(v) >= 1e6 ? d3.format('.1f')(v / 1e6) + 'm' : Math.abs(v) >= 1000 ? n0(v / 1000) + 'k' : n0(v));
+  const kfmt = (v0) => { const v = fxv(v0); return (Math.abs(v) >= 1e6 ? d3.format('.1f')(v / 1e6) + 'm' : Math.abs(v) >= 1000 ? n0(v / 1000) + 'k' : n0(v)); };
+
+  /* ---------------- Currency display ---------------- */
+  function fxUI(view) {
+    const wrap = $('#curWrap'), sel = $('#curSel'); if (!wrap) return;
+    const on = !!S.A && ['story', 'sort', 'budget'].includes(view || (location.hash || '#home').slice(1));
+    wrap.hidden = !on;
+    if (S.A) {
+      const nat = S.A.cur;
+      if (sel.dataset.nat !== nat) {
+        sel.dataset.nat = nat;
+        sel.innerHTML = [nat].concat(Object.keys(FX).filter((c) => c !== nat && FX[nat])).map((c) => `<option value="${c === nat ? '' : c}">${c}${c === nat ? '' : ''}</option>`).join('');
+        sel.value = window.PD_FX && window.PD_FX.from === nat ? window.PD_FX.to : '';
+      }
+    }
+    const note = $('#fxNote'); const fx = window.PD_FX;
+    note.hidden = !on; note.classList.toggle('conv', !!fx);
+    if (on) {
+      if (!note.contains(wrap)) { note.innerHTML = '<div class="wrap fxin"><span class="fxmsg" id="fxMsg"></span></div>'; note.querySelector('.fxin').appendChild(wrap); }
+      $('#fxMsg').innerHTML = fx ? `Shown in <b>${fx.to}</b> at about ${fx.rate >= 1 ? d3.format(',.2f')(fx.rate) + ' ' + fx.to + ' to 1 ' + fx.from : '1 ' + fx.to + ' to ' + d3.format(',.2f')(1 / fx.rate) + ' ' + fx.from}, ${FX_DATE} rates. Your records are in ${fx.from}; treat this as a guide. <button type="button" class="linkbtn small" id="fxOff">Back to ${fx.from}</button>` : `Amounts in ${S.A.cur}, as in your records.`;
+    }
+    const off = $('#fxOff'); if (off) off.onclick = () => setFx('');
+  }
+  function setFx(to) {
+    const nat = S.A ? S.A.cur : 'KES';
+    window.PD_FX = to && FX[to] && FX[nat] ? { from: nat, to, rate: FX[to] / FX[nat] } : null;
+    try { localStorage.setItem('pesadithi:fx', to || ''); } catch (e) { /* fine */ }
+    const v = (location.hash || '#home').slice(1);
+    if (S.A) { $('#story').innerHTML = ''; $('#chapterNav') && ($('#chapterNav').innerHTML = ''); }
+    if (v === 'story' && S.A) renderStory(); else if (v === 'sort') renderGame(); else if (v === 'budget') renderBudget();
+    $('#curSel').value = to || ''; fxUI(v);
+  }
+  $('#curSel') && $('#curSel').addEventListener('change', (e) => setFx(e.target.value));
+
+  $('#openLegal') && $('#openLegal').addEventListener('click', (e) => { e.preventDefault(); const d = document.querySelector('details.legal'); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 
   /* ---------------- Routing ---------------- */
   let firstRoute = true;
@@ -42,9 +81,13 @@
     $$('[data-v]').forEach((s) => (s.hidden = s.dataset.v !== view));
     $$('.nav a').forEach((a) => (a.dataset.view === view ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
     $('#demoBadge').hidden = !(S.A && S.demo && view !== 'start');
+    fxUI(view);
     if (view === 'sort') renderGame();
     if (view === 'budget') renderBudget();
-    if (view === 'ai') { $('#aiEmpty').hidden = !!S.A; $('#aiBody').hidden = !S.A; renderAI(); }
+    if (view === 'ai') {
+      if (!S.A) { $('#aiEmpty').hidden = true; $('#aiBody').hidden = true; loadDemoForAI(); }
+      else { $('#aiEmpty').hidden = true; $('#aiBody').hidden = false; renderAI(); }
+    }
     if (view === 'story' && !$('#story').childElementCount) renderStory();
     window.scrollTo(0, 0);
     if (!firstRoute) { const hd = $('[data-v="' + view + '"] h1'); if (hd) { hd.setAttribute('tabindex', '-1'); hd.focus({ preventScroll: true }); } }
@@ -74,13 +117,14 @@
   };
   let FILE = null; let FILES = [];
   const isImg = (f) => f && (/^image\//.test(f.type) || /\.(png|jpe?g|webp|heic)$/i.test(f.name));
+  function stepTo(n) { $$('#stepper li').forEach((li, i) => { li.classList.toggle('on', i < n); li.classList.toggle('now', i === n - 1); if (i === n - 1) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); }); }
   function resetLoader() {
     FILE = null; S.lastInput = null; S.pwFails = 0; $('#file').value = ''; $('#fileName').textContent = 'PDF statement, screenshots of your SMS, or a JSON, XML, CSV or TXT export. Up to 25 MB.';
     $('#found').hidden = true; status('');
   }
   $$('.source').forEach((b) => b.addEventListener('click', () => {
     $$('.source').forEach((x) => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true');
-    S.src = b.dataset.src; S.token++; resetLoader();
+    S.src = b.dataset.src; S.token++; resetLoader(); stepTo(2);
     $('#srcHelp').innerHTML = HELP[S.src]; $('#srcHelp').hidden = false; $('#loader').hidden = false;
     $('#pwField').hidden = S.src !== 'pdf';
     $('#pasteField').hidden = S.src === 'pdf' || S.src === 'shots';
@@ -192,7 +236,7 @@
     const ts = r.txs.map((t) => t.ts).sort();
     const span = Math.round((dt(ts[ts.length - 1]) - dt(ts[0])) / 864e5) + 1;
     const nTx = r.txs.filter((t) => t.dir === 'in' || t.dir === 'out').length;
-    $('#found').hidden = false; requestAnimationFrame(() => $('#found').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })); window.pdTrack && pdTrack('Data loaded', { route: S.src || 'unknown', kind: r.kind || 'sms', months: String(Math.max(1, Math.round(span / 30))) });
+    $('#found').hidden = false; stepTo(3); requestAnimationFrame(() => $('#found').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })); window.pdTrack && pdTrack('Data loaded', { route: S.src || 'unknown', kind: r.kind || 'sms', months: String(Math.max(1, Math.round(span / 30))) });
     $('#foundTitle').textContent = `We found ${pl(nTx, r.provider + ' transaction')}`;
     $('#foundText').textContent = (r.kind === 'statement' ? 'Read from your statement' : `${n0(r.txs.length)} of ${pl(r.messages, 'message')} were transactions or loan updates`) + `, from ${fmtDate(ts[0])} to ${fmtDate(ts[ts.length - 1])} (${pl(span, 'day')}). Everything stayed on this device.${note}`;
     showSkipped(r.skipped);
@@ -217,6 +261,7 @@
   function compute() {
     S.A = AN.analyse(S.raw.txs, { start: periodRange().start });
     S.A.provider = S.raw.provider;
+    { let pf = ''; try { pf = localStorage.getItem('pesadithi:fx') || ''; } catch (e) { /* fine */ } window.PD_FX = pf && pf !== S.A.cur && FX[pf] && FX[S.A.cur] ? { from: S.A.cur, to: pf, rate: FX[pf] / FX[S.A.cur] } : null; const cs = $('#curSel'); if (cs) cs.dataset.nat = ''; }
     $('#story').innerHTML = ''; setDataUI(true); resetGame(); S.targets = store.get('targets') || {};
   }
 
@@ -436,10 +481,10 @@
     if (A.lifespan != null) chapters.push(['drain', 'How long it lasts', ch('drain', num() + 'how long money lasts', `Half of a big payment is spent <em>within ${A.lifespan.toFixed(1)} days</em>`, `<p class="muted">For each payment in of ${F(A.bigCut)} or more (${pl(A.bigInsCount, 'payment')}), how much is still unspent, day by day. Transfers to ${their} own banks, savings and business payroll don't count as spending.</p><div class="chart" data-c="drain"></div>${A.lifespan75 != null ? `<p class="insight">Three quarters is gone by day ${A.lifespan75.toFixed(1)}. ${A.lifespan75 < 15 ? 'That leaves the rest of the month running on what is left, or on credit.' : 'That is a steady pace.'}</p>` : ''}`)]);
     chapters.push(['month', 'The month', ch('month', num() + 'the month inside the month', A.lowDay ? `The balance is usually lowest <em>around the ${ord(A.lowDay.day)}</em>` : 'When in the month money moves', `<p class="muted">Each square is a day. Switch what it shows: money in, money out, the net of the two, ${A.hasCredit ? `or what was owed to ${cn}` : 'or the balance'}. Black dots mark big payments in. The bars underneath add up each date across the period.</p><div class="toggle" role="group" aria-label="Calendar shows" id="calToggle"><button type="button" data-m="in">Money in</button><button type="button" data-m="out">Money out</button><button type="button" data-m="net">Net</button>${A.hasCredit ? `<button type="button" data-m="credit">Owed to ${cn}</button>` : ''}</div><div class="chart scrollx" data-c="cal"></div>${A.bigInDays.length ? `<p class="insight">The biggest payments in land around the ${A.bigInDays.map(ord).join(', ')}.${A.hasCredit && A.dom.some((d) => d.creditDraw) ? ` ${cn} is used most on the ${ord(d3.greatest(A.dom, (d) => d.creditDraw).day)}.` : ''}</p>` : ''}`)]);
     chapters.push(['clock', 'Money clock', ch('clock', num() + 'the money clock', `Spending peaks on ${WD[A.habits.peakWeekday]}, <em>around ${hourLabel(A.habits.peakHour)}</em>`, `<p class="muted">Payments by day and hour. Darker squares hold more money. Transfers to ${their} own accounts are left out.</p><div class="chart scrollx" data-c="heat"></div><div class="bigs">${big(pct(A.habits.lateNightShare), 'of spending happens between 10pm and 4am')}${big(pct(A.habits.weekendShare), 'happens at weekends')}${A.habits.cafeVisits ? big(n0(A.habits.cafeVisits), `café and restaurant payments, about ${Math.round(A.habits.cafePerWeek)} a week`) : ''}</div>`)]);
-    chapters.push(['where', 'Where it goes', ch('where', num() + 'where it goes', topCat ? `Of every ${A.cur} 100 spent, ${Math.round(topCat.total / d3.sum(spendCats, (c) => c.total) * 100)} went to ${topCat.category.toLowerCase()}` : 'Where it goes', `<p class="muted">Spending only.${A.ownOut ? ` Money moved to ${their} own banks, cards and savings (${F(A.ownOut)}) is left out.` : ''} Each square is 1 in every 100.</p><div class="chart" data-c="units"></div><h3 style="margin-top:30px">Who got paid most</h3><p class="small muted">With a note on who each business is. Payment platforms hide the real shop behind them.</p><div class="mcards">${A.merchants.slice(0, 6).map((m) => `<div class="mcard"><div class="n">${esc(titleCase(m.name))}</div><div class="c">${esc(m.category)} · ${pl(m.count, 'payment')}</div><div class="a">${F(m.total)}</div>${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}</div>`).join('')}</div>${A.merchants.length > 6 ? `<details class="datatable"><summary>All ${pl(Math.min(25, A.merchants.length), 'place')} paid most</summary><div class="scrollx"><table class="merch"><thead><tr><th>Paid to</th><th>Category</th><th class="n">Payments</th><th class="n">${A.cur}</th></tr></thead><tbody>${A.merchants.slice(0, 25).map((m) => `<tr><td>${esc(titleCase(m.name))}${m.note ? `<span class="note">${esc(m.note)}</span>` : ''}</td><td>${esc(m.category)}</td><td class="n">${m.count}</td><td class="n">${n0(m.total)}</td></tr>`).join('')}</tbody></table></div></details>` : ''}<p class="small muted">${pl(A.people.length, 'person', 'people')} received ${F(d3.sum(A.people, (p) => p.total))} across ${pl(A.habits.peopleSends, 'send')}. <a href="#sort">Sort them</a> to see what that money really is.</p>`)]);
+    chapters.push(['where', 'Where it goes', ch('where', num() + 'where it goes', topCat ? `Of every ${cur()} 100 spent, ${Math.round(topCat.total / d3.sum(spendCats, (c) => c.total) * 100)} went to ${topCat.category.toLowerCase()}` : 'Where it goes', `<p class="muted">Spending only.${A.ownOut ? ` Money moved to ${their} own banks, cards and savings (${F(A.ownOut)}) is left out.` : ''} Each square is 1 in every 100.</p><div class="chart" data-c="units"></div><h3 style="margin-top:30px">Who got paid most</h3><p class="small muted">With a note on who each business is. Payment platforms hide the real shop behind them.</p><div class="mcards">${A.merchants.slice(0, 6).map((m) => `<div class="mcard"><div class="n">${esc(titleCase(m.name))}</div><div class="c">${esc(m.category)} · ${pl(m.count, 'payment')}</div><div class="a">${F(m.total)}</div>${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}</div>`).join('')}</div>${A.merchants.length > 6 ? `<details class="datatable"><summary>All ${pl(Math.min(25, A.merchants.length), 'place')} paid most</summary><div class="scrollx"><table class="merch"><thead><tr><th>Paid to</th><th>Category</th><th class="n">Payments</th><th class="n">${A.cur}</th></tr></thead><tbody>${A.merchants.slice(0, 25).map((m) => `<tr><td>${esc(titleCase(m.name))}${m.note ? `<span class="note">${esc(m.note)}</span>` : ''}</td><td>${esc(m.category)}</td><td class="n">${m.count}</td><td class="n">${n0(m.total)}</td></tr>`).join('')}</tbody></table></div></details>` : ''}<p class="small muted">${pl(A.people.length, 'person', 'people')} received ${F(d3.sum(A.people, (p) => p.total))} across ${pl(A.habits.peopleSends, 'send')}. <a href="#sort">Sort them</a> to see what that money really is.</p>`)]);
     { const H = A.habits; const small = A.draws ? A.draws.filter((d) => d.amt < 500).length : 0; const cards = [];
       if (H.cafeVisits) cards.push(['Café and restaurant payments', n0(H.cafeVisits), `${F(H.cafeSpend)} in all, about ${Math.round(H.cafePerWeek)} a week`]);
-      if (A.hasCredit) cards.push([`${cn} top-ups after 7pm`, n0(H.drawsAfter7pm), `Typical top-up ${F(H.medianDraw)}; ${pl(small, 'top-up')} under ${A.cur} 500`]);
+      if (A.hasCredit) cards.push([`${cn} top-ups after 7pm`, n0(H.drawsAfter7pm), `Typical top-up ${F(H.medianDraw)}; ${pl(small, 'top-up')} under ${cur()} 500`]);
       if (A.hasCredit && H.redraw) cards.push([`Repaid ${cn}, then used it again the same day`, n0(H.redraw), 'Money arrived, cleared what was owed, and a new top-up followed within hours']);
       if (H.peopleSends) cards.push(['Sends to people', n0(H.peopleSends), `${F(H.peopleFees)} in transaction costs`]);
       cards.push(['Late-night spending', pct(H.lateNightShare), 'of spending between 10pm and 4am']);
@@ -549,84 +594,139 @@
       $('.wthanks', box).hidden = false;
     });
   }
-  /* ---------------- Sort game ---------------- */
-  const GCATS = ['Household and home help', 'Family support', 'Friends and social', 'Work and business', 'Services and transport', 'Giving and community', 'Savings group or chama', 'Lending or repaying'];
-  function resetGame() { const saved = store.get('game') || {}; S.game = { assign: {}, saved: saved.assign || {}, history: [], last: null, skipped: [], extra: saved.extra || [] }; }
+  /* ---------------- Sort your people: set up categories, then swipe ---------------- */
+  const AREAS = [
+    ['Household and home help', '🧺'], ['Kids and school', '🎒'], ['Parents and family back home', '👵'], ['Partner', '💞'],
+    ['Friends and social', '🎉'], ['Church and giving', '⛪'], ['Chama or savings group', '🤝'], ['Services and transport', '🛵'],
+    ['Lending or repaying', '💸'], ['Gifts and celebrations', '🎁'], ['Health and care', '🩺'], ['Rent and landlord', '🔑']
+  ];
+  const BIZ = [['Suppliers and stock', '📦'], ['Staff and casuals', '👷'], ['Customers and refunds', '🧾'], ['Other business costs', '💼']];
+  const PRESETS = [
+    ['Young professional', '🧑‍💻', ['Household and home help', 'Parents and family back home', 'Friends and social', 'Services and transport', 'Rent and landlord', 'Lending or repaying'], false],
+    ['Parent', '👨‍👩‍👧', ['Household and home help', 'Kids and school', 'Parents and family back home', 'Partner', 'Services and transport', 'Health and care', 'Church and giving'], false],
+    ['Business owner or hustler', '🛍️', ['Household and home help', 'Parents and family back home', 'Friends and social', 'Services and transport', 'Lending or repaying'], true],
+    ['Student', '📚', ['Friends and social', 'Parents and family back home', 'Services and transport', 'Rent and landlord', 'Lending or repaying'], false],
+    ['Church or community leader', '⛪', ['Household and home help', 'Church and giving', 'Parents and family back home', 'Gifts and celebrations', 'Chama or savings group', 'Services and transport'], false]
+  ];
+  const EMO = Object.fromEntries(AREAS.concat(BIZ).concat([['Business or side hustle', '💼'], ['Family support', '👪'], ['Work and business', '💼'], ['Giving and community', '🙏'], ['Savings group or chama', '🤝']]));
+  const emo = (c) => EMO[c] || '🏷️';
+  const SORT_COL = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6'];
+  const colFor = (() => { const m = {}; let n = 0; return (c) => (m[c] || (m[c] = n < SORT_COL.length ? SORT_COL[n++] : '#8a8f98')); })();
+  function resetGame() {
+    const saved = store.get('game') || {};
+    S.game = { assign: {}, saved: saved.assign || {}, history: [], skipped: [], extra: saved.extra || [], setup: saved.setup || null, stage: null, last: null };
+  }
   const catOf = (name) => S.game.assign[name] || S.game.saved[h(name)] || null;
   function gameDeck() { return S.A ? S.A.people.filter((p) => p.total > 0) : []; }
   function nextPerson() { const deck = gameDeck(); return deck.find((p) => !catOf(p.name) && !S.game.skipped.includes(p.name)) || deck.find((p) => !catOf(p.name)) || null; }
+  function personalCats() { const st = S.game.setup; return (st ? st.areas : AREAS.slice(0, 6).map((a) => a[0])).concat(S.game.extra); }
+  function saveGame() { if (!$('#remember').checked) return; const hashed = { ...S.game.saved }; Object.entries(S.game.assign).forEach(([nm, c]) => { hashed[h(nm)] = c; }); store.set('game', { assign: hashed, extra: S.game.extra, setup: S.game.setup }); setDataUI(!!S.A); }
+
+  /* Setup */
+  let draft = null;
+  function renderSetup() {
+    const g = S.game; draft = draft || { areas: (g.setup ? g.setup.areas : PRESETS[0][2]).slice(), biz: g.setup ? g.setup.biz : null, preset: g.setup ? g.setup.preset : null };
+    $('#presets').innerHTML = PRESETS.map(([n, e]) => `<button type="button" data-p="${esc(n)}" aria-pressed="${draft.preset === n}"><span class="em">${e}</span>${esc(n)}</button>`).join('');
+    const all = AREAS.map((a) => a[0]).concat(g.extra);
+    $('#areas').innerHTML = all.map((c) => `<button type="button" data-c="${esc(c)}" aria-pressed="${draft.areas.includes(c)}"><span class="em">${emo(c)}</span>${esc(c)}</button>`).join('');
+    $$('#bizYN button').forEach((b) => b.setAttribute('aria-pressed', String(draft.biz === (b.dataset.v === '1'))));
+    $$('#presets button').forEach((b) => b.onclick = () => { const p = PRESETS.find((x) => x[0] === b.dataset.p); draft.preset = p[0]; draft.areas = p[2].slice(); draft.biz = p[3]; renderSetup(); });
+    $$('#areas button').forEach((b) => b.onclick = () => { const c = b.dataset.c; draft.areas = draft.areas.includes(c) ? draft.areas.filter((x) => x !== c) : draft.areas.concat(c); b.setAttribute('aria-pressed', String(draft.areas.includes(c))); setupNote(); });
+    $$('#bizYN button').forEach((b) => b.onclick = () => { draft.biz = b.dataset.v === '1'; renderSetup(); });
+    setupNote();
+  }
+  function setupNote() { $('#sortGoNote').textContent = draft.areas.length ? `${pl(draft.areas.length, 'category', 'categories')}${draft.biz ? ', plus business' : ''}. ${pl(gameDeck().length, 'person', 'people')} to sort.` : 'Pick at least one category.'; $('#sortGo').disabled = !draft.areas.length; }
+  $('#addArea').addEventListener('submit', (ev) => {
+    ev.preventDefault(); const c = $('#addAreaIn').value.trim().replace(/\s+/g, ' ').slice(0, 32); if (!c) return;
+    if (!AREAS.some((a) => a[0].toLowerCase() === c.toLowerCase()) && !S.game.extra.some((x) => x.toLowerCase() === c.toLowerCase())) S.game.extra.push(c);
+    if (!draft.areas.includes(c)) draft.areas.push(c); $('#addAreaIn').value = ''; renderSetup();
+  });
+  $('#sortGo').addEventListener('click', () => { if (!draft.areas.length) return; S.game.setup = { areas: draft.areas.slice(), biz: !!draft.biz, preset: draft.preset }; S.game.editing = false; draft = null; saveGame(); renderGame(true); });
+  $('#sortEdit').addEventListener('click', () => { draft = null; S.game.editing = true; renderGame(); $('#sortSetup').scrollIntoView({ block: 'start' }); });
+
+  /* Play */
+  function initials(nm) { return titleCase(nm).split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase(); }
   function renderGame(focus) {
     if (!S.game) resetGame();
-    const deck = gameDeck(); const g = S.game; const cats = GCATS.concat(g.extra);
+    const g = S.game;
+    if (!g.setup || g.editing) { $('#sortSetup').hidden = false; $('#sortPlay').hidden = true; renderSetup(); return; }
+    $('#sortSetup').hidden = true; $('#sortPlay').hidden = false;
+    const deck = gameDeck();
     if (deck.length && deck.every((p) => catOf(p.name) || g.skipped.includes(p.name)) && g.skipped.length) g.skipped = [];
     const done = deck.filter((p) => catOf(p.name)).length;
     $('#gameBar').style.width = (deck.length ? done / deck.length * 100 : 100) + '%';
     $('#gameCount').textContent = deck.length ? `${done} of ${pl(deck.length, 'person', 'people')} sorted` : '';
     const p = nextPerson(); const ctrls = $('#gameCtrls');
-    if (!deck.length) { $('#deck').innerHTML = '<div class="pcard"><div class="who">No money sent to people in this period</div><p class="muted">Nothing to sort. Try a longer period on the Load data page.</p></div>'; ctrls.hidden = true; }
-    else if (!p) { $('#deck').innerHTML = `<div class="pcard" tabindex="-1" id="pcard"><div class="who">All sorted</div><p class="muted">You labelled ${pl(done, 'person', 'people')}. The budget now shows what that money is for.</p></div>`; ctrls.hidden = true; $('#narr').textContent = ''; }
+    if (!deck.length) { $('#deck').innerHTML = '<div class="pcard"><div class="who">No money sent to people in this period</div><p class="muted">Nothing to sort. Try a longer period on the Attach SMS page.</p></div>'; ctrls.hidden = true; }
+    else if (!p) { $('#deck').innerHTML = `<div class="pcard done" tabindex="-1" id="pcard"><div class="big-emo">🎉</div><div class="who">All sorted</div><p class="muted">You labelled ${pl(done, 'person', 'people')}. Your budget now shows what that money is really for.</p><button class="btn" type="button" id="doneBudget">See my budget</button></div>`; ctrls.hidden = true; $('#narr').textContent = ''; $('#doneBudget').onclick = () => go('budget'); }
     else {
       ctrls.hidden = false; const m = S.A.monthsEq; const idx = deck.indexOf(p) + 1;
-      $('#deck').innerHTML = `<div class="pcard" id="pcard" tabindex="-1" aria-labelledby="pwho" aria-describedby="pfacts"><div class="small muted">Person ${idx} of ${deck.length}${g.skipped.includes(p.name) ? ' · skipped earlier' : ''}</div><div class="who" id="pwho">${esc(titleCase(p.name))}</div><div id="pfacts"><div class="facts"><div><b>${p.count}</b><span>${p.count === 1 ? 'send' : 'sends'}</span></div><div><b>${kfmt(p.total)}</b><span>${cur()} total</span></div><div><b>${kfmt(p.total / m)}</b><span>a month</span></div></div><p class="small muted" style="margin:0">Usually ${F(p.typical)} · first ${fmtDate(p.first)} · last ${fmtDate(p.last)}</p></div><div class="cats" role="group" aria-label="Choose a category">${cats.map((c, i) => `<button type="button" data-cat="${esc(c)}"><span>${esc(c)}</span>${i < 9 && !coarse() ? `<kbd aria-hidden="true">${i + 1}</kbd>` : ''}</button>`).join('')}</div></div>`;
-      $$('#deck [data-cat]').forEach((b) => b.addEventListener('click', () => pick(b.dataset.cat)));
-      swipe($('#pcard'));
+      const twoStep = g.setup.biz && !g.stage;
+      const cats = g.stage === 'biz' ? BIZ.map((b) => b[0]) : personalCats();
+      const col = colFor(p.name);
+      const body = twoStep
+        ? `<p class="ask">Business or personal?</p><div class="bp"><button type="button" class="bp-p" data-bp="p"><span>👈</span> Personal</button><button type="button" class="bp-b" data-bp="b">Business <span>👉</span></button></div><p class="small muted swipe-hint">Swipe the card left or right, or tap.</p>`
+        : `<p class="ask">${g.stage === 'biz' ? 'Which part of the business?' : g.setup.biz ? 'Personal. What is it for?' : 'What is this money for?'}</p><div class="cats emo-cats" role="group" aria-label="Choose a category">${cats.map((c, i) => `<button type="button" data-cat="${esc(c)}"><span class="em">${emo(c)}</span><span class="cl">${esc(c)}</span>${i < 9 && !coarse() ? `<kbd aria-hidden="true">${i + 1}</kbd>` : ''}</button>`).join('')}</div>${g.stage ? '<button type="button" class="linkbtn small" id="backStage">← Back</button>' : (g.last && !g.setup.biz ? `<p class="small muted swipe-hint">Swipe right for ${emo(g.last)} ${esc(g.last)} again, left to skip.</p>` : '')}`;
+      $('#deck').innerHTML = `<div class="pstack" aria-hidden="true"><i></i><i></i></div><div class="pcard" id="pcard" tabindex="-1" aria-labelledby="pwho" aria-describedby="pfacts"><span class="stamp st-l">${twoStep ? 'PERSONAL' : 'SKIP'}</span><span class="stamp st-r">${twoStep ? 'BUSINESS' : g.last ? 'SAME AGAIN' : ''}</span>
+        <div class="phead"><span class="avatar" style="--c:${col}">${esc(initials(p.name))}</span><div><div class="small muted">Person ${idx} of ${deck.length}${g.skipped.includes(p.name) ? ' · skipped earlier' : ''}</div><div class="who" id="pwho">${esc(titleCase(p.name))}</div></div></div>
+        <div id="pfacts"><div class="facts"><div><b>${p.count}</b><span>${p.count === 1 ? 'send' : 'sends'}</span></div><div><b>${kfmt(p.total)}</b><span>${cur()} total</span></div><div><b>${kfmt(p.total / m)}</b><span>a month</span></div></div><p class="small muted" style="margin:0">Usually ${F(p.typical)} · first ${fmtDate(p.first)} · last ${fmtDate(p.last)}</p></div>${body}</div>`;
+      $$('#deck [data-cat]').forEach((b) => b.addEventListener('click', () => pick(b.dataset.cat, 'r')));
+      $$('#deck [data-bp]').forEach((b) => b.addEventListener('click', () => choose(b.dataset.bp === 'b' ? 'biz' : 'personal')));
+      const bk = $('#backStage'); if (bk) bk.onclick = () => { g.stage = null; renderGame(true); };
+      swipe($('#pcard'), twoStep);
     }
     $('#toBudget').className = 'btn small' + (done ? '' : ' ghost');
     renderTally();
     if (focus) { const c = $('#pcard'); if (c) c.focus({ preventScroll: true }); }
   }
+  function choose(stage) { S.game.stage = stage; const c = $('#pcard'); if (c) { c.classList.add(stage === 'biz' ? 'nudge-r' : 'nudge-l'); } setTimeout(() => renderGame(true), 160); }
   function pick(cat, dir) {
-    const p = nextPerson(); if (!p) return;
+    const p = nextPerson(); if (!p) return; const g = S.game;
     const card = $('#pcard'); if (card) card.classList.add(dir === 'l' ? 'fly-l' : 'fly-r');
-    if (cat === null) { if (!S.game.skipped.includes(p.name)) S.game.skipped.push(p.name); S.game.history.push({ name: p.name, skip: true }); $('#narr').textContent = `Skipped ${titleCase(p.name)}. They'll come back at the end.`; }
+    if (cat === null) { if (!g.skipped.includes(p.name)) g.skipped.push(p.name); g.history.push({ name: p.name, skip: true }); $('#narr').textContent = `Skipped ${titleCase(p.name)}. They'll come back at the end.`; }
     else {
-      S.game.assign[p.name] = cat; S.game.history.push({ name: p.name }); S.game.last = cat;
-      const same = gameDeck().filter((q) => catOf(q.name) === cat); const tot = d3.sum(same, (q) => q.total);
-      $('#narr').textContent = `${titleCase(p.name)} → ${cat}. That now holds ${F(tot)} across ${pl(same.length, 'person', 'people')}, about ${F(tot / S.A.monthsEq)} a month.`;
+      const full = g.stage === 'biz' ? cat : cat; g.assign[p.name] = full; g.history.push({ name: p.name }); g.last = full;
+      const same = gameDeck().filter((q) => catOf(q.name) === full); const tot = d3.sum(same, (q) => q.total);
+      $('#narr').innerHTML = `${emo(full)} <b>${esc(titleCase(p.name))}</b> → ${esc(full)}. That now holds ${F(tot)} across ${pl(same.length, 'person', 'people')}, about <b>${F(tot / S.A.monthsEq)}</b> a month.`;
     }
-    saveGame(); setTimeout(() => renderGame(true), card ? 200 : 0);
+    g.stage = null; saveGame(); setTimeout(() => renderGame(true), card ? 220 : 0);
   }
-  function saveGame() { if (!$('#remember').checked) return; const hashed = { ...S.game.saved }; Object.entries(S.game.assign).forEach(([nm, c]) => { hashed[h(nm)] = c; }); store.set('game', { assign: hashed, extra: S.game.extra }); setDataUI(!!S.A); }
   function renderTally() {
     const deck = gameDeck(); const m = S.A ? S.A.monthsEq : 1;
     const rows = d3.rollups(deck.filter((p) => catOf(p.name)), (v) => d3.sum(v, (p) => p.total), (p) => catOf(p.name)).sort((a, b) => b[1] - a[1]);
-    $('#tally').innerHTML = rows.length ? rows.map(([c, v]) => `<div class="row"><span>${esc(c)}</span><span class="num">${F(v / m)} a month</span></div>`).join('') : '<p class="small muted">Nothing sorted yet.</p>';
+    const mx = d3.max(rows, (r) => r[1]) || 1;
+    $('#tally').innerHTML = rows.length ? rows.map(([c, v]) => `<div class="trow"><div class="tl"><span class="em">${emo(c)}</span><span class="tn">${esc(c)}</span><span class="num">${F(v / m)}<small> a month</small></span></div><div class="tbar"><i style="width:${Math.max(4, v / mx * 100)}%;background:${colFor('cat:' + c)}"></i></div></div>`).join('') : '<p class="small muted">Nothing sorted yet. Each person you sort lands here.</p>';
   }
-  function swipe(card) {
+  function swipe(card, twoStep) {
     if (!card) return; let x0 = null, dx = 0;
+    const sl = $('.st-l', card), sr = $('.st-r', card);
     card.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) return; x0 = e.clientX; dx = 0; card.setPointerCapture(e.pointerId); card.style.transition = 'none'; });
-    card.addEventListener('pointermove', (e) => { if (x0 == null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 25}deg)`; });
-    const end = () => { if (x0 == null) return; card.style.transition = ''; x0 = null; if (dx > 90) { if (S.game.last) pick(S.game.last, 'r'); else { card.style.transform = ''; $('#narr').textContent = 'Pick a category first. After that, swiping right repeats your last choice.'; } } else if (dx < -90) pick(null, 'l'); else card.style.transform = ''; };
+    card.addEventListener('pointermove', (e) => { if (x0 == null) return; dx = e.clientX - x0; card.style.transform = `translateX(${dx}px) rotate(${dx / 25}deg)`; sl.style.opacity = Math.min(1, Math.max(0, -dx / 90)); sr.style.opacity = Math.min(1, Math.max(0, dx / 90)); });
+    const end = () => {
+      if (x0 == null) return; card.style.transition = ''; x0 = null; sl.style.opacity = 0; sr.style.opacity = 0;
+      if (twoStep) { if (dx > 90) choose('biz'); else if (dx < -90) choose('personal'); else card.style.transform = ''; return; }
+      if (dx > 90) { if (S.game.last && !S.game.stage) pick(S.game.last, 'r'); else { card.style.transform = ''; $('#narr').textContent = 'Tap a category first. After that, swiping right repeats it.'; } }
+      else if (dx < -90) pick(null, 'l'); else card.style.transform = '';
+    };
     card.addEventListener('pointerup', end); card.addEventListener('pointercancel', end);
   }
   document.addEventListener('keydown', (e) => {
-    if ($('#v-sort').hidden || !$('#sm').hidden || /input|textarea|select/i.test(document.activeElement.tagName)) return;
+    if ($('#v-sort').hidden || $('#sortPlay').hidden || !$('#sm').hidden || /input|textarea|select/i.test(document.activeElement.tagName)) return;
     if ((e.key === 'z' && (e.ctrlKey || e.metaKey)) || e.key === 'Backspace') { e.preventDefault(); undo(); return; }
-    if (!nextPerson()) return;
-    const cats = GCATS.concat(S.game.extra); const k = parseInt(e.key, 10);
-    if (k >= 1 && k <= Math.min(9, cats.length)) { e.preventDefault(); pick(cats[k - 1]); }
-    else if (e.key === 'ArrowRight' && S.game.last) { e.preventDefault(); pick(S.game.last, 'r'); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); pick(null, 'l'); }
+    if (!nextPerson()) return; const g = S.game;
+    if (g.setup.biz && !g.stage) { if (e.key === 'ArrowLeft') { e.preventDefault(); choose('personal'); } else if (e.key === 'ArrowRight') { e.preventDefault(); choose('biz'); } else if (e.key.toLowerCase() === 's') pick(null, 'l'); return; }
+    const cats = g.stage === 'biz' ? BIZ.map((b) => b[0]) : personalCats(); const k = parseInt(e.key, 10);
+    if (k >= 1 && k <= Math.min(9, cats.length)) { e.preventDefault(); pick(cats[k - 1], 'r'); }
+    else if (e.key === 'ArrowRight' && g.last && !g.setup.biz) { e.preventDefault(); pick(g.last, 'r'); }
+    else if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 's') { e.preventDefault(); if (g.stage) { g.stage = null; renderGame(true); } else pick(null, 'l'); }
   });
   function undo() {
     const last = S.game && S.game.history.pop(); if (!last) { $('#narr').textContent = 'Nothing to undo.'; return; }
     if (last.skip) S.game.skipped = S.game.skipped.filter((nm) => nm !== last.name); else { delete S.game.assign[last.name]; delete S.game.saved[h(last.name)]; }
-    $('#narr').textContent = `Undone: ${titleCase(last.name)} is back in the pile.`; saveGame(); renderGame(true);
+    S.game.stage = null; $('#narr').textContent = `Undone: ${titleCase(last.name)} is back on top.`; saveGame(); renderGame(true);
   }
   $('#gUndo').addEventListener('click', undo);
-  $('#gSkip').addEventListener('click', () => pick(null, 'l'));
-  $('#gAdd').addEventListener('click', () => { $('#addCat').hidden = false; $('#addCatIn').focus(); });
-  const closeAdd = () => { $('#addCat').hidden = true; $('#addCatIn').value = ''; $('#gAdd').focus(); };
-  $('#addCatCancel').addEventListener('click', closeAdd);
-  $('#addCatIn').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); closeAdd(); } });
-  $('#addCat').addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    const c = $('#addCatIn').value.trim().replace(/\s+/g, ' ');
-    if (!c) { $('#narr').textContent = 'A category needs a name.'; return; }
-    if (c.length > 40) { $('#narr').textContent = 'Please keep category names to 40 characters.'; return; }
-    if (GCATS.concat(S.game.extra).some((x) => x.toLowerCase() === c.toLowerCase())) { $('#narr').textContent = `"${c}" is already a category.`; return; }
-    S.game.extra.push(c); saveGame(); $('#addCat').hidden = true; $('#addCatIn').value = ''; renderGame(true); $('#narr').textContent = `Added "${c}". It is now a choice on the card.`;
-  });
+  $('#gSkip').addEventListener('click', () => { S.game.stage = null; pick(null, 'l'); });
   $('#toBudget').addEventListener('click', () => go('budget'));
 
   /* ---------------- Budget ---------------- */
@@ -636,26 +736,48 @@
     A.outs.forEach((t) => { if (MC.OWN_MONEY.includes(t.category)) return; let c = t.category; if (t.person) { const a = catOf(AN.norm(t.party)); c = a ? 'People: ' + a : 'People: not sorted yet'; } rows[c] = (rows[c] || 0) + t.amt; });
     return Object.entries(rows).map(([c, v]) => ({ category: c, monthly: v / m })).sort((a, b) => b.monthly - a.monthly);
   }
+  const BEMO = { 'Groceries & household': '🛒', 'Eating out & coffee': '☕', 'Going out': '🎶', 'Transport & fuel': '🚕', 'Car & parking': '🚗', 'Bills & utilities': '💡', 'Rent & housing': '🏠', 'Health': '🩺', 'Education': '🎓', 'Savings & investing': '🌱', 'Banks & cards': '🏦', 'Borrowing': '💳', 'Shopping': '🛍️', 'Subscriptions & entertainment': '📺', 'Giving & community': '🙏', 'Business & payroll': '💼', 'Cash': '💵', 'Airtime & data': '📶', 'Government & tax': '🏛️', 'Payment platforms': '🔗', 'Other': '📦', 'People: not sorted yet': '👥' };
+  const bemo = (c) => (c.startsWith('People: ') && c !== 'People: not sorted yet' ? emo(c.slice(8)) : BEMO[c] || '🏷️');
+  const blabel = (c) => (c === 'People: not sorted yet' ? 'People you haven\'t sorted yet' : c.startsWith('People: ') ? c.slice(8) + ' (people)' : c);
+  const BCOL = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6'];
   function renderBudget() {
     const A = S.A; if (!A) return; const m = A.monthsEq; const rows = budgetRows();
     const income = A.totalIn / m, ownIn = d3.sum(A.ins.filter((t) => t.category === 'From your banks'), (t) => t.amt) / m;
-    $('#budgetBigs').innerHTML = big(F(income), 'average money in per month' + (ownIn > income * .2 ? `, ${pct(ownIn / income)} of it moved in from ${S.demo ? 'her' : 'your'} own bank accounts` : '')) + big(F(d3.sum(rows, (r) => r.monthly)), 'average spending per month') + `<div class="big"><div class="v" id="tSum">–</div><div class="l">your targets add up to</div></div>`;
-    $('#budgetTable tbody').innerHTML = rows.map((r, i) => `<tr><td data-l="Category">${esc(r.category)}</td><td class="n" data-l="Monthly average">${F(r.monthly)}</td><td class="n" data-l="Target"><input type="text" inputmode="numeric" value="${S.targets[r.category] != null ? S.targets[r.category] : ''}" placeholder="Set" data-i="${i}" aria-label="Monthly target for ${esc(r.category)}"></td><td class="n" data-l="Difference" id="bd${i}"></td></tr>`).join('');
+    const spend = d3.sum(rows, (r) => r.monthly);
+    $('#budgetBigs').innerHTML = big(F(income), 'average money in per month' + (ownIn > income * .2 ? `, ${pct(ownIn / income)} of it moved in from ${S.demo ? 'her' : 'your'} own bank accounts` : ''), 'b-in') + big(F(spend), 'average spending per month', 'b-out') + `<div class="big b-tgt"><div class="v" id="tSum">–</div><div class="l">your targets add up to</div></div>`;
+    const col = (i) => (i < BCOL.length ? BCOL[i] : '#9aa3ab');
+    // Stacked bar: top 7 plus Other
+    const top = rows.slice(0, 7), rest = d3.sum(rows.slice(7), (r) => r.monthly);
+    const seg = top.map((r, i) => ({ l: blabel(r.category), e: bemo(r.category), v: r.monthly, c: col(i) })).concat(rest > 0 ? [{ l: 'Everything else', e: '➕', v: rest, c: '#9aa3ab' }] : []);
+    $('#bStack').innerHTML = seg.map((sg) => `<i style="flex-grow:${sg.v};background:${sg.c}" title="${esc(sg.l)}: ${F(sg.v)}"></i>`).join('');
+    $('#bStack').setAttribute('aria-label', 'Monthly spending split: ' + seg.map((sg) => `${sg.l} ${pct(sg.v / spend)}`).join(', '));
+    $('#bLegend').innerHTML = seg.map((sg) => `<span><i style="background:${sg.c}"></i>${sg.e} ${esc(sg.l)} <b>${pct(sg.v / spend)}</b></span>`).join('');
+    const unsorted = rows.find((r) => r.category === 'People: not sorted yet');
+    $('#bSorted').innerHTML = unsorted ? `${F(unsorted.monthly)} a month goes to people you haven't sorted. <a href="#sort">Sort them</a> to see what it's for.` : '';
+    const mx = d3.max(rows, (r) => Math.max(r.monthly, S.targets[r.category] || 0)) || 1;
+    $('#bList').innerHTML = rows.map((r, i) => {
+      const t = S.targets[r.category];
+      return `<div class="brow" style="--c:${col(i)}"><div class="bname"><span class="em">${bemo(r.category)}</span><span>${esc(blabel(r.category))}</span></div>
+        <div class="btrack"><i class="bavg" style="width:${r.monthly / mx * 100}%"></i><i class="btgt" id="bt${i}" style="left:${t != null ? Math.min(100, t / mx * 100) : 0}%" ${t == null ? 'hidden' : ''}></i></div>
+        <div class="bnum"><b>${F(r.monthly)}</b><small>a month</small></div>
+        <label class="bin"><span class="sr">Monthly target for ${esc(blabel(r.category))}</span><input type="text" inputmode="numeric" value="${t != null ? Math.round(fxv(t)) : ''}" placeholder="Target" data-i="${i}"></label>
+        <div class="bdiff" id="bd${i}"></div></div>`;
+    }).join('');
     const upd = () => {
       let sum = 0, any = false;
-      rows.forEach((r, i) => { const v = S.targets[r.category]; const cell = $('#bd' + i); if (v == null) { cell.textContent = '–'; cell.className = 'n'; return; } any = true; sum += v; const d = v - r.monthly; cell.textContent = (d < 0 ? 'over by ' : 'under by ') + F(Math.abs(d)); cell.className = 'n ' + (d < 0 ? 'over' : 'under'); });
+      rows.forEach((r, i) => { const v = S.targets[r.category]; const cell = $('#bd' + i); const mk = $('#bt' + i); if (v == null) { cell.textContent = ''; cell.className = 'bdiff'; mk.hidden = true; return; } any = true; sum += v; const d = v - r.monthly; cell.textContent = (d < 0 ? 'Over by ' : 'Under by ') + F(Math.abs(d)); cell.className = 'bdiff ' + (d < 0 ? 'over' : 'under'); mk.hidden = false; mk.style.left = Math.min(100, v / mx * 100) + '%'; mk.className = 'btgt ' + (d < 0 ? 'over' : 'under'); });
       $('#tSum').textContent = any ? F(sum) : '–';
     };
-    $$('#budgetTable input').forEach((inp) => inp.addEventListener('input', () => {
+    $$('#bList input').forEach((inp) => inp.addEventListener('input', () => {
       const r = rows[+inp.dataset.i]; const raw = inp.value.trim(); const cell = $('#bd' + inp.dataset.i);
       if (!raw) { delete S.targets[r.category]; }
       else {
         // Accept "1,500", "KES 1500", "1500.50" and "2.5k"; refuse anything else instead of guessing
-        const m = raw.replace(/^(kes|ksh|ugx|tzs|rwf|ghs|zmw)\.?\s*/i, '').replace(/,/g, '').match(/^(\d+(?:\.\d+)?)\s*(k|m)?$/i);
-        if (!m) { delete S.targets[r.category]; upd(); cell.textContent = 'Type a whole amount, like 15000 or 15k'; cell.className = 'n over'; return; }
-        let v = Math.round(parseFloat(m[1]) * (m[2] ? (m[2].toLowerCase() === 'k' ? 1e3 : 1e6) : 1));
-        if (v > 1e9) { v = 1e9; }
-        S.targets[r.category] = v;
+        const mm = raw.replace(/^(kes|ksh|ugx|tzs|usd|rwf|ghs|zmw)\.?\s*/i, '').replace(/,/g, '').match(/^(\d+(?:\.\d+)?)\s*(k|m)?$/i);
+        if (!mm) { delete S.targets[r.category]; upd(); cell.textContent = 'Type an amount, like 15000 or 15k'; cell.className = 'bdiff over'; return; }
+        let v = parseFloat(mm[1]) * (mm[2] ? (mm[2].toLowerCase() === 'k' ? 1e3 : 1e6) : 1);
+        if (window.PD_FX) v = v / window.PD_FX.rate; // targets are kept in the statement's own currency
+        S.targets[r.category] = Math.min(1e9, Math.round(v));
       }
       if ($('#remember').checked) store.set('targets', S.targets); upd();
     }));
@@ -675,6 +797,10 @@
   /* ---------------- Ask your AI ---------------- */
   $$('.choices').forEach((g) => g.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', String(S.ai[g.dataset.q] === b.dataset.a)); b.addEventListener('click', () => { g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); S.ai[g.dataset.q] = b.dataset.a; renderAI(); }); }));
   $('#incMerchants').addEventListener('change', renderAI);
+  async function loadDemoForAI() {
+    try { const t = await (await fetch('demo/demo-mpesa-sms.json')).text(); S.raw = P.fromMessages(t, 'demo'); S.demo = true; S.period = 12; compute(); $('#demoBadge').hidden = false; $('#aiBody').hidden = false; renderAI(); }
+    catch (e) { $('#aiEmpty').hidden = false; }
+  }
   $('#aiDemo').addEventListener('click', async () => { try { const t = await (await fetch('demo/demo-mpesa-sms.json')).text(); S.raw = P.fromMessages(t, 'demo'); S.demo = true; S.period = 12; compute(); show('ai'); } catch (e) { /* stays on the empty state */ } });
   function aiPlan(a) {
     // Same rules as prompts/any-llm.md
@@ -704,7 +830,20 @@
     $('#aiPriv').textContent = inf ? inf[3] : 'Before you paste, check its settings for an option that lets your chats train its models, and switch it off if you prefer.';
   }
   $$('#aiFq button').forEach((b) => b.addEventListener('click', async () => { try { await navigator.clipboard.writeText(b.textContent); $('#fqState').textContent = 'Copied: ' + b.textContent; } catch (e) { $('#fqState').textContent = 'Copy this: ' + b.textContent; } }));
-  function renderAI() {
+  function renderAI() { const fxKeep = window.PD_FX; window.PD_FX = null; try { renderAI0(); } finally { window.PD_FX = fxKeep; } }
+  function aiShow(A, p) {
+    const inf = AI_INFO[p] || AI_INFO.ChatGPT; const name = AI_INFO[p] ? p : 'ChatGPT';
+    const lg = $('#aiShowLogo'); if (lg.dataset.ai !== inf[0]) { lg.dataset.ai = inf[0]; lg.className = 'ai'; window.pdFillAi && window.pdFillAi(lg); }
+    $('#aiShowName').textContent = name;
+    $('#aiDemoNote').hidden = !S.demo; $('#aiShowWho').textContent = S.demo ? "Amani's" : 'Your';
+    const her = S.demo ? 'Amani' : 'You'; const pts = [];
+    if (A.lifespan) pts.push(`<b>Payday runs out fast.</b> Half of each big payment is gone in about ${Math.round(A.lifespan)} days. Pay rent and the must-pays on payday, before anything else moves.`);
+    if (A.hasCredit && A.creditDays) pts.push(`<b>Fuliza is a habit, not an emergency.</b> ${A.creditDays} days ended owing it. Clearing it the day money lands would shorten each loan.`);
+    if (A.avoidableTotal) pts.push(`<b>${F(A.avoidableTotal)} could have been kept.</b> Mostly late repayments and missed cashback. Repay within 10 days where the lender offers it.`);
+    else if (A.feesTotal) pts.push(`<b>Charges add up to ${F(A.feesTotal)}.</b> Paying tills directly and withdrawing less often trims most of it.`);
+    $('#aiShowReply').innerHTML = `<span class="small">${esc(name)} replies</span><p>Here's what stands out in ${S.demo ? 'Amani\'s' : 'your'} year, and 3 things to try:</p><ol>${pts.slice(0, 3).map((x) => `<li>${x}</li>`).join('')}</ol><p class="small" style="margin:0;opacity:.8">Want me to turn this into a plan for the week ${her === 'You' ? 'you usually run' : 'she usually runs'} low?</p>`;
+  }
+  function renderAI0() {
     const A = S.A; if (!A) return; const a = S.ai; const plan = aiPlan(a);
     const sum = AN.summary(A, { merchants: plan.free ? 8 : 15, demo: S.demo, provider: A.provider });
     if (!$('#incMerchants').checked) sum.top_merchants = sum.top_merchants.map((m) => ({ category: m.category, total: m.total, payments: m.payments }));
@@ -718,6 +857,7 @@
     if (a.share === 'sms') adv.push(`Paste your money messages where the prompt says, ${plan.months === 1 ? 'one month at most' : 'one month at a time, up to ' + plan.months + ' months'}. Never paste bank codes or chats.`);
     $('#aiAdvice').textContent = adv.join(' ');
     aiNext(a.platform);
+    aiShow(A, a.platform);
     const mp = A.provider === 'M-PESA';
     const what = a.share === 'pdf' ? 'I have attached my statement PDF. The summary below covers the same period.' : a.share === 'sms' ? 'My money messages are pasted at the end, after the summary.' : 'Below is an anonymised summary: totals and patterns only, with no names of people.';
     const prompt = `${S.demo ? 'NOTE: this is DEMO data for a fictional person, invented to show how the tool works. It is not real.\n\n' : ''}You are a calm, practical money coach who understands mobile money in Africa${mp ? ' (M-PESA, Fuliza, M-Shwari, KCB M-PESA)' : ` (${A.provider}, mobile loans and agent fees)`}. Use plain words.
@@ -737,6 +877,7 @@ Rules: use only numbers in the data and never invent any. Months marked partial_
 SUMMARY (${A.cur}, ${A.start} to ${A.end}):
 ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     $('#aiOut').textContent = prompt;
+    $('#aiShowWords').textContent = `about ${n0(Math.round(prompt.split(/\s+/).length / 10) * 10)} words`;
     $('#aiSize').textContent = `About ${n0(Math.round(prompt.split(/\s+/).length / 10) * 10)} words, small enough for a free plan${a.share === 'pdf' ? ' plus your PDF' : a.share === 'sms' ? ' plus your messages' : ''}`;
     $('#copyState').textContent = '';
   }
@@ -788,7 +929,7 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     $('#smBar').innerHTML = SM.slides.map((_, i) => `<i class="${i <= SM.i ? 'on' : ''}"></i>`).join('');
     const TONES = { 'Fuliza-free days': 'mint', 'Savings rate': 'mint', 'Your money story': 'ink', 'Meet Amani · invented data': 'ink', 'How long it lasts': 'mint', 'The gap': 'credit', 'The money clock': 'ink', 'A habit': 'mint', 'Borrowing': 'credit', 'The price': 'out', 'Try this': 'mint', 'Pesadithi Lab': 'ink' };
     $('#smFrame').dataset.tone = s.tone || TONES[s.k] || 'mint';
-    $('#smSlide').innerHTML = `<div class="sk">${esc(s.k)}</div><div class="sv${s.small ? ' small' : ''}${s.cls ? ' ' + s.cls : ''}${/KES|Ksh|UGX|[+−-]?\d{1,3}(?:,\d{3})|\d(?:\.\d+)?[km]\b/.test(s.v) ? ' money' : ''}">${esc(s.v)}</div><div class="st">${esc(s.t)}</div>${s.dd ? `<div class="sd">${esc(s.dd)}</div>` : ''}${s.viz ? miniViz(s.viz) : ''}${s.url ? `<div class="surl">${esc(s.url)}</div>` : ''}`;
+    $('#smSlide').innerHTML = `<div class="sk">${esc(s.k)}</div><div class="sv${s.small ? ' small' : ''}${s.cls ? ' ' + s.cls : ''}${/KES|Ksh|UGX|TZS|USD|[+−-]?\d{1,3}(?:,\d{3})|\d(?:\.\d+)?[km]\b/.test(s.v) ? ' money' : ''}">${esc(s.v)}</div><div class="st">${esc(s.t)}</div>${s.dd ? `<div class="sd">${esc(s.dd)}</div>` : ''}${s.viz ? miniViz(s.viz) : ''}${s.url ? `<div class="surl">${esc(s.url)}</div>` : ''}`;
     const sv = $('#smSlide .sv'); if (sv && /\d/.test(sv.textContent)) countUp(sv);
     $('#smLive').textContent = `Slide ${SM.i + 1} of ${SM.slides.length}: ${s.v} ${s.t}`;
   }
