@@ -989,7 +989,18 @@ ${json}${a.share === 'sms' ? '\n\nMY MONEY MESSAGES:\n[Paste them here]' : ''}`;
     });
     feed.innerHTML = html;
     const T = [['in', 'came in', G.in, 5], ['out', 'went out', G.out, 6], ['saved', 'saved to Ziidi', G.saved, 9], ['credit', 'Fuliza', G.credit, 7], ['fee', 'in charges', '#5b6670', 8]];
-    $('#heroTally').innerHTML = T.map(([k, l, c]) => `<div style="--c:${c}"><b id="ht-${k}">KES 0</b><small>${l}</small></div>`).join('');
+    // Each tile carries a mark as well as a colour: arrows for money in and out, the Ziidi and Fuliza logos when their files are in vendor/logos, a coin for charges
+    const IC = {
+      in: '<svg viewBox="0 0 24 24"><path d="M12 4v12M6.5 10.5 12 16l5.5-5.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      out: '<svg viewBox="0 0 24 24"><path d="M12 20V8M6.5 13.5 12 8l5.5 5.5M5 4h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      saved: '<span class="lm">Z</span>', credit: '<span class="lm">F</span>',
+      fee: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14.6 9.2c-.5-.9-1.5-1.4-2.6-1.4-1.5 0-2.6.8-2.6 2s1.1 1.7 2.6 2c1.5.3 2.7.8 2.7 2.1s-1.2 2.1-2.7 2.1c-1.2 0-2.2-.5-2.7-1.5M12 6v1.8M12 16v1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+    };
+    const LOGO = { saved: 'ziidi', credit: 'fuliza' };
+    $('#heroTally').innerHTML = T.map(([k, l, c]) => `<div style="--c:${c}"><span class="tl-ic${LOGO[k] ? ' tl-brand' : ''}" data-k="${k}" aria-hidden="true">${IC[k]}</span><b id="ht-${k}">KES 0</b><small>${l}</small></div>`).join('');
+    fetch('vendor/logos/logos.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({})).then((m) => {
+      Object.entries(LOGO).forEach(([k, key]) => { if (!m || !m[key]) return; const slot = $(`#heroTally .tl-ic[data-k="${k}"]`); const img = new Image(); img.alt = ''; img.onload = () => { slot.innerHTML = ''; slot.appendChild(img); slot.classList.add('has-logo'); }; img.src = 'vendor/logos/' + m[key]; });
+    });
     const rows = $$('#heroFeed .row'); const scan = $('#heroScan'); const convo = feed.parentElement;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const run = { in: 0, out: 0, credit: 0, fee: 0, saved: 0 };
